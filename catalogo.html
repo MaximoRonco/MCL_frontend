@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Catálogo - MCL</title>
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+
+  <!-- Navbar -->
+  <header>
+    <nav class="navbar">
+      <div class="container">
+        <a href="index.html" class="logo">MCL</a>
+        <ul class="nav-links">
+          <li><a href="index.html">Inicio</a></li>
+          <li><a href="catalogo.html" class="active">Catálogo</a></li>
+          <li><a href="sobre-nosotros.html">Sobre Nosotros</a></li>
+          <li><a href="contacto.html">Contacto</a></li>
+        </ul>
+      </div>
+    </nav>
+  </header>
+
+  <!-- Catálogo -->
+  <section id="catalogo">
+    <div class="container">
+      <h2>Catálogo Completo</h2>
+
+      <!-- Filtros -->
+      <div class="filtros">
+        <select id="filtro-tipo">
+          <option value="">Todos los tipos</option>
+          <option value="autos">Autos</option>
+          <option value="suv">SUVs</option>
+          <option value="camionetas">Camionetas</option>
+        </select>
+
+        <select id="filtro-marca">
+          <option value="">Todas las marcas</option>
+          <option value="Toyota">Toyota</option>
+          <option value="Ford">Ford</option>
+          <option value="Chevrolet">Chevrolet</option>
+        </select>
+      </div>
+
+      <!-- Lista de vehículos -->
+      <div id="lista-vehiculos" class="grid-cards">
+        <!-- JS inyectará aquí las cards -->
+      </div>
+    </div>
+  </section>
+
+  <!-- Footer -->
+  <footer>
+    <div class="container">
+      <p>© 2025 MCL Automotores - Todos los derechos reservados</p>
+    </div>
+  </footer>
+
+  <script src="js/main.js"></script>
+  <script src="js/catalogo.js"></script>
+</body>
+</html>
