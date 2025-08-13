@@ -243,7 +243,10 @@ header {
 
 /* ======= CONTACTO ======= */
 .contacto {
-  display: flex;
+  display: grid;
+  grid-template-rows: 1fr 1fr;
+  text-align: center;
+  width: 90%;
   background-color: var(--color-bg);
   padding: 40px;
   border-radius: 12px;
@@ -255,6 +258,11 @@ header {
   margin-bottom: 50px;
 }
 
+@media (min-width: 768px) {
+   .contacto{
+    display: flex;
+   }
+}
 .contacto-container {
   flex: 1;
   padding-right: 20px;
@@ -357,8 +365,8 @@ header {
 }
 
 .footer-container {
-    display: flex;
-    justify-content: space-between;
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr;
     flex-wrap: wrap;
     max-width: 1200px;
     margin: auto;
@@ -368,7 +376,9 @@ header {
 }
 
 .footer-section {
-    flex: 1 1 250px;
+    /* flex: 1 1 250px; */
+    text-align: center;
+    width: 90%;
 }
 
 .footer-section h3 {
@@ -423,6 +433,7 @@ header {
 /* Responsive */
 @media (max-width: 768px) {
     .footer-container {
+        display: flex;
         flex-direction: column;
         align-items: center;
         text-align: center;
