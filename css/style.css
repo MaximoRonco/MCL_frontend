@@ -22,7 +22,7 @@ body {
 
 /* ======= NAVBAR ======= */
 header {
-  height: 120px;
+  height: 100px;
   background-color: var(--color-black);
   position: sticky;
   top: 0;
@@ -30,7 +30,7 @@ header {
 }
 
 .navbar .container {
-  height: 120px;
+  height: 100px;
   max-width: 1200px;
   margin: auto;
   display: flex;
@@ -40,7 +40,7 @@ header {
 }
 
 .logo img{
-  height: 110px;
+  height: 80px;
   width: auto;
 }
 
@@ -48,6 +48,34 @@ header {
   list-style: none;
   display: flex;
   gap: 1.5rem;
+  align-items: center;
+}
+
+.secciones{
+  display: flex;
+  gap: 1.5rem;
+}
+
+.menu-toggle{
+  display: none;
+}
+
+@media (max-width: 768px) {
+   .secciones{
+    display: none;
+   }
+   .menu-toggle{
+    display: block;
+   }
+   .logo img{
+    height: 65px;
+   }
+}
+
+
+.iniciar-sesion-icono{
+  width: 35px;
+  text-align: center;
 }
 
 .nav-links a {
