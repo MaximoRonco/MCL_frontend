@@ -575,7 +575,7 @@ header {
 
 /* servicios */
 #contenedor-servicios {
-  background: white !important;
+  background-color: white !important;
   padding: 60px 20px;
   text-align: center;
 }
@@ -659,12 +659,16 @@ header {
 
 /* Celulares: 1 columna */
 @media (max-width: 600px) {
+  #contenedor-servicios {
+    background-color: white !important;
+  }
   #title-servicios h2 {
     font-size: 1.8rem;
     margin-bottom: 25px;
   }
 
   .servicios {
+    background-color: white !important;
     flex-direction: column;
     align-items: center;
     gap: 20px;
