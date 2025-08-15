@@ -310,7 +310,7 @@ header {
 /* Inicio responsive catalogo */
 @media (max-width: 768px) {
    #catalogo-inicio {
-    padding: 3rem 3.5rem ;
+    padding: 3rem 6rem ;
 }
 }
 
