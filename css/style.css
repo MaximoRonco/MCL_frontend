@@ -15,7 +15,7 @@
 
 body {
   font-family: Arial, Helvetica, sans-serif;
-  background-color: var(--color-light);
+  background-color: white;
   color: var(--color-light);
   line-height: 1.5;
 }
@@ -100,19 +100,53 @@ header {
   color: var(--color-primary);
 }
 
-.info-head{
+/* ======= INFO HEAD ======= */
+.info-head {
   background-color: var(--color-primary);
   color: white;
   padding: 10px 0;
-  text-align: center;
   display: flex;
   align-items: center;
-  justify-content: center;  
+  overflow: hidden; /* Oculta lo que se sale */
+  height: 40px; /* Mantiene altura fija */
 }
 
-.clock{
-  margin-left: 10px;
+.marquee {
+  display: flex;
+  white-space: nowrap;
+  animation: scrollText 15s linear infinite;
 }
+
+.marquee span {
+  padding-right: 50px; /* Espacio entre repeticiones */
+}
+
+.marquee span i{
+  margin-left: 5px;
+  margin-right: 5px;
+}
+
+@media (min-width: 769px) {
+  .marquee {
+    animation: none; /* En desktop no hay scroll */
+    justify-content: center;
+    width: 100%;
+  }
+}
+
+@keyframes scrollText {
+  from {
+    transform: translateX(0);
+  }
+  to {
+    transform: translateX(-50%);
+  }
+}
+
+
+
+
+/* ======= FIN INFO HEAD ======= */
 
 /* ======= CARRUSEL ======= */
 #carrusel {
@@ -139,11 +173,12 @@ header {
 
 /* ======= CATÁLOGO ======= */
 #catalogo-inicio {
-  padding: 3rem 1rem;
+  padding: 3rem 5rem;
 }
 
 #catalogo-inicio h2 {
   text-align: center;
+  font-size: 2rem;
   margin-bottom: 2rem;
   color: var(--color-primary);
 }
@@ -168,12 +203,25 @@ header {
 }
 
 .card {
+  opacity: 0;
+  transform: translateX(50px);
+  transition: all 0.6s ease;
   background-color: var(--color-black);
   border-radius: 8px;
   overflow: hidden;
   box-shadow: 0 2px 5px rgba(0,0,0,0.5);
   transition: transform 0.3s;
   margin-bottom: 20px;
+}
+
+.card.from-left {
+  transform: translateX(-50px);
+}
+
+/* Cuando se muestran */
+.card.show {
+  opacity: 1;
+  transform: translateX(0);
 }
 
 .card:hover {
@@ -253,6 +301,19 @@ header {
   margin-top: 20px;
 }
 
+/* fin catalogo */
+
+/* Animacion izquierda y derecha */
+
+
+/* Inicio responsive catalogo */
+@media (max-width: 768px) {
+   #catalogo-inicio {
+    padding: 3rem 4rem ;
+}
+}
+
+
 /*Boton de wpp*/
 
 #btnWpp {
@@ -298,6 +359,19 @@ header {
   margin-bottom: 50px;
 }
 
+/* Animación para la sección de contacto */
+.contacto, .formulario-container {
+  opacity: 0;
+  transform: translateY(50px);
+  transition: all 0.7s ease;
+}
+
+.contacto.show, .formulario-container.show {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+
 @media (min-width: 768px) {
    .contacto{
     display: flex;
@@ -305,7 +379,6 @@ header {
 }
 .contacto-container {
   flex: 1;
-  padding-right: 20px;
 }
 
 .contacto-container h2 {
@@ -331,7 +404,7 @@ header {
 
 .formulario-container{
   flex: 1;
-  padding-left: 20px;
+  
 }
 
 .formulario {
@@ -367,7 +440,7 @@ header {
 .campo__field:focus,
 .campo__label--textarea:focus {
   border: 1px solid var(--color-primary);
-  background-color: #1a1a1a;
+  background-color: var(--color-light);
 }
 
 .campo__label--textarea {
@@ -413,12 +486,21 @@ header {
     margin-bottom: 50px;
     gap: 30px;
     padding: 1rem;
+
+    justify-items: center; /* Centra cada columna */
+    text-align: center;    /* Centra el texto dentro */
 }
+
 
 .footer-section {
     /* flex: 1 1 250px; */
     text-align: center;
     width: 90%;
+}
+
+.logo_footer img{
+    width: 150px;
+    height: auto;
 }
 
 .footer-section h3 {
@@ -491,65 +573,119 @@ header {
 
 
 /* servicios */
+#contenedor-servicios {
+  background: #f8f8f8;
+  padding: 60px 20px;
+  text-align: center;
+}
 
-#title-servicios{
-    margin-left: 20px;
-    margin-right: 20px;
+#title-servicios h2 {
+  font-size: 2rem;
+  margin-bottom: 40px;
+  color: #b91127;
 }
 
 .servicios {
-    text-align: center;
-    /*background-color: var(--gris);*/
-    width: 90%;
-    margin: 0 auto;
-    border-radius: .5rem;
-    margin-bottom: 3rem;
-    /*-webkit-box-shadow: 0px 5px 15px 0px rgba(112,112,112,0.48);
-    -moz-box-shadow: 0px 5px 15px 0px rgba(112,112,112,0.48);
-    box-shadow: 0px 5px 15px 0px rgba(112,112,112,0.48);*/
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 30px;
 }
 
-.item {
-    padding-top: 40px !important;
-    padding-bottom: 40px !important;
-    padding-left: 20px !important;
-    padding-right: 20px !important;
-    margin: 10px;
-    margin-top: 2rem;
-    padding-top: 2rem;
-    border-radius: .5rem;
-    border: 2px solid var(--color-bg);
-    -webkit-transition: all 0.3s ease;
-    -moz-transition: all 0.3s ease;
-    transition: all 0.3s ease;
+.servicios .item {
+  background: white;
+  border-radius: 15px;
+  margin-left: 40px;
+  margin-right: 40px;
+  width: 350px;
+  box-shadow: 0 5px 20px rgba(0,0,0,0.1);
+  text-align: center;
+  opacity: 0;
+  transform: translateY(50px);
+  transition: all 0.8s ease;
+  padding: 30px;
 }
 
-.item:hover {
-    transition: 500ms all;
-    border: 2px solid var(--color-primary);
+.servicios .item svg {
+  margin-bottom: 15px;
 }
 
-.item h3{
-    margin-top: 10px;
-    color: var(--color-black);
+.servicios .item h3 {
+  margin: 10px 0;
+  font-size: 1.3rem;
+  color: #222;
 }
 
-.item p{
-  color: var(--color-bg);
+.servicios .item p {
+  font-size: 0.95rem;
+  color: #555;
 }
 
-.item:last-child{
-    margin-bottom: 2rem;
+/* Estados animados */
+.item.show {
+  opacity: 1;
+  transform: translateY(0);
 }
 
-@media (min-width: 768px) {
-    .servicios {
-        display: grid;
-        grid-template-columns: repeat(3, 1fr);
-        column-gap: 10px;
-    }
-
-    .item {
-        margin-bottom: 2rem;
-    }
+.item[data-anim="left"] {
+  transform: translateX(-100px);
 }
+
+.item[data-anim="left"].show {
+  transform: translateX(0);
+}
+
+.item[data-anim="right"] {
+  transform: translateX(00px);
+}
+
+.item[data-anim="right"].show {
+  transform: translateX(0);
+}
+
+/* RESPONSIVE SERVICIOS */
+
+/* Tablets: 2 columnas */
+@media (max-width: 992px) {
+  .servicios {
+    gap: 20px;
+  }
+  .servicios .item {
+    width: 45%;
+  }
+}
+
+/* Celulares: 1 columna */
+@media (max-width: 600px) {
+  #title-servicios h2 {
+    font-size: 1.8rem;
+    margin-bottom: 25px;
+  }
+
+  .servicios {
+    flex-direction: column;
+    align-items: center;
+    gap: 20px;
+  }
+
+  .servicios .item {
+    width: 80%;
+    padding: 20px;
+  }
+
+  .servicios .item svg {
+    width: 100px;
+    height: 100px;
+  }
+
+  .servicios .item h3 {
+    font-size: 1.2rem;
+  }
+
+  .servicios .item p {
+    font-size: 0.9rem;
+  }
+}
+
+/* FIN RESPONSIVE SERVICIOS */
+
