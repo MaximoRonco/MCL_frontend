@@ -695,3 +695,155 @@ header {
 
 /* FIN RESPONSIVE SERVICIOS */
 
+
+/* Inicio de Sesión */
+
+#contenidoSesion i{
+    font-size: 1.8rem;
+    margin-right: 10px;
+    color: var(--color-primary);
+}
+
+.input-container {
+    display: flex;
+    align-items: center;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+    padding: 5px;
+}
+
+.input-container i {
+    margin-right: 5px;
+}
+
+.input-container input {
+    border: none;
+    outline: none;
+}
+
+#contenedorSesion{
+    width: 100%;
+    height: 100vh;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+}
+
+#contenedorSesion img{
+    width: 80%;
+    display: flex;
+    margin: 0 auto;
+}
+
+#usuario, #contraseña{
+    display: flex;
+    width: 80%;
+}
+
+#iniciar-Sesion input{
+    height: 3rem;
+    width: 80%;
+}
+
+/*.iconoUser{
+    margin-top: 9px;
+}*/
+
+
+#iniciar-Sesion{
+    height: 500px;
+    width: 50%;
+    border-radius: 5px;
+    -webkit-box-shadow: 0px 5px 15px 0px rgba(112,112,112,0.48);
+    -moz-box-shadow: 0px 5px 15px 0px rgba(112,112,112,0.48);
+    box-shadow: 0px 5px 15px 0px rgba(112,112,112,0.48);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    border: 0.1px solid rgba(138, 138, 138, 0.336);
+}
+.barraSesion{
+    display: flex;
+    justify-content: center;
+
+}
+
+#imgSesion{
+    margin-top: 40px;
+}
+
+#iniciar-Sesion h2{
+    margin-top: 10px;
+    font-size: 30px !important;
+    color: #3f3f3f;
+}
+
+#contenidoSesion{
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 20px;
+}
+
+#iniciar-Sesion button{
+    height: 3rem;
+    font-size: 15px;
+    font-weight:bold;
+    width: 80%;
+    border: none;
+    background-color: var(--color-primary);
+    color: var(--color-light);
+}
+
+#iniciar-Sesion input::placeholder{
+    font-size: 15px;
+}
+
+#iniciar-Sesion input{
+    font-size: 20px;
+}
+
+#iniciar-Sesion button:hover{
+    transform: scale(1.02);
+    transition: all 200ms;
+    background-color: #474747;
+}
+
+
+@media (max-width: 768px) {
+    #contenidoSesion h2{
+        font-size: 25px !important;
+        margin: 20px;
+    }
+
+    #iniciar-Sesion{
+        width: 80%;
+        box-shadow: 0 1px 3px rgba(0,0,0,0.12), 0 1px 2px rgba(0,0,0,0.24);
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+    }
+
+    #usuario, #contraseña{
+        width: 80%;
+    }
+
+    #iniciar-Sesion button{
+        height: 3rem;
+        font-size: 15px;
+        font-weight:bold;
+        width: 80%;
+        border: none;
+        background-color: var(--color-primary);
+        color: var(--color-light);
+
+    }
+    #iniciar-Sesion input::placeholder{
+        font-size: 12px;
+    }
+    #contenidoSesion i{
+        font-size: 1.5rem;
+        margin-right: 10px;
+    }
+}
