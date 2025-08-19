@@ -107,6 +107,20 @@ function displayProductosMCL(data) {
             ${prod.descripcion ? `${escapeHTML(prod.descripcion)}` : ''}
           </p>
           <div class="divPrecio">${precioFmt}</div>
+
+          <!-- 🔹 Extra: mostrar prioridad -->
+          <div class="divPrioridad">
+            <label><b>Prioridad:</b> ${prod.prioridad ?? '—'}</label>
+          </div>
+
+          <!-- 🔹 Extra: selector de oculto -->
+          <div class="divOculto">
+            <label for="oculto-${prod.id}"><b>Oculto:</b></label>
+            <select id="oculto-${prod.id}" onchange="toggleOculto(${prod.id}, this.value)">
+              <option value="false" ${!prod.esOculto ? 'selected' : ''}>No</option>
+              <option value="true" ${prod.esOculto ? 'selected' : ''}>Sí</option>
+            </select>
+          </div>
         `;
 
         const btns = document.createElement('div');
@@ -134,6 +148,13 @@ function displayProductosMCL(data) {
     productosDiv.appendChild(catDiv);
   });
 }
+
+// función placeholder para manejar el cambio de "esOculto"
+function toggleOculto(idProducto, value) {
+  console.log(`Producto ${idProducto} oculto = ${value}`);
+  // acá podés hacer fetchWithAuth(...) al backend para actualizar
+}
+
 
 // 3) Carrusel simple (soporta N imágenes)
 function createCarouselMCL(urls = [], altBase = 'foto') {
@@ -504,3 +525,278 @@ function createSubcategoryElement(categoryId, subcategoryId, subcategoryTitle) {
 
   subList.prepend(subDiv);
 }
+
+//PRODUCTOS
+
+// =============================
+// Config
+// =============================
+const MCL_API_BASE = 'https://mcl-backend-ten.vercel.app'; // <- CAMBIA si tu backend usa otro dominio o prefijo
+const MCL_UPLOAD_PATH = '/productos';               // <- CAMBIA si tu ruta es distinta
+
+// =============================
+// Crear Producto (MCL)
+// =============================
+async function addProduct(subcategoryId) {
+  // Modal con campos de MCL
+  const { value: formValues } = await Swal.fire({
+    title: 'Agregar Producto',
+    html: `
+      <input id="mcl-name" class="swal2-input" placeholder="Nombre *">
+      <input id="mcl-version" class="swal2-input" placeholder="Versión (ej: High Line)">
+      <input id="mcl-modelo" type="number" class="swal2-input" placeholder="Modelo (año)">
+      <input id="mcl-km" type="number" class="swal2-input" placeholder="Kilómetros">
+      <textarea id="mcl-description" class="swal2-input" placeholder="Descripción *"></textarea>
+      <input id="mcl-price" type="number" class="swal2-input" placeholder="Precio *">
+      <input id="mcl-prioridad" type="number" class="swal2-input" placeholder="Prioridad (orden)">
+      
+      <label style="display:block; text-align:left; margin:0 0 4px 5px;"><b>Oculto *</b></label>
+      <select id="mcl-oculto" class="swal2-select" style="width:100%; padding:6px;">
+        <option value="false" selected>No</option>
+        <option value="true">Sí</option>
+      </select>
+
+      <label style="display:block; text-align:left; margin:12px 0 4px 5px;"><b>Imágenes *</b></label>
+      <input id="mcl-images" type="file" class="swal2-file" multiple>
+    `,
+    focusConfirm: false,
+    confirmButtonText: 'Crear',
+    showCancelButton: true,
+    preConfirm: () => {
+      const name = document.getElementById('mcl-name').value.trim();
+      const version = document.getElementById('mcl-version').value.trim();
+      const modelo = document.getElementById('mcl-modelo').value;
+      const km = document.getElementById('mcl-km').value;
+      const description = document.getElementById('mcl-description').value.trim();
+      const price = document.getElementById('mcl-price').value;
+      const prioridad = document.getElementById('mcl-prioridad').value;
+      const esOcultoStr = document.getElementById('mcl-oculto').value;
+      const imageFiles = document.getElementById('mcl-images').files;
+
+      // Validaciones mínimas
+      if (!name || !description || !price || imageFiles.length === 0) {
+        Swal.showValidationMessage('Campos obligatorios: Nombre, Descripción, Precio e Imágenes.');
+        return false;
+      }
+
+      // Sanitización
+      const precioNum = Number(price);
+      if (!Number.isFinite(precioNum) || precioNum <= 0) {
+        Swal.showValidationMessage('Ingresá un precio válido.');
+        return false;
+      }
+
+      const kmNum = km ? Number(km) : null;
+      if (km && (!Number.isFinite(kmNum) || kmNum < 0)) {
+        Swal.showValidationMessage('Kilómetros inválidos.');
+        return false;
+      }
+
+      const modeloNum = modelo ? Number(modelo) : null;
+      if (modelo && (!Number.isFinite(modeloNum) || modeloNum < 1900)) {
+        Swal.showValidationMessage('Modelo inválido.');
+        return false;
+      }
+
+      const prioridadNum = prioridad ? Number(prioridad) : null;
+      if (prioridad && (!Number.isFinite(prioridadNum) || prioridadNum < 0)) {
+        Swal.showValidationMessage('Prioridad inválida (número >= 0).');
+        return false;
+      }
+
+      const esOculto = esOcultoStr === 'true';
+
+      return {
+        name,
+        version,
+        modelo: modeloNum,
+        km: kmNum,
+        description,
+        price: precioNum,
+        prioridad: prioridadNum,
+        esOculto,
+        imageFiles
+      };
+    }
+  });
+
+  if (!formValues) return;
+
+  const {
+    name, version, modelo, km, description, price, prioridad, esOculto, imageFiles
+  } = formValues;
+
+  // ✅ Preview inmediato en el DOM (igual que Cardelli)
+  createProductElementMCL(subcategoryId, {
+    nombre: name,
+    version,
+    modelo,
+    kilometros: km,
+    descripcion: description,
+    precio: price,
+    prioridad,
+    esOculto
+  }, imageFiles);
+
+  // 📦 Armado del payload según tu modelo MCL
+  const formData = new FormData();
+  const dataPayload = {
+    nombre: name,
+    version: version || null,
+    modelo: modelo ?? null,
+    kilometros: km ?? null,
+    descripcion: description,
+    precio: price.toFixed(2),     // backend ejemplo usa string "13500000.00"
+    prioridad: prioridad ?? null, // puede ir null si no la cargaron
+    idSubCategoria: subcategoryId,
+    esOculto: !!esOculto
+  };
+  formData.append('data', JSON.stringify(dataPayload));
+  for (let i = 0; i < imageFiles.length; i++) {
+    formData.append('files', imageFiles[i]);
+  }
+
+  // 🚀 POST al backend (autenticado)
+  try {
+    const { data, ok } = await fetchWithAuth(`${MCL_API_BASE}${MCL_UPLOAD_PATH}`, {
+      method: 'POST',
+      body: formData
+    });
+
+    if (ok) {
+      Swal.fire('Éxito', 'Producto agregado con éxito.', 'success');
+      // Si querés traer ID/fotos reales del backend:
+      if (typeof fetchProductosMCL === 'function') {
+        fetchProductosMCL();
+      }
+    } else {
+      console.error('Error en la respuesta:', data);
+      Swal.fire('Error', (data && data.error) || 'Hubo un error al agregar el producto', 'error');
+    }
+  } catch (err) {
+    console.error('Error al agregar el producto:', err);
+    Swal.fire('Error', 'Hubo un error al agregar el producto', 'error');
+  }
+}
+
+// =============================
+// Preview en DOM (MCL)
+// =============================
+function createProductElementMCL(subcategoryId, prod, imageFiles) {
+  const subcategoryDiv = document.getElementById(`subcategoria-${subcategoryId}`);
+  if (!subcategoryDiv) {
+    console.error(`No se encontró el elemento con id subcategoria-${subcategoryId}`);
+    return;
+  }
+  const productsRowDiv = subcategoryDiv.querySelector('.products-row');
+
+  // Contenedor
+  const productContainerDiv = document.createElement('div');
+  productContainerDiv.classList.add('product-container');
+
+  // Card
+  const productDiv = document.createElement('div');
+  productDiv.classList.add('product-index');
+
+  // Carrusel preview con ObjectURL
+  const urls = Array.from(imageFiles).map(f => URL.createObjectURL(f));
+  const carrusel = createCarouselMCL(urls, prod.nombre || 'foto');
+  productDiv.appendChild(carrusel);
+
+  // Info
+  const productInfoDiv = document.createElement('div');
+  productInfoDiv.classList.add('product-info');
+
+  const precioFmt = Number.isFinite(Number(prod.precio))
+    ? `$${Math.floor(Number(prod.precio)).toLocaleString('es-AR')}`
+    : `$${String(prod.precio)}`;
+
+  const kmFmt = prod.kilometros != null
+    ? `${Number(prod.kilometros).toLocaleString('es-AR')} km`
+    : '';
+
+  const prioridadDisplay = (prod.prioridad ?? '') === '' ? '—' : String(prod.prioridad);
+
+  productInfoDiv.innerHTML = `
+    <div class="product-header-line" style="display:flex;justify-content:space-between;align-items:center;gap:8px;">
+      <strong>${escapeHTML(prod.nombre || '')}</strong>
+      <div class="badges" style="display:flex;gap:6px;align-items:center;">
+        ${prod.esOculto ? `<span class="badge-oculto" style="font-size:.8rem;padding:2px 6px;border-radius:12px;background:#ffd6d6;border:1px solid #ff9f9f;">Oculto</span>` : ''}
+        <span class="badge-prioridad" style="font-size:.8rem;padding:2px 6px;border-radius:12px;border:1px solid #ccc;">${prioridadDisplay}</span>
+      </div>
+    </div>
+    <p class="producto_descripcion">
+      ${prod.version ? `<b>Versión:</b> ${escapeHTML(prod.version)}<br>` : ''}
+      ${prod.modelo ? `<b>Modelo:</b> ${escapeHTML(String(prod.modelo))}<br>` : ''}
+      ${kmFmt ? `<b>Kilómetros:</b> ${kmFmt}<br>` : ''}
+      ${prod.descripcion ? `${escapeHTML(prod.descripcion)}` : ''}
+    </p>
+    <div class="divPrecio">${precioFmt}</div>
+
+    <div class="divOculto" style="margin-top:8px;">
+      <label for="oculto-preview-${Date.now()}"><b>Oculto:</b></label>
+      <select disabled>
+        <option ${!prod.esOculto ? 'selected' : ''}>No</option>
+        <option ${prod.esOculto ? 'selected' : ''}>Sí</option>
+      </select>
+    </div>
+  `;
+
+  productDiv.appendChild(productInfoDiv);
+
+  // Botones (preview sin ID real aún)
+  const productButtonsDiv = document.createElement('div');
+  productButtonsDiv.classList.add('product-buttons');
+  productButtonsDiv.innerHTML = `
+    <div class="cont-btnProd">
+      <button class="edit modProducto" disabled title="Disponible al recargar"><i class="bi bi-pencil-square"></i>Editar Producto</button>
+      <button class="delete delProducto" disabled title="Disponible al recargar"><i class="bi bi-trash"></i>Eliminar Producto</button>
+    </div>
+  `;
+
+  // Append
+  productContainerDiv.appendChild(productDiv);
+  productContainerDiv.appendChild(productButtonsDiv);
+  productsRowDiv.appendChild(productContainerDiv);
+
+  // Limpieza de ObjectURL cuando se quite el elemento (opcional)
+  productContainerDiv.addEventListener('DOMNodeRemoved', () => {
+    urls.forEach(u => URL.revokeObjectURL(u));
+  });
+}
+
+async function deleteProduct(productId) {
+  Swal.fire({
+    title: '¿Estás seguro?',
+    text: '¡No podrás revertir esto!',
+    icon: 'warning',
+    showCancelButton: true,
+    confirmButtonColor: '#3085d6',
+    cancelButtonColor: '#d33',
+    confirmButtonText: 'Sí, eliminarlo'
+  }).then(async (result) => {
+    if (!result.isConfirmed) return;
+
+    try {
+      const { data, ok } = await fetchWithAuth(`${MCL_API_BASE}/productos/${productId}`, {
+        method: 'DELETE'
+      });
+
+      if (ok) {
+        Swal.fire('Éxito', 'Producto eliminado con éxito.', 'success');
+        // refrescá la grilla de MCL
+        if (typeof fetchProductosMCL === 'function') {
+          await fetchProductosMCL();
+        }
+      } else {
+        // data puede venir null si el backend no devuelve JSON
+        const msg = (data && (data.message || data.error)) || 'Hubo un error al eliminar el producto';
+        Swal.fire('Error', msg, 'error');
+      }
+    } catch (error) {
+      console.error('Error al eliminar el producto:', error);
+      Swal.fire('Error', 'Hubo un error al eliminar el producto', 'error');
+    }
+  });
+}
+
