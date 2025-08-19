@@ -104,7 +104,7 @@ function checkLoginStatus() {
 }
 
 // Ejecutar la verificación de sesión solo en index-admin.html y menu-admin.html
-if (window.location.pathname.endsWith('carrusel-admin.html') ||  window.location.pathname.endsWith('medidas-admin.html') ||  window.location.pathname.endsWith('ofertas-admin.html') ||  window.location.pathname.endsWith('productos-admin.html') ) {
+if (window.location.pathname.endsWith('carrusel-admin.html') ||  window.location.pathname.endsWith('catalogo-admin.html') ) {
     checkLoginStatus();
 }
 
