@@ -808,6 +808,7 @@ header {
     transform: scale(1.02);
     transition: all 200ms;
     background-color: #474747;
+    cursor: pointer;
 }
 
 
@@ -847,3 +848,10 @@ header {
         margin-right: 10px;
     }
 }
+
+
+/* CATALOGO DE AUTOS */
+.subcategory{
+  color: var(--color-black);
+}
+

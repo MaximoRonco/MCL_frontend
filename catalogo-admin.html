@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>MCL- Inicio</title>
+  <link rel="stylesheet" href="css/style.css">
+  <script src="https://kit.fontawesome.com/80682cd68b.js" crossorigin="anonymous"></script>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css">
+  <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
+
+</head>
+<body>
+  <!-- Navbar -->
+  <header>
+    <nav class="navbar">
+      <div class="container">
+        <svg xmlns="http://www.w3.org/2000/svg" class="menu-toggle icon icon-tabler icon-tabler-menu-2" width="35" height="35" viewBox="0 0 24 24" stroke-width="1.5" stroke="white" fill="none" stroke-linecap="round" stroke-linejoin="round">
+            <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
+            <path d="M4 6l16 0" />
+            <path d="M4 12l16 0" />
+            <path d="M4 18l16 0" />
+        </svg>
+        <a href="index.html" class="logo"><img src="./assets/img/logo_rojo-trn.png" alt=""></a>
+        <ul class="nav-links">
+            <div class="secciones">
+                <li><a href="index.html">Inicio</a></li>
+                <li><a href="carrusel-admin.html">Carrusel</a></li>
+                <li><a href="catalogo-admin.html">Catálogo</a></li>
+            </div>  
+
+        </ul>
+      </div>
+    </nav>
+  </header>
+
+    <div id="barra-busqueda">
+        <div id="input-busqueda">
+            <input type="text" id="buscar-input" placeholder="Buscar" onkeyup="filtrarPorBusqueda()">
+            <button id="buscar-btn">
+                <i class="fa-solid fa-magnifying-glass" style="color: #2f2f8f;"></i>
+            </button>
+        </div>
+        <div id="categorias-contenedor" class="categorias-contenedor"></div> <!-- Contenedor para las categorías -->
+        <div id="marcas-contenedor" class="marcas-contenedor" style="display: none;"></div> <!-- Contenedor para las marcas (subcategorías) -->    
+    </div>    
+    <div id="productos">
+        <!-- El contenido se generará dinámicamente aquí -->
+    </div>
+
+
+
+
+
+    <script src="js/catalogo-admin.js"></script>
+    <script src="js/sesion.js"></script>
+</body>
+</html>
