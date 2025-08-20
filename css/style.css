@@ -75,38 +75,56 @@ h2 {
 /* ======= FIN INFO HEAD ======= */
 
 /* ======= CARRUSEL ======= */
-#carrusel {
-  overflow: hidden;
+
+
+.carousel {
+    position: relative;
+    width: 100%;
+    overflow: hidden;
+    display: flex;
+    align-items: center;
 }
 
-.carousel-container {
-  display: flex;
-  animation: slide 12s infinite;
+.carousel-images {
+    display: flex;
+    transition: transform 0.5s ease;
 }
 
-.carousel-container img {
-  width: 100%;
-  height: 500px;
-  object-fit: cover;
+.carousel-image {
+    min-width: 100%;
+    box-sizing: border-box;
 }
 
-.carousel,
-.carousel-inner {
-  margin-top: 100px; /* Ajusta según la altura de tu header */
+.carousel-control {
+    position: absolute;
+    top: 50%;
+    width: 50px;
+    height: 50px;
+    background-color: rgba(0, 0, 0, 0.5);
+    color: white;
+    border: none;
+    cursor: pointer;
+    transform: translateY(-50%);
 }
 
-@media (max-width: 900px) {
-  .carousel,
-  .carousel-inner {
-    margin-top: 100px; /* Mantén el margen en mobile también */
-  }
+.carousel-control.prev {
+    left: 0;
 }
 
-@keyframes slide {
-  0% { transform: translateX(0); }
-  33% { transform: translateX(-100%); }
-  66% { transform: translateX(-200%); }
-  100% { transform: translateX(0); }
+.carousel-control.next {
+    right: 0;
+}
+
+.medidas-info, #medidasSelectModal {
+    width: 100%;
+    padding: 5px;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    box-sizing: border-box;
+    /* Asegúrate de que no haya estilos que oculten el desplegable */
+    appearance: auto; /* O asegúrate de que no esté usando 'none' */
+    background-color: #fff;
+    text-align: center;
 }
 
 /* ======= CATÁLOGO ======= */
@@ -563,7 +581,7 @@ h2 {
 }
 
 .servicios .item p {
-  font-size: 0.95rem;
+  font-size: 1.45rem;
   color: #555;
 }
 
@@ -801,60 +819,6 @@ h2 {
   color: var(--color-black);
 }
 
-/*Carrusel de imagenes */
-
-.carousel {
-    position: relative;
-    width: 100%;
-    overflow: hidden;
-    display: flex;
-    align-items: center;
-}
-
-.carousel-images {
-    display: flex;
-    transition: transform 0.5s ease;
-}
-
-.carousel-image {
-    min-width: 100%;
-    box-sizing: border-box;
-}
-
-.carousel-control {
-    position: absolute;
-    top: 50%;
-    width: 50px;
-    height: 50px;
-    background-color: rgba(0, 0, 0, 0.5);
-    color: white;
-    border: none;
-    cursor: pointer;
-    transform: translateY(-50%);
-}
-
-.carousel-control.prev {
-    left: 0;
-}
-
-.carousel-control.next {
-    right: 0;
-}
-
-/* Carrusel debajo del header */
-.carousel,
-.carousel-inner {
-  margin-top: 0 !important; /* Elimina margen extra */
-  position: relative;
-  z-index: 1;
-}
-
-/* Si el header tiene altura fija, agrega padding arriba al carrusel */
-@media (min-width: 0px) {
-  .carousel {
-    padding-top: 100px; /* Igual a la altura del header */
-  }
-}
 
 
 
@@ -1200,86 +1164,6 @@ h2 {
   align-items: center;
 }
 
-.carousel {
-  width: 100%;
-  height: 220px;
-  background: #e3e7fa;
-  border-radius: 8px;
-  position: relative;
-  overflow: hidden;
-  margin-bottom: 8px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
-
-.carousel-images {
-  width: 100%;
-  height: 100%;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  position: relative;
-}
-
-.carousel-image {
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-  border-radius: 8px;
-  display: none;
-  transition: opacity 0.3s;
-}
-
-.carousel-image.active {
-  display: block;
-  opacity: 1;
-}
-
-.carousel-control {
-  position: absolute;
-  top: 50%;
-  width: 38px;
-  height: 38px;
-  background: #b91127;
-  color: #fff;
-  border: none;
-  border-radius: 50%;
-  font-size: 1.3rem;
-  cursor: pointer;
-  transform: translateY(-50%);
-  z-index: 2;
-  transition: background 0.2s, transform 0.2s;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
-
-.carousel-control.prev {
-  left: 8px;
-  background: var(--color-bg);
-}
-
-.carousel-control.next {
-  right: 8px;
-  background: var(--color-bg);
-}
-
-.carousel-control:hover {
-  background: #222;
-  transform: scale(1.12) translateY(-50%);
-}
-
-.carousel-empty {
-  width: 100%;
-  height: 100%;
-  color: #888;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 1.1rem;
-}
-
 /* Info de producto */
 .product-info {
   font-size: 1rem;
@@ -1396,8 +1280,5 @@ h2 {
   .product-container {
     width: 98vw;
     min-width: 180px;
-  }
-  .carousel {
-    height: 120px;
   }
 }
