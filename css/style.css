@@ -855,3 +855,43 @@ header {
   color: var(--color-black);
 }
 
+/*Carrusel de imagenes */
+
+
+.carousel {
+    position: relative;
+    width: 100%;
+    overflow: hidden;
+    display: flex;
+    align-items: center;
+}
+
+.carousel-images {
+    display: flex;
+    transition: transform 0.5s ease;
+}
+
+.carousel-image {
+    min-width: 100%;
+    box-sizing: border-box;
+}
+
+.carousel-control {
+    position: absolute;
+    top: 50%;
+    width: 50px;
+    height: 50px;
+    background-color: rgba(0, 0, 0, 0.5);
+    color: white;
+    border: none;
+    cursor: pointer;
+    transform: translateY(-50%);
+}
+
+.carousel-control.prev {
+    left: 0;
+}
+
+.carousel-control.next {
+    right: 0;
+}
