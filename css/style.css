@@ -1173,19 +1173,19 @@ h2 {
 }
 
 .product-info strong {
-  font-size: 1.1rem;
+  font-size: 2.5rem;
   color: var(--color-primary);
 }
 
 .producto_descripcion {
-  font-size: 0.98rem;
+  font-size: 1.48rem;
   color: #444;
   margin: 4px 0;
   text-align: center;
 }
 
 .divPrecio {
-  font-size: 1.15rem;
+  font-size: 1.55rem;
   color: #b91127;
   font-weight: bold;
   margin-top: 4px;
@@ -1194,7 +1194,7 @@ h2 {
 
 .divPrioridad label,
 .divOculto label {
-  font-size: 0.95rem;
+  font-size: 1.48rem;
   color: var(--color-bg);
 }
 
@@ -1204,7 +1204,7 @@ h2 {
   border: 1px solid #b91127;
   background: #fff;
   color: #b91127;
-  font-size: 0.95rem;
+  font-size: 1.38rem; 
 }
 
 /* Botones de producto */
@@ -1265,7 +1265,7 @@ h2 {
 }
 
 /* Responsive */
-@media (max-width: 900px) {
+@media (max-width: 768px) {
   #barra-busqueda {
     padding: 14px 8px 8px 8px;
     border-radius: 10px;
@@ -1278,7 +1278,10 @@ h2 {
     gap: 10px;
   }
   .product-container {
-    width: 98vw;
+    /* width: 98vw; */
     min-width: 180px;
+    width: 90%;
   }
 }
+
+
