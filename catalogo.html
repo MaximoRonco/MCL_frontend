@@ -5,24 +5,45 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Catálogo - MCL</title>
   <link rel="stylesheet" href="css/style.css">
-
+  <script src="https://kit.fontawesome.com/80682cd68b.js" crossorigin="anonymous"></script>
 </head>
 <body>
 
   <!-- Navbar -->
-  <header>
-    <nav class="navbar">
-      <div class="container">
-        <a href="index.html" class="logo">MCL</a>
-        <ul class="nav-links">
+<header>
+  <nav class="navbar">
+    <div class="container">
+      <svg xmlns="http://www.w3.org/2000/svg" class="menu-toggle icon icon-tabler icon-tabler-menu-2" width="35" height="35" viewBox="0 0 24 24" stroke-width="1.5" stroke="white" fill="none" stroke-linecap="round" stroke-linejoin="round" id="menuToggle">
+        <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
+        <path d="M4 6l16 0" />
+        <path d="M4 12l16 0" />
+        <path d="M4 18l16 0" />
+      </svg>
+      <a href="index.html" class="logo"><img src="./assets/img/logo_rojo-trn.png" alt=""></a>
+      <ul class="nav-links" id="navLinks">
+        <div class="secciones">
           <li><a href="index.html">Inicio</a></li>
-          <li><a href="catalogo.html" class="active">Catálogo</a></li>
+          <li><a href="catalogo.html">Catálogo</a></li>
           <li><a href="sobre-nosotros.html">Sobre Nosotros</a></li>
-          <li><a href="contacto.html">Contacto</a></li>
-        </ul>
-      </div>
-    </nav>
-  </header>
+          <li><a href="#contacto">Contacto</a></li>
+        </div>
+        <a href="./sesion.html" class="iniciar-sesion-icono">
+          <i class="fas fa-user"></i>
+          <span class="texto-sesion">Inicio de sesión</span>
+        </a>
+      </ul>
+    </div>
+  </nav>
+  <div class="info-head">
+    <div class="marquee">
+      <span>
+        <i class="fas fa-clock"></i> <strong>Lunes a Viernes:</strong> 9:00 - 12:30 hs - 16:00 - 20:00 hs |
+        <i class="fas fa-clock"></i> <strong>Sábados:</strong> 9:00 - 12:30 hs |
+        <i class="fas fa-headset"></i> <strong>Atención online:</strong> 24 hs
+      </span>
+    </div>
+  </div>
+</header>
 
   <!-- Catálogo -->
   <section id="catalogo">
@@ -53,6 +74,9 @@
     </div>
   </section>
 
+  <div>
+    <button id="btnWpp"><i class="fab fa-whatsapp"></i></button>
+  </div>
   <!-- Footer -->
   <footer>
     <div class="container">

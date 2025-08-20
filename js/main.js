@@ -95,3 +95,26 @@ const observerContacto = new IntersectionObserver((entries) => {
 
 contactoElements.forEach(el => observerContacto.observe(el));
 // Fin animación de la sección de contacto
+
+// Menu hamburguesa
+
+document.addEventListener('DOMContentLoaded', function() {
+  const menuToggle = document.getElementById('menuToggle');
+  const navLinks = document.getElementById('navLinks');
+
+  if (menuToggle && navLinks) {
+    menuToggle.addEventListener('click', function() {
+      navLinks.classList.toggle('menu-open');
+      menuToggle.classList.toggle('active');
+    });
+
+    document.addEventListener('click', function(e) {
+      if (!navLinks.contains(e.target) && !menuToggle.contains(e.target)) {
+        navLinks.classList.remove('menu-open');
+        menuToggle.classList.remove('active');
+      }
+    });
+  }
+});
+
+// Fin Menu hamburguesa
