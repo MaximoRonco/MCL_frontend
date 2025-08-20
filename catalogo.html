@@ -4,46 +4,47 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Catálogo - MCL</title>
+  <link rel="stylesheet" href="css/header_styles.css">
   <link rel="stylesheet" href="css/style.css">
   <script src="https://kit.fontawesome.com/80682cd68b.js" crossorigin="anonymous"></script>
 </head>
 <body>
 
   <!-- Navbar -->
-<header>
-  <nav class="navbar">
-    <div class="container">
-      <svg xmlns="http://www.w3.org/2000/svg" class="menu-toggle icon icon-tabler icon-tabler-menu-2" width="35" height="35" viewBox="0 0 24 24" stroke-width="1.5" stroke="white" fill="none" stroke-linecap="round" stroke-linejoin="round" id="menuToggle">
-        <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
-        <path d="M4 6l16 0" />
-        <path d="M4 12l16 0" />
-        <path d="M4 18l16 0" />
-      </svg>
-      <a href="index.html" class="logo"><img src="./assets/img/logo_rojo-trn.png" alt=""></a>
-      <ul class="nav-links" id="navLinks">
-        <div class="secciones">
-          <li><a href="index.html">Inicio</a></li>
-          <li><a href="catalogo.html">Catálogo</a></li>
-          <li><a href="sobre-nosotros.html">Sobre Nosotros</a></li>
-          <li><a href="#contacto">Contacto</a></li>
+  <header class="header">
+        <div class="contenedor">
+            <div class="barra">
+                <svg xmlns="http://www.w3.org/2000/svg" class="menu-toggle icon icon-tabler icon-tabler-menu-2" width="44" height="44" viewBox="0 0 24 24" stroke-width="1.5" stroke="white" fill="none" stroke-linecap="round" stroke-linejoin="round">
+                    <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
+                    <path d="M4 6l16 0" />
+                    <path d="M4 12l16 0" />
+                    <path d="M4 18l16 0" />
+                </svg>
+    
+                <a href="index.html" class="logo" title="Volver a la página de inicio">
+                    <img src="assets/img/logo_rojo-trn.png">
+                </a> 
+                <div class="overlay"></div>
+                <nav class="navegacion">
+                    <a href="index.html" class="logo noneFlex logo-menu" title="Volver a la página de inicio">
+                        <img src="assets/img/logo_rojo-trn.png">
+                    </a> 
+                    <button class="menu-close">X</button> 
+                    <div class="links-header">
+                        <a class="navegacion-enlace" href="catalogo.html">Catálogo</a>
+                        <a class="navegacion-enlace" href="sobre-nosotros.html">Sobre Nosotros</a>
+                        <a class="navegacion-enlace" href="contacto.html" title="Contacto">Contacto</a>
+                        <!-- <a class="navegacion-enlace" href="#mapa">Nosotros</a> -->
+                    </div>
+                </nav>
+                <div class="flex iconos-header">
+                    <a href="sesion.html" class="iniciar-sesion-icono" rel="nofollow" title="Iniciar sesión en tu cuenta">
+                        <i class="fas fa-user"></i>
+                    </a>
+                </div>
+            </div>
         </div>
-        <a href="./sesion.html" class="iniciar-sesion-icono">
-          <i class="fas fa-user"></i>
-          <span class="texto-sesion">Inicio de sesión</span>
-        </a>
-      </ul>
-    </div>
-  </nav>
-  <div class="info-head">
-    <div class="marquee">
-      <span>
-        <i class="fas fa-clock"></i> <strong>Lunes a Viernes:</strong> 9:00 - 12:30 hs - 16:00 - 20:00 hs |
-        <i class="fas fa-clock"></i> <strong>Sábados:</strong> 9:00 - 12:30 hs |
-        <i class="fas fa-headset"></i> <strong>Atención online:</strong> 24 hs
-      </span>
-    </div>
-  </div>
-</header>
+    </header>
 
   <!-- Catálogo -->
   <section id="catalogo">

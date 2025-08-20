@@ -3,38 +3,49 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>MCL- Inicio</title>
+  <title>MCL- Inicio</title>  
+  <link rel="stylesheet" href="css/header_styles.css">
   <link rel="stylesheet" href="css/style.css">
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.min.css">
   <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
-
   <script src="https://kit.fontawesome.com/80682cd68b.js" crossorigin="anonymous"></script>
 </head>
 <body>
-  <!-- Navbar -->
-  <header>
-    <nav class="navbar">
-        <div class="container">
-            <svg xmlns="http://www.w3.org/2000/svg" class="menu-toggle icon icon-tabler icon-tabler-menu-2" width="35" height="35" viewBox="0 0 24 24" stroke-width="1.5" stroke="white" fill="none" stroke-linecap="round" stroke-linejoin="round" id="menuToggle">
-                <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
-                <path d="M4 6l16 0" />
-                <path d="M4 12l16 0" />
-                <path d="M4 18l16 0" />
-            </svg>
-            <a href="index.html" class="logo"><img src="./assets/img/logo_rojo-trn.png" alt=""></a>
-            <ul class="nav-links" id="navLinks">
-                    <li><a href="index.html">Inicio</a></li>
-                    <li><a href="catalogo.html">Catálogo</a></li>
-                    <li><a href="sobre-nosotros.html">Sobre Nosotros</a></li>
-                    <li><a href="#contacto">Contacto</a></li>
-                <a href="./sesion.html" class="iniciar-sesion-icono">
-                    <i class="fas fa-user"></i>
-                    <span class="texto-sesion">Inicio de sesión</span>
-                </a>
-            </ul>
+      <header class="header">
+        <div class="contenedor">
+            <div class="barra">
+                <svg xmlns="http://www.w3.org/2000/svg" class="menu-toggle icon icon-tabler icon-tabler-menu-2" width="44" height="44" viewBox="0 0 24 24" stroke-width="1.5" stroke="white" fill="none" stroke-linecap="round" stroke-linejoin="round">
+                    <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
+                    <path d="M4 6l16 0" />
+                    <path d="M4 12l16 0" />
+                    <path d="M4 18l16 0" />
+                </svg>
+    
+                <a href="index.html" class="logo" title="Volver a la página de inicio">
+                    <img src="assets/img/logo_rojo-trn.png">
+                </a> 
+                <div class="overlay"></div>
+                <nav class="navegacion">
+                    <a href="index.html" class="logo noneFlex logo-menu" title="Volver a la página de inicio">
+                        <img src="assets/img/logo_rojo-trn.png">
+                    </a> 
+                    <button class="menu-close">X</button> 
+                    <div class="links-header">
+                        <a class="navegacion-enlace" href="catalogo.html">Catálogo</a>
+                        <a class="navegacion-enlace" href="sobre-nosotros.html">Sobre Nosotros</a>
+                        <a class="navegacion-enlace" href="contacto.html" title="Contacto">Contacto</a>
+                        <!-- <a class="navegacion-enlace" href="#mapa">Nosotros</a> -->
+                    </div>
+                </nav>
+                <div class="flex iconos-header">
+                    <a href="sesion.html" class="iniciar-sesion-icono" rel="nofollow" title="Iniciar sesión en tu cuenta">
+                        <i class="fas fa-user"></i>
+                    </a>
+                </div>
+            </div>
         </div>
-    </nav>
-  </header>
+    </header>
+
 
     <div id="contenedorSesion">
         <div id="iniciar-Sesion">
@@ -54,9 +65,10 @@
                 <button id="btnIniciarSesion" type="button" class="btn btn-primary" onclick="login()">Iniciar Sesión</button>
             </div>
         </div>
-    </div>
-
-    <script src="js/main.js"></script>
+    </div>    
+    
     <script src="js/sesion.js"></script>
+    <script src="js/menu-hamburguesa.js"></script>
+
 </body>
 </html>

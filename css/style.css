@@ -26,81 +26,6 @@ h2 {
 }
 
 
-/* ======= NAVBAR ======= */
-header {
- 
-  width: 100%;
-  background-color: #131313;
-  position: sticky;
-  top: 0;
-  z-index: 2000;
-}
-
-.navbar .container {
-  height: 100px;
-  max-width: 1200px;
-  margin: auto;
-  display: flex;
-  align-items: center;
-  justify-content: space-around;
-  padding: 1rem;
-}
-
-@media (max-width: 768px) {
-   .navbar .container{
-    justify-content: space-between;
-   }
-}
-
-.logo img{
-  height: 60px;
-  width: auto;
-}
-
-.nav-links {
-  list-style: none;
-  display: flex;
-  gap: 1.5rem;
-  align-items: center;
-}
-
-.secciones{
-  display: flex;
-  gap: 1.5rem;
-}
-
-.menu-toggle{
-  display: none;
-}
-
-@media (max-width: 768px) {
-   .secciones{
-    display: none;
-   }
-   .menu-toggle{
-    display: block;
-   }
-   .logo img{
-    height: 65px;
-   }
-}
-
-
-.iniciar-sesion-icono{
-  width: 35px;
-  text-align: center;
-}
-
-.nav-links a {
-  text-decoration: none;
-  color: var(--color-light);
-  transition: color 0.3s;
-}
-
-.nav-links a:hover {
-  color: var(--color-primary);
-}
-
 /* ======= INFO HEAD ======= */
 .info-head {
   background-color: var(--color-primary);
@@ -878,7 +803,6 @@ header {
 
 /*Carrusel de imagenes */
 
-
 .carousel {
     position: relative;
     width: 100%;
@@ -932,94 +856,7 @@ header {
   }
 }
 
-/* Navbar hamburguesa minimalista */
-.menu-toggle {
-  cursor: pointer;
-  transition: transform 0.3s;
-  z-index: 1001;
-  display: none;
-}
 
-.nav-links {
-  display: flex;
-  align-items: center;
-  gap: 2rem;
-  transition: right 0.3s;
-}
-
-@media (max-width: 900px) {
-  .navbar .container {
-    position: relative;
-    height: 100px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    padding: 1rem;
-  }
-
-  .menu-toggle {
-    display: block;
-    position: absolute;
-    left: 20px;
-    top: 50%;
-    transform: translateY(-50%);
-  }
-
-  .logo {
-    position: absolute;
-    left: 50%;
-    top: 50%;
-    transform: translate(-50%, -50%);
-    z-index: 1002;
-  }
-
-  .nav-links {
-    position: fixed;
-    top: 0;
-    right: -100vw;
-    width: 70vw;
-    height: 100vh;
-    background: rgba(30,30,30,0.97);
-    flex-direction: column;
-    justify-content: center;
-    align-items: flex-start;
-    gap: 2rem;
-    box-shadow: -2px 0 10px rgba(0,0,0,0.1);
-    transition: right 0.3s;
-    z-index: 100;
-    margin-bottom: 0;
-  }
-  .nav-links.menu-open {
-    right: 0;
-  }
-  .secciones {
-    display: flex;
-    flex-direction: column;
-    gap: 2rem;
-    width: 100%;
-  }
-  .secciones li a {
-    color: #fff;
-    font-size: 1.3rem;
-    padding: 0.5rem 1rem;
-    transition: background 0.2s;
-    width: 100%;
-    display: block;
-  }
-  .secciones li a:hover {
-    background: #b91127;
-    border-radius: 5px;
-  }
-  .iniciar-sesion-icono {
-    color: #fff;
-    font-size: 2rem;
-  
-    width: 100%;
-    display: flex;
-    align-items: center;
-    margin-top: 2rem;
-  }
-}
 
 /* Oculta el texto por defecto */
 .texto-sesion {
