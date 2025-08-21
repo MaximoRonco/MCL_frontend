@@ -256,6 +256,7 @@ header .navegacion-enlace:hover{
     display: flex;
     justify-content: center;
     align-items: center;
+    padding-left: 20px;
 }
 
 .iconos-header i{
