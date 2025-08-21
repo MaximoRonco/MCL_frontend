@@ -104,6 +104,7 @@ function displayProductosMCL(data) {
           <p class="producto_descripcion">
             ${prod.version ? `<b>Versión:</b> ${escapeHTML(prod.version)}<br>` : ''}
             ${prod.modelo  ? `<b>Modelo:</b> ${escapeHTML(String(prod.modelo))}<br>` : ''}
+            ${kmFmt ? `<b>Kilómetros:</b> ${kmFmt}<br>` : ''}
           </p>
           <div class="divPrecio">${precioFmt}</div>
         `;
@@ -177,14 +178,14 @@ function openModal(prod) {
 
   // Llenar el modal con la información (SIN prioridad, SIN oculto, SIN descripción)
   modalContent.innerHTML = `
-    <strong>${escapeHTML(prod.nombre)}</strong><br>
+    <strong class="product-nombre">${escapeHTML(prod.nombre)}</strong>
     <p class="producto_descripcion">
       ${prod.version ? `<b>Versión:</b> ${escapeHTML(prod.version)}<br>` : ''}
       ${prod.modelo ? `<b>Modelo:</b> ${escapeHTML(String(prod.modelo))}<br>` : ''}
       ${kmFmt ? `<b>Kilómetros:</b> ${kmFmt}<br>` : ''}
       ${prod.descripcion ? `<b>Descripción:</b> ${escapeHTML(prod.descripcion)}<br>` : ''}
     </p>
-    <div class="divPrecio">${precioFmt}</div>
+    <div class="divPrecio-modal">${precioFmt}</div>
 
     <!-- 🔹 Prioridad -->
     <div class="divPrioridad">
@@ -205,11 +206,22 @@ function openModal(prod) {
   modal.style.display = 'flex';
 }
 
+// CLOSE MODAL 
 function closeModal() {
   const modal = document.getElementById('productModal');
   if (!modal) return;
   modal.style.display = 'none';
 }
+
+//CLOSE MODAL
+window.addEventListener('click', function (e) {
+  const modal = document.getElementById('productModal');
+  if (!modal) return;
+
+  if (e.target === modal) {
+    closeModal();
+  }
+});
 
 
 

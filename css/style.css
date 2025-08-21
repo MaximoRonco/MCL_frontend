@@ -1225,12 +1225,12 @@ h2 {
 }
 
 .divPrecio {
-  font-size: 1.55rem;
-  color: #b91127;
+  font-size: 2rem;
+  color: var(--color-black);
   font-weight: bold;
   margin-top: 4px;
-  text-align: left;
-  margin-left: 20px;
+  text-align: center;
+
 }
 
 .divPrioridad label,
@@ -1250,10 +1250,13 @@ h2 {
   font-size: 1.38rem; 
 }
 
+
 /* Asegurá el scope al carrusel de productos */
 .carousel-producto {
   position: relative;
   overflow: hidden; /* muy importante para que no se vean las otras imágenes */
+  width: 90%;
+  margin: 0 auto;
 }
 
 .carousel-producto .carousel-images {
@@ -1289,7 +1292,7 @@ h2 {
 .modal {
   display: none; /* Oculto por defecto */
   position: fixed; /* Para que quede fijo en la pantalla */
-  z-index: 1000; /* Encima de todo */
+  z-index: 1000; /*   Encima de todo */
   left: 0;
   top: 0;
   width: 100%;
@@ -1305,12 +1308,56 @@ h2 {
   background-color: #fff;
   padding: 20px;
   border-radius: 12px;
-  max-width: 500px;
-  width: 90%;
+  width: 75%;
   box-shadow: 0 5px 20px rgba(0, 0, 0, 0.3);
   animation: fadeIn 0.3s ease-in-out;
   position: relative;
 }
+
+@media (min-width: 768px) {
+  .modal-content{ 
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+  }
+
+}
+
+.product-nombre{
+  color: var(--color-primary);
+  display: flex;
+  justify-content: center;
+  font-size: 3rem;
+}
+
+.divPrecio-modal {
+  font-size: 2rem;
+  color: var(--color-black);
+  font-weight: 800;
+  margin-top: 4px;
+  text-align: right;
+  margin-right: 20px;
+}
+
+.ver-mas-btn{
+    border: none;
+    width: 200px;
+    height: 30px;
+    border-radius: 5px;
+    background-color: var(--color-primary) !important; 
+    color: white;
+    font-weight: 600;
+    background-color: transparent;
+    border: 1px solid var(--color-black);
+    cursor: pointer;
+}
+
+.ver-mas-btn:hover{
+    background-color: var(--color-bg) !important;
+    transform: scale(1.02);
+    transition: all 100ms;
+    color: var(--blanco);
+}
+
 
 /* Botón de cerrar (X) */
 .close-btn {
