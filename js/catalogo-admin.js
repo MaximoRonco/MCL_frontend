@@ -628,7 +628,7 @@ async function addProduct(subcategoryId) {
     html: `
       <input id="mcl-name" class="swal2-input" placeholder="Nombre *">
       <input id="mcl-version" class="swal2-input" placeholder="Versión (ej: High Line)">
-      <input id="mcl-modelo" type="number" class="swal2-input" placeholder="Modelo (año)">
+      <input id="mcl-modelo" class="swal2-input" placeholder="Modelo (año)">
       <input id="mcl-km" type="number" class="swal2-input" placeholder="Kilómetros">
       <textarea id="mcl-description" class="swal2-input" placeholder="Descripción *"></textarea>
       <input id="mcl-price" type="number" class="swal2-input" placeholder="Precio *">
