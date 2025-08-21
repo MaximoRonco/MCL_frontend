@@ -877,10 +877,18 @@ function createProductElementMCL(subcategoryId, prod, imageFiles) {
   const productDiv = document.createElement('div');
   productDiv.classList.add('product-index');
 
-  // Carrusel preview con ObjectURL
+  // URLs de preview (ObjectURL)
   const urls = Array.from(imageFiles).map(f => URL.createObjectURL(f));
-  const carrusel = createCarouselMCL(urls, prod.nombre || 'foto');
-  productDiv.appendChild(carrusel);
+
+  // Armamos un "prod" de preview para el modal (incluye Fotos: [{url}])
+  const previewProd = {
+    ...prod,
+    Fotos: urls.map(u => ({ url: u })),
+  };
+
+  // Portada (solo 1ra imagen) y la hacemos clickeable para abrir modal
+  const cover = createCoverImageMCL(urls, prod.nombre || 'foto', () => openModal(previewProd));
+  productDiv.appendChild(cover);
 
   // Info
   const productInfoDiv = document.createElement('div');
@@ -890,46 +898,39 @@ function createProductElementMCL(subcategoryId, prod, imageFiles) {
     ? `$${Math.floor(Number(prod.precio)).toLocaleString('es-AR')}`
     : `$${String(prod.precio)}`;
 
-  const kmFmt = prod.kilometros != null
+  const kmFmt = (prod.kilometros != null && prod.kilometros !== '')
     ? `${Number(prod.kilometros).toLocaleString('es-AR')} km`
     : '';
 
   const prioridadDisplay = (prod.prioridad ?? '') === '' ? '—' : String(prod.prioridad);
 
   productInfoDiv.innerHTML = `
-    <div class="product-header-line" style="display:flex;justify-content:space-between;align-items:center;gap:8px;">
-      <strong>${escapeHTML(prod.nombre || '')}</strong>
-      <div class="badges" style="display:flex;gap:6px;align-items:center;">
-        ${prod.esOculto ? `<span class="badge-oculto" style="font-size:.8rem;padding:2px 6px;border-radius:12px;background:#ffd6d6;border:1px solid #ff9f9f;">Oculto</span>` : ''}
-        <span class="badge-prioridad" style="font-size:.8rem;padding:2px 6px;border-radius:12px;border:1px solid #ccc;">${prioridadDisplay}</span>
-      </div>
-    </div>
-    <p class="producto_descripcion">
-      ${prod.version ? `<b>Versión:</b> ${escapeHTML(prod.version)}<br>` : ''}
-      ${prod.modelo ? `<b>Modelo:</b> ${escapeHTML(String(prod.modelo))}<br>` : ''}
-      ${kmFmt ? `<b>Kilómetros:</b> ${kmFmt}<br>` : ''}
-      ${prod.descripcion ? `${escapeHTML(prod.descripcion)}` : ''}
-    </p>
-    <div class="divPrecio">${precioFmt}</div>
+          <strong>${escapeHTML(prod.nombre)}</strong><br>
+          <p class="producto_descripcion">
+            ${prod.version ? `<b>Versión:</b> ${escapeHTML(prod.version)}<br>` : ''}
+            ${prod.modelo  ? `<b>Modelo:</b> ${escapeHTML(String(prod.modelo))}<br>` : ''}
+            ${kmFmt ? `<b>Kilómetros:</b> ${kmFmt}<br>` : ''}
+          </p>
+          <div class="divPrecio">${precioFmt}</div>
+        `;
 
-    <div class="divOculto" style="margin-top:8px;">
-      <label for="oculto-preview-${Date.now()}"><b>Oculto:</b></label>
-      <select disabled>
-        <option ${!prod.esOculto ? 'selected' : ''}>No</option>
-        <option ${prod.esOculto ? 'selected' : ''}>Sí</option>
-      </select>
-    </div>
-  `;
 
   productDiv.appendChild(productInfoDiv);
+
+  // 🔹 Botón "Ver más" (abre modal con carrusel)
+  const verMasBtn = document.createElement('button');
+  verMasBtn.classList.add('ver-mas-btn');
+  verMasBtn.textContent = 'Ver más';
+  verMasBtn.onclick = () => openModal(previewProd);
+  productDiv.appendChild(verMasBtn);
 
   // Botones (preview sin ID real aún)
   const productButtonsDiv = document.createElement('div');
   productButtonsDiv.classList.add('product-buttons');
   productButtonsDiv.innerHTML = `
     <div class="cont-btnProd">
-      <button class="edit modProducto" disabled title="Disponible al recargar"><i class="bi bi-pencil-square"></i>Editar Producto</button>
-      <button class="delete delProducto" disabled title="Disponible al recargar"><i class="bi bi-trash"></i>Eliminar Producto</button>
+      <button class="edit modProducto" disabled title="Disponible al recargar"><i class="bi bi-pencil-square"></i>Producto</button>
+      <button class="delete delProducto" disabled title="Disponible al recargar"><i class="bi bi-trash"></i>Producto</button>
     </div>
   `;
 
@@ -943,6 +944,7 @@ function createProductElementMCL(subcategoryId, prod, imageFiles) {
     urls.forEach(u => URL.revokeObjectURL(u));
   });
 }
+
 
 async function deleteProduct(productId) {
   Swal.fire({
