@@ -800,3 +800,141 @@ async function deleteProduct(productId) {
   });
 }
 
+// =============================
+// Editar Producto (MCL)
+// =============================
+/*async function editProduct(productId) {
+  try {
+    // 1. Obtener datos actuales del producto
+    const { data: prod, ok } = await fetchWithAuth(`${MCL_API_BASE}/productos/${productId}`, {
+      method: 'GET'
+    });
+    if (!ok) {
+      Swal.fire('Error', 'No se pudo obtener la información del producto.', 'error');
+      return;
+    }
+
+    // 2. Mostrar modal de edición
+    const { value: formValues } = await Swal.fire({
+      title: 'Editar Producto',
+      html: `
+        <input id="mcl-name-edit" class="swal2-input" placeholder="Nombre *" value="${escapeHTML(prod.nombre) || ''}">
+        <input id="mcl-version-edit" class="swal2-input" placeholder="Versión" value="${escapeHTML(prod.version || '')}">
+        <input id="mcl-modelo-edit" type="number" class="swal2-input" placeholder="Modelo (año)" value="${prod.modelo || ''}">
+        <input id="mcl-km-edit" type="number" class="swal2-input" placeholder="Kilómetros" value="${prod.kilometros || ''}">
+        <textarea id="mcl-description-edit" class="swal2-input" placeholder="Descripción *">${escapeHTML(prod.descripcion || '')}</textarea>
+        <input id="mcl-price-edit" type="number" class="swal2-input" placeholder="Precio *" value="${prod.precio || ''}">
+        <input id="mcl-prioridad-edit" type="number" class="swal2-input" placeholder="Prioridad" value="${prod.prioridad ?? ''}">
+        <label style="display:block; text-align:left; margin:0 0 4px 5px;"><b>Oculto *</b></label>
+        <select id="mcl-oculto-edit" class="swal2-select" style="width:100%; padding:6px;">
+          <option value="false" ${!prod.esOculto ? 'selected' : ''}>No</option>
+          <option value="true" ${prod.esOculto ? 'selected' : ''}>Sí</option>
+        </select>
+        <label style="display:block; text-align:left; margin:12px 0 4px 5px;"><b>Cambiar Imágenes</b></label>
+        <input id="mcl-images-edit" type="file" class="swal2-file" multiple>
+        <div style="margin-top:8px;font-size:.8em;color:#888;">
+          (Las imágenes existentes se mantienen si no seleccionás nuevas)
+        </div>
+      `,
+      focusConfirm: false,
+      confirmButtonText: 'Guardar',
+      showCancelButton: true,
+      preConfirm: () => {
+        const name = document.getElementById('mcl-name-edit').value.trim();
+        const version = document.getElementById('mcl-version-edit').value.trim();
+        const modelo = document.getElementById('mcl-modelo-edit').value;
+        const km = document.getElementById('mcl-km-edit').value;
+        const description = document.getElementById('mcl-description-edit').value.trim();
+        const price = document.getElementById('mcl-price-edit').value;
+        const prioridad = document.getElementById('mcl-prioridad-edit').value;
+        const esOcultoStr = document.getElementById('mcl-oculto-edit').value;
+        const imageFiles = document.getElementById('mcl-images-edit').files;
+
+        if (!name || !description || !price) {
+          Swal.showValidationMessage('Campos obligatorios: Nombre, Descripción y Precio.');
+          return false;
+        }
+
+        const precioNum = Number(price);
+        if (!Number.isFinite(precioNum) || precioNum <= 0) {
+          Swal.showValidationMessage('Ingresá un precio válido.');
+          return false;
+        }
+
+        const kmNum = km ? Number(km) : null;
+        if (km && (!Number.isFinite(kmNum) || kmNum < 0)) {
+          Swal.showValidationMessage('Kilómetros inválidos.');
+          return false;
+        }
+
+        const modeloNum = modelo ? Number(modelo) : null;
+        if (modelo && (!Number.isFinite(modeloNum) || modeloNum < 1900)) {
+          Swal.showValidationMessage('Modelo inválido.');
+          return false;
+        }
+
+        const prioridadNum = prioridad ? Number(prioridad) : null;
+        if (prioridad && (!Number.isFinite(prioridadNum) || prioridadNum < 0)) {
+          Swal.showValidationMessage('Prioridad inválida (número >= 0).');
+          return false;
+        }
+
+        const esOculto = esOcultoStr === 'true';
+
+        return {
+          name,
+          version,
+          modelo: modeloNum,
+          km: kmNum,
+          description,
+          price: precioNum,
+          prioridad: prioridadNum,
+          esOculto,
+          imageFiles
+        };
+      }
+    });
+
+    if (!formValues) return;
+
+    // 3. Preparar y hacer el PUT (o el método que tu backend espere)
+    const {
+      name, version, modelo, km, description, price, prioridad, esOculto, imageFiles
+    } = formValues;
+
+    const formData = new FormData();
+    const dataPayload = {
+      nombre: name,
+      version: version || null,
+      modelo: modelo ?? null,
+      kilometros: km ?? null,
+      descripcion: description,
+      precio: price.toFixed(2),
+      prioridad: prioridad ?? null,
+      esOculto: !!esOculto
+    };
+    formData.append('data', JSON.stringify(dataPayload));
+    if (imageFiles && imageFiles.length) {
+      for (let i = 0; i < imageFiles.length; i++) {
+        formData.append('files', imageFiles[i]);
+      }
+    }
+
+    const { ok: okPut, data: dataPut } = await fetchWithAuth(`${MCL_API_BASE}/productos/${productId}`, {
+      method: 'PUT',
+      body: formData
+    });
+
+    if (okPut) {
+      Swal.fire('Éxito', 'Producto editado correctamente.', 'success');
+      if (typeof fetchProductosMCL === 'function') {
+        fetchProductosMCL();
+      }
+    } else {
+      Swal.fire('Error', (dataPut && dataPut.error) || 'Error al editar el producto.', 'error');
+    }
+  } catch (err) {
+    console.error('Error al editar producto:', err);
+    Swal.fire('Error', 'Hubo un error al editar el producto.', 'error');
+  }
+}*/

@@ -98,8 +98,9 @@ h2 {
 .carousel-control {
     position: absolute;
     top: 50%;
-    width: 50px;
-    height: 50px;
+    width: 40px;
+    height: 40px;
+    border-radius: 8px;
     background-color: rgba(0, 0, 0, 0.5);
     color: white;
     border: none;
@@ -128,6 +129,11 @@ h2 {
 }
 
 /* ======= CATÁLOGO ======= */
+
+.container-catalogo{
+  margin-top: 40px;
+}
+
 #catalogo-inicio {
   padding: 3rem 5rem;
   background-color: white;
@@ -141,6 +147,7 @@ h2 {
 }
 
 .filtros {
+  margin-top: 20px;
   display: flex;
   justify-content: center;
   gap: 1rem;
@@ -148,9 +155,12 @@ h2 {
 }
 
 .filtros select {
+  font-size: 15px;
+  cursor: pointer;
+  color: var(--color-bg);
   padding: 0.5rem;
   border-radius: 5px;
-  border: none;
+  border: var(--color-primary) 1px solid;
 }
 
 .grid-cards {
@@ -258,6 +268,23 @@ h2 {
   margin-top: 20px;
 }
 
+.ver-mas .btn{
+  background-color: var(--color-primary);
+  color: var(--color-light);
+  padding: 0.7rem 1.2rem;
+  border-radius: 5px;
+  text-decoration: none;
+  transition: background 0.3s;
+  text-transform: none;
+}
+
+.ver-mas .btn:hover{
+  background-color: #a80f22;
+  color: white;
+  transform: scale(1.05);
+  transition: all 300ms;
+}
+
 /* fin catalogo */
 
 /* Animacion izquierda y derecha */
@@ -288,7 +315,7 @@ h2 {
 }
 
 #btnWpp i{
-  margin-top: 5px;
+  margin-top: 5px !important;
   font-size: 35px !important;
 }
 
@@ -328,6 +355,11 @@ h2 {
   transform: translateY(0);
 }
 
+.contacto-container img{
+  margin-left: 0px !important;
+}
+
+
 
 @media (min-width: 768px) {
    .contacto{
@@ -335,6 +367,7 @@ h2 {
    }
 }
 .contacto-container {
+  margin-right: 30px;
   flex: 1;
 }
 
@@ -468,12 +501,26 @@ h2 {
 .footer-section p {
     margin: 5px 0;
     font-size: 16px;
+    text-transform: none;
+}
+
+.footer-section p:hover {
+    margin-right: 8px;
+    color: rgb(180, 3, 3);
+    transition: all 0.3s;
 }
 
 .footer-section i {
     margin-right: 8px;
     color: white;
 }
+
+.footer-section i:hover {
+    margin-right: 8px;
+    color: rgb(180, 3, 3);
+    transition: all 0.3s;
+}
+
 
 .social-icons{
   margin-left: 20px;
@@ -512,9 +559,7 @@ h2 {
   background-color: var(--color-bg);
 }
 
-.derechos p{
-  margin-top: 20px;
-}
+
 
 /* Responsive footer */
 @media (max-width: 768px) {
@@ -899,7 +944,7 @@ h2 {
   transition: background 0.2s, transform 0.2s;
   display: flex;
   align-items: center;
-  height: 42px;
+  height: 34px;
 }
 
 #buscar-btn:hover {
@@ -917,8 +962,8 @@ h2 {
   color: #fff;
   border: none;
   border-radius: 8px;
-  padding: 6px 16px;
-  font-size: 1rem;
+  padding: 8px 20px;
+  font-size: 1.4rem;
   cursor: pointer;
   transition: background 0.2s, transform 0.2s;
 }
@@ -968,6 +1013,7 @@ h2 {
 /* Contenedor de productos */
 #productos {
   margin-top: 24px;
+  width: 100%;
   display: flex;
   flex-direction: column;
   gap: 32px;
@@ -982,7 +1028,7 @@ h2 {
   padding: 18px 22px;
   margin-bottom: 18px;
   width: 100%;
-  max-width: 700px;
+
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -994,6 +1040,7 @@ h2 {
   margin-bottom: 10px;
   font-weight: 700;
   text-align: center;
+  margin-bottom: 20px;
 }
 
 /* Botones de categoría */
@@ -1009,8 +1056,8 @@ h2 {
   color: #fff;
   border: none;
   border-radius: 8px;
-  padding: 6px 16px;
-  font-size: 1rem;
+  padding: 8px 20px;
+  font-size: 1.4rem;
   cursor: pointer;
   transition: background 0.2s, transform 0.2s;
 }
@@ -1025,8 +1072,8 @@ h2 {
   color: #fff;
   border: none;
   border-radius: 8px;
-  padding: 6px 16px;
-  font-size: 1rem;
+  padding: 8px 20px;
+  font-size: 1.4rem;
   cursor: pointer;
   transition: background 0.2s, transform 0.2s;
 }
@@ -1041,8 +1088,8 @@ h2 {
   color: #b91127;
   border: 1.5px solid #b91127;
   border-radius: 8px;
-  padding: 6px 16px;
-  font-size: 1rem;
+  padding: 8px 20px;
+  font-size: 1.4rem;
   cursor: pointer;
   transition: background 0.2s, color 0.2s, transform 0.2s;
 }
@@ -1059,9 +1106,7 @@ h2 {
   border-radius: 10px;
   padding: 14px 18px;
   margin-bottom: 12px;
-
   width: 100%;
-  max-width: 600px;
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -1073,6 +1118,7 @@ h2 {
   margin-bottom: 8px;
   font-weight: 600;
   text-align: center;
+  margin-bottom: 20px;
 }
 
 /* Botones de subcategoría */
@@ -1088,8 +1134,8 @@ h2 {
   color: #fff;
   border: none;
   border-radius: 8px;
-  padding: 5px 14px;
-  font-size: 0.95rem;
+  padding: 8px 20px;
+  font-size: 1.4rem;
   cursor: pointer;
   transition: background 0.2s, transform 0.2s;
 }
@@ -1104,8 +1150,8 @@ h2 {
   color: #fff;
   border: none;
   border-radius: 8px;
-  padding: 5px 14px;
-  font-size: 0.95rem;
+  padding: 8px 20px;
+  font-size: 1.4rem;
   cursor: pointer;
   transition: background 0.2s, transform 0.2s;
 }
@@ -1120,8 +1166,8 @@ h2 {
   color: #b91127;
   border: 1.5px solid #b91127;
   border-radius: 8px;
-  padding: 5px 14px;
-  font-size: 0.95rem;
+  padding: 8px 20px;
+  font-size: 1.4rem;
   cursor: pointer;
   transition: background 0.2s, color 0.2s, transform 0.2s;
 }
@@ -1169,10 +1215,15 @@ h2 {
   font-size: 1rem;
   color: #222;
   padding: 4px 0;
-  text-align: center;
+  text-align: left;
+  width: 100%;
 }
 
 .product-info strong {
+  margin-bottom: -10px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
   font-size: 2.5rem;
   color: var(--color-primary);
 }
@@ -1180,8 +1231,8 @@ h2 {
 .producto_descripcion {
   font-size: 1.48rem;
   color: #444;
-  margin: 4px 0;
-  text-align: center;
+  text-align:left;
+  margin-left: 20px;
 }
 
 .divPrecio {
@@ -1189,13 +1240,16 @@ h2 {
   color: #b91127;
   font-weight: bold;
   margin-top: 4px;
-  text-align: center;
+  text-align: left;
+  margin-left: 20px;
 }
 
 .divPrioridad label,
 .divOculto label {
   font-size: 1.48rem;
   color: var(--color-bg);
+  margin-left: 20px;
+  margin-bottom: 20px;
 }
 
 .divOculto select {
@@ -1211,8 +1265,9 @@ h2 {
 .product-buttons {
   display: flex;
   gap: 8px;
-  margin-top: 6px;
+  margin-top: 15px;
   justify-content: center;
+  margin-bottom: 15px;
 }
 
 .product-buttons .add {
@@ -1220,8 +1275,8 @@ h2 {
   color: #fff;
   border: none;
   border-radius: 8px;
-  padding: 5px 14px;
-  font-size: 0.95rem;
+  padding: 8px 20px;
+  font-size: 1.4rem;
   cursor: pointer;
   transition: background 0.2s, transform 0.2s;
 }
@@ -1236,8 +1291,8 @@ h2 {
   color: #fff;
   border: none;
   border-radius: 8px;
-  padding: 5px 14px;
-  font-size: 0.95rem;
+  padding: 8px 20px;
+  font-size: 1.4rem;
   cursor: pointer;
   transition: background 0.2s, transform 0.2s;
 }
@@ -1252,8 +1307,8 @@ h2 {
   color: #b91127;
   border: 1.5px solid #b91127;
   border-radius: 8px;
-  padding: 5px 14px;
-  font-size: 0.95rem;
+  padding: 8px 20px;
+  font-size: 1.4rem;
   cursor: pointer;
   transition: background 0.2s, color 0.2s, transform 0.2s;
 }
