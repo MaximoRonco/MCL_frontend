@@ -252,9 +252,16 @@ header .navegacion-enlace:hover{
     margin-top: 12px;
 }
 
+.iconos-header{
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
 .iconos-header i{
     margin-left: 35px;
 }
+
 
 .iconos-header i:hover{
     transform: scale(1.12);
