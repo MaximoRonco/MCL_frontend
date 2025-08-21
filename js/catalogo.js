@@ -55,7 +55,7 @@ function displayProductosMCL(data) {
         card.id = `producto-${prod.id}`;
 
         const fotos = (prod.Fotos || []).map(f => f.url);
-        const carrusel = createCarouselMCL(fotos, prod.nombre); // wrapper .carousel-producto
+        const cover = createCoverImageMCL(fotos, prod.nombre, () => openModal(prod));
 
         const info = document.createElement('div');
         info.className = 'product-info';
@@ -94,7 +94,7 @@ function displayProductosMCL(data) {
 
 
         // Armado
-        card.appendChild(carrusel);
+        card.appendChild(cover);
         card.appendChild(info);
         card.appendChild(verMasBtn);
         cardWrap.appendChild(card);
@@ -153,18 +153,6 @@ function openModal(prod) {
       ${prod.descripcion ? `<b>Descripción:</b> ${escapeHTML(prod.descripcion)}<br>` : ''}
     </p>
     <div class="divPrecio-modal">${precioFmt}</div>
-
-    <div class="divPrioridad">
-      <label><b>Prioridad:</b> ${prod.prioridad ?? '—'}</label>
-    </div>
-
-    <div class="divOculto">
-      <label for="oculto-${prod.id}"><b>Oculto:</b></label>
-      <select id="oculto-${prod.id}" onchange="toggleOculto(${prod.id}, this.value)">
-        <option value="false" ${!prod.esOculto ? 'selected' : ''}>No</option>
-        <option value="true" ${prod.esOculto ? 'selected' : ''}>Sí</option>
-      </select>
-    </div>
   `;
 
   // Mostrar el modal como overlay centrado
@@ -200,60 +188,154 @@ function toggleOculto(idProducto, value) {
 
 
 
+// === Portada simple para la tarjeta (solo primera imagen) ===
+function createCoverImageMCL(urls = [], altBase = 'foto', onClick = null) {
+  const wrap = document.createElement('div');
+  wrap.className = 'product-cover';
+
+  if (!urls.length) {
+    const empty = document.createElement('div');
+    empty.className = 'carousel-empty';
+    empty.textContent = 'Sin imágenes';
+    wrap.appendChild(empty);
+    return wrap;
+  }
+
+  const img = document.createElement('img');
+  img.src = urls[0];
+  img.alt = `${altBase} 1`;
+  img.loading = 'lazy';
+  img.decoding = 'async';
+  img.className = 'product-cover-image';
+  if (typeof onClick === 'function') {
+    img.style.cursor = 'pointer';
+    img.addEventListener('click', onClick);
+  }
+  wrap.appendChild(img);
+  return wrap;
+}
+
+
+// CARRUSEL DE IMAGENES PARA LA PANTALLA MODAL //
 function createCarouselMCL(urls = [], altBase = 'foto') {
   const wrap = document.createElement('div');
   wrap.className = 'carousel-producto';
 
+  // estado interno
+  let index = 0;
+  const clamp = (n, min, max) => Math.max(min, Math.min(max, n));
+
+  // contenedor de imágenes
   const imgsWrap = document.createElement('div');
   imgsWrap.className = 'carousel-images';
-  imgsWrap.dataset.index = "0"; // índice actual
+  imgsWrap.dataset.index = "0";
 
   if (!urls.length) {
     const empty = document.createElement('div');
     empty.className = 'carousel-empty';
     empty.textContent = 'Sin imágenes';
     imgsWrap.appendChild(empty);
-  } else {
-    urls.forEach((src, i) => {
-      const img = document.createElement('img');
-      img.src = src;
-      img.alt = `${altBase} ${i + 1}`;
-      img.className = 'carousel-image';
-      imgsWrap.appendChild(img);
-    });
+    wrap.appendChild(imgsWrap);
+    return wrap;
   }
 
+  // imágenes
+  urls.forEach((src, i) => {
+    const img = document.createElement('img');
+    img.src = src;
+    img.alt = `${altBase} ${i + 1}`;
+    img.loading = 'lazy';
+    img.decoding = 'async';
+    img.className = 'carousel-image';
+    imgsWrap.appendChild(img);
+  });
+
+  // flechas
   const prev = document.createElement('button');
   prev.className = 'carousel-control prev';
   prev.innerHTML = '&lt;';
-  prev.onclick = () => moveCarouselMCL(-1, imgsWrap);
 
   const next = document.createElement('button');
   next.className = 'carousel-control next';
   next.innerHTML = '&gt;';
-  next.onclick = () => moveCarouselMCL(1, imgsWrap);
 
+  prev.onclick = () => jump(-1);
+  next.onclick = () => jump(1);
+
+  // miniaturas
+  const thumbs = document.createElement('div');
+  thumbs.className = 'carousel-thumbs';
+  urls.forEach((src, i) => {
+    const t = document.createElement('img');
+    t.src = src;
+    t.alt = `mini ${i + 1}`;
+    t.className = 'carousel-thumb';
+    t.addEventListener('click', () => goTo(i));
+    thumbs.appendChild(t);
+  });
+
+  // helpers
+  function render() {
+    imgsWrap.style.transform = `translateX(-${index * 100}%)`;
+    imgsWrap.dataset.index = String(index);
+    thumbs.querySelectorAll('.carousel-thumb').forEach((el, i) => {
+      el.classList.toggle('active', i === index);
+    });
+  }
+  function goTo(i) {
+    index = clamp(i, 0, urls.length - 1);
+    render();
+  }
+  function jump(step) {
+    index = (index + step + urls.length) % urls.length;
+    render();
+  }
+
+  // swipe/touch
+  let startX = 0, deltaX = 0;
+  imgsWrap.addEventListener('touchstart', (e) => {
+    startX = e.touches[0].clientX;
+    deltaX = 0;
+  }, { passive: true });
+  imgsWrap.addEventListener('touchmove', (e) => {
+    deltaX = e.touches[0].clientX - startX;
+  }, { passive: true });
+  imgsWrap.addEventListener('touchend', () => {
+    const threshold = 40;
+    if (Math.abs(deltaX) > threshold) jump(deltaX < 0 ? 1 : -1);
+    deltaX = 0;
+  });
+
+  // teclado
+  wrap.tabIndex = 0;
+  wrap.addEventListener('keydown', (e) => {
+    if (e.key === 'ArrowLeft') { e.preventDefault(); jump(-1); }
+    if (e.key === 'ArrowRight') { e.preventDefault(); jump(1); }
+  });
+
+  // armar DOM
   wrap.appendChild(prev);
   wrap.appendChild(imgsWrap);
   wrap.appendChild(next);
+  wrap.appendChild(thumbs);
 
-  // Posicionar en la primera imagen
-  imgsWrap.style.transform = 'translateX(0%)';
-
+  // inicial
+  render();
   return wrap;
 }
 
+// Compat: si en algún lugar seguís llamando moveCarouselMCL(...)
 function moveCarouselMCL(step, imgsWrap) {
   const imgs = imgsWrap.querySelectorAll('.carousel-image');
   if (!imgs.length) return;
-
   let index = Number(imgsWrap.dataset.index || 0);
   index = (index + step + imgs.length) % imgs.length;
-
   imgsWrap.dataset.index = String(index);
   imgsWrap.style.transform = `translateX(-${index * 100}%)`;
+  const wrap = imgsWrap.parentElement;
+  const thumbs = wrap?.querySelectorAll('.carousel-thumb') || [];
+  thumbs.forEach((t, i) => t.classList.toggle('active', i === index));
 }
-
 
 // 4) Util
 function escapeHTML(str) {
