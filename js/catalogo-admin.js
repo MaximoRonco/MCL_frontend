@@ -153,6 +153,11 @@ function openModal(prod) {
   const modalContent = document.getElementById('modal-product-info');
   if (!modal || !modalContent) return;
 
+  // AÑADIMOS NAMESPACE para ganar a Bootstrap (no quitamos tus clases)
+  modal.classList.add('mcl-modal');
+  const contentWrapper = modal.querySelector('.modal-content');
+  if (contentWrapper) contentWrapper.classList.add('mcl-modal-content');
+
   // Formateos
   const precioNum = parseFloat(prod.precio);
   const precioFmt = isFinite(precioNum)
@@ -176,7 +181,7 @@ function openModal(prod) {
     modalContentWrapper.insertBefore(modalCarousel, modalContent); // arriba del texto
   }
 
-  // Llenar el modal con la información (SIN prioridad, SIN oculto, SIN descripción)
+  // Llenar el modal con la información (incluye descripción, prioridad y oculto)
   modalContent.innerHTML = `
     <strong class="product-nombre">${escapeHTML(prod.nombre)}</strong>
     <p class="producto_descripcion">
@@ -187,12 +192,10 @@ function openModal(prod) {
     </p>
     <div class="divPrecio-modal">${precioFmt}</div>
 
-    <!-- 🔹 Prioridad -->
     <div class="divPrioridad">
       <label><b>Prioridad:</b> ${prod.prioridad ?? '—'}</label>
     </div>
 
-    <!-- 🔹 Oculto -->
     <div class="divOculto">
       <label for="oculto-${prod.id}"><b>Oculto:</b></label>
       <select id="oculto-${prod.id}" onchange="toggleOculto(${prod.id}, this.value)">
@@ -200,9 +203,9 @@ function openModal(prod) {
         <option value="true" ${prod.esOculto ? 'selected' : ''}>Sí</option>
       </select>
     </div>
-    `;
+  `;
 
-  // Mostrar el modal
+  // Mostrar el modal como overlay centrado
   modal.style.display = 'flex';
 }
 
@@ -213,15 +216,16 @@ function closeModal() {
   modal.style.display = 'none';
 }
 
-//CLOSE MODAL
+// Cerrar haciendo click fuera del contenido
 window.addEventListener('click', function (e) {
   const modal = document.getElementById('productModal');
   if (!modal) return;
-
+  // si el click fue exactamente sobre el overlay
   if (e.target === modal) {
     closeModal();
   }
 });
+
 
 
 

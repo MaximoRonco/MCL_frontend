@@ -55,34 +55,30 @@
         </div>
     </div>
 
-  <!-- Catálogo -->
-  <section id="catalogo">
-    <div class="container-catalogo">
-      <h2>Catálogo Completo</h2>
-
-      <!-- Filtros -->
-      <div class="filtros">
-        <select id="filtro-tipo">
-          <option value="">Todos los tipos</option>
-          <option value="autos">Autos</option>
-          <option value="suv">SUVs</option>
-          <option value="camionetas">Camionetas</option>
-        </select>
-
-        <select id="filtro-marca">
-          <option value="">Todas las marcas</option>
-          <option value="Toyota">Toyota</option>
-          <option value="Ford">Ford</option>
-          <option value="Chevrolet">Chevrolet</option>
-        </select>
-      </div>
-
-      <!-- Lista de vehículos -->
-      <div id="lista-vehiculos" class="grid-cards">
-        <!-- JS inyectará aquí las cards -->
-      </div>
+    <div id="barra-busqueda">
+        <div id="input-busqueda">
+            <input type="text" id="buscar-input" placeholder="Buscar" onkeyup="filtrarPorBusqueda()">
+            <button id="buscar-btn">
+                <i class="fa-solid fa-magnifying-glass" style="color: #2f2f8f;"></i>
+            </button>
+        </div>
+        <div id="categorias-contenedor" class="categorias-contenedor"></div> <!-- Contenedor para las categorías -->
+        <div id="marcas-contenedor" class="marcas-contenedor" style="display: none;"></div> <!-- Contenedor para las marcas (subcategorías) -->    
+    </div>    
+    <div id="productos">
+        <!-- El contenido se generará dinámicamente aquí -->
     </div>
-  </section>
+
+    <div id="productModal" class="modal" style="display: none;">
+    <div class="modal-content">
+        <span class="close-btn" onclick="closeModal()">&times;</span>
+        <div id="modal-product-info">
+        <!-- Aquí se llenará la información del producto -->
+        </div>
+    </div>
+    </div>
+
+
 
  <div>
     <button id="btnWpp"><i class="fab fa-whatsapp"></i></button>

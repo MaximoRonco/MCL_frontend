@@ -1287,48 +1287,55 @@ h2 {
 
 .carousel-producto .carousel-control.prev { left: 0; }
 .carousel-producto .carousel-control.next { right: 0; }
+/* ===== Overlay del modal ===== */
+/* Bootstrap usa .modal: le sumamos .mcl-modal para ganar especificidad */
+.modal.mcl-modal.hidden { display: none !important; }
 
-/* Fondo oscuro semitransparente */
-.modal {
-  display: none; /* Oculto por defecto */
-  position: fixed; /* Para que quede fijo en la pantalla */
-  z-index: 1000; /*   Encima de todo */
-  left: 0;
-  top: 0;
-  width: 100%;
-  height: 100%;
-  overflow: auto; /* Scroll si el contenido es muy grande */
-  background-color: rgba(0, 0, 0, 0.6); /* Fondo oscuro */
-  justify-content: center; /* Centrado horizontal */
-  align-items: center; /* Centrado vertical */
+.modal.mcl-modal {
+  display: none;                 /* se activa a 'flex' desde JS */
+  position: fixed !important;    /* ignora posicionamiento de Bootstrap */
+  z-index: 2000 !important;      /* > a los z-index de Bootstrap */
+  left: 0; top: 0; width: 100%; height: 100%;
+  overflow: auto !important;     /* si el contenido excede */
+  background-color: rgba(0, 0, 0, 0.6) !important;
+  justify-content: center !important;
+  align-items: center !important;
+  padding: 16px;
 }
 
-/* Caja del modal */
-.modal-content {
+/* ===== Caja del modal ===== */
+.modal-content.mcl-modal-content {
   background-color: #fff;
   padding: 20px;
   border-radius: 12px;
   width: 75%;
+  max-width: 1000px;
   box-shadow: 0 5px 20px rgba(0, 0, 0, 0.3);
   animation: fadeIn 0.3s ease-in-out;
   position: relative;
+  margin: 0 !important;   /* anula márgenes que Bootstrap podría agregar */
+  border: none !important;
 }
 
+/* Layout responsive dentro del modal */
 @media (min-width: 768px) {
-  .modal-content{ 
+  .modal-content.mcl-modal-content { 
     display: grid;
     grid-template-columns: 1fr 1fr;
+    gap: 12px;
   }
-
 }
 
+/* Título */
 .product-nombre{
   color: var(--color-primary);
   display: flex;
   justify-content: center;
   font-size: 3rem;
+  margin: 8px 0;
 }
 
+/* Precio destacado (modal) */
 .divPrecio-modal {
   font-size: 2rem;
   color: var(--color-black);
@@ -1338,26 +1345,23 @@ h2 {
   margin-right: 20px;
 }
 
+/* Botón "Ver más" (card) */
 .ver-mas-btn{
-    border: none;
-    width: 200px;
-    height: 30px;
-    border-radius: 5px;
-    background-color: var(--color-primary) !important; 
-    color: white;
-    font-weight: 600;
-    background-color: transparent;
-    border: 1px solid var(--color-black);
-    cursor: pointer;
+  width: 200px;
+  height: 30px;
+  border-radius: 5px;
+  font-weight: 600;
+  cursor: pointer;
+  border: 1px solid var(--color-black);
+  background-color: var(--color-primary) !important; 
+  color: #fff;
 }
-
 .ver-mas-btn:hover{
-    background-color: var(--color-bg) !important;
-    transform: scale(1.02);
-    transition: all 100ms;
-    color: var(--blanco);
+  background-color: var(--color-bg) !important;
+  transform: scale(1.02);
+  transition: all 100ms;
+  color: var(--blanco);
 }
-
 
 /* Botón de cerrar (X) */
 .close-btn {
@@ -1369,17 +1373,17 @@ h2 {
   color: #333;
   cursor: pointer;
 }
+.close-btn:hover { color: #e74c3c; }
 
-.close-btn:hover {
-  color: #e74c3c;
-}
-
-/* Animación suave */
+/* Suave */
 @keyframes fadeIn {
   from { opacity: 0; transform: translateY(-20px); }
-  to { opacity: 1; transform: translateY(0); }
+  to   { opacity: 1; transform: translateY(0); }
 }
 
+/* Carrusel dentro del modal (si lo usás) */
+.modal.mcl-modal .carousel-producto { margin-bottom: .75rem; }
+.modal.mcl-modal .carousel-control { z-index: 2; } /* flechas por encima de la imagen */
 
 
 
