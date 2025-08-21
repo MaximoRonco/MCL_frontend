@@ -6,6 +6,7 @@
   --color-light: #E6E6E6;
 }
 
+
 /* ======= RESETEO ======= */
 * {
   margin: 0;
@@ -357,6 +358,7 @@ h2 {
 
 .contacto-container img{
   margin-left: 0px !important;
+  margin-top: 50px !important;
 }
 
 
@@ -366,6 +368,23 @@ h2 {
     display: flex;
    }
 }
+
+@media (max-width: 768px) {
+   .contacto-container {
+      margin-right: 0px !important;
+   }
+   .contacto-container h2{
+      font-size: 30px !important;
+      margin-bottom: 10px;
+      font-weight: 500;
+   }
+    .contacto-container p{
+      font-size: 17px !important;
+      margin-bottom: 10px;
+      font-weight: 600 !important;
+   }
+}
+
 .contacto-container {
   margin-right: 30px;
   flex: 1;
@@ -491,6 +510,7 @@ h2 {
 .logo_footer img{
     width: 150px;
     height: auto;
+        margin-bottom: 20px;
 }
 
 .footer-section h3 {
@@ -559,6 +579,10 @@ h2 {
   background-color: var(--color-bg);
 }
 
+.derechos p{
+
+      margin-top: 10px;
+}
 
 
 /* Responsive footer */
@@ -574,6 +598,11 @@ h2 {
         flex: none;
         width: 100%;
     }
+    .derechos p{
+      font-size: 12px !important;
+      margin-top: 10px;
+    }
+    
 }
 
 .dividir_footer{
@@ -697,7 +726,7 @@ h2 {
   }
 
   .servicios .item p {
-    font-size: 0.9rem;
+    font-size: 1.1rem;
   }
 }
 
@@ -923,7 +952,7 @@ h2 {
   padding: 10px 16px;
   border: 1.5px solid var(--color-primary);
   border-radius: 8px 0 0 8px;
-  font-size: 1.1rem;
+  font-size: 1.3rem;
   outline: none;
   transition: border-color 0.2s;
   background: #f8f8f8;
@@ -934,6 +963,7 @@ h2 {
 }
 
 #buscar-btn {
+  
   padding: 0 18px;
   background: var(--color-primary);
   border: none;
@@ -944,7 +974,7 @@ h2 {
   transition: background 0.2s, transform 0.2s;
   display: flex;
   align-items: center;
-  height: 34px;
+  height: 37.5px;
 }
 
 #buscar-btn:hover {
@@ -1338,5 +1368,6 @@ h2 {
     width: 90%;
   }
 }
+
 
 

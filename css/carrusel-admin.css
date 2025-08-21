@@ -1,0 +1,49 @@
+/* ======= VARIABLES ======= */
+:root {
+  --color-bg: #282927;
+  --color-primary: #b91127;
+  --color-black: #131313;
+  --color-light: #E6E6E6;
+}
+
+.carousel-editor{
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    width: 100%;
+}
+
+.form-control{
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    margin-top: 40px;
+    width: 100% !important;
+    font-size: 15px !important;
+}
+
+#btnsImgCarousel{
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    margin: 20px;
+}
+
+#btnsImgCarousel button{
+    font-size: 12px;
+    color: white;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+}
+
+#addImageBtn{
+    margin-right: 5px;
+    background-color: #43b66c;
+}
+
+#deleteImageBtn{
+    margin-left: 5px;
+    background-color: var(--color-primary) !important;
+}
