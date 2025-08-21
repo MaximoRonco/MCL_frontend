@@ -86,48 +86,7 @@ h2 {
     align-items: center;
 }
 
-.carousel-images {
-    display: flex;
-    transition: transform 0.5s ease;
-}
 
-.carousel-image {
-    min-width: 100%;
-    box-sizing: border-box;
-}
-
-.carousel-control {
-    position: absolute;
-    top: 50%;
-    width: 40px;
-    height: 40px;
-    border-radius: 8px;
-    background-color: rgba(0, 0, 0, 0.5);
-    color: white;
-    border: none;
-    cursor: pointer;
-    transform: translateY(-50%);
-}
-
-.carousel-control.prev {
-    left: 0;
-}
-
-.carousel-control.next {
-    right: 0;
-}
-
-.medidas-info, #medidasSelectModal {
-    width: 100%;
-    padding: 5px;
-    border: 1px solid #ccc;
-    border-radius: 4px;
-    box-sizing: border-box;
-    /* Asegúrate de que no haya estilos que oculten el desplegable */
-    appearance: auto; /* O asegúrate de que no esté usando 'none' */
-    background-color: #fff;
-    text-align: center;
-}
 
 /* ======= CATÁLOGO ======= */
 
@@ -1290,6 +1249,92 @@ h2 {
   color: #b91127;
   font-size: 1.38rem; 
 }
+
+/* Asegurá el scope al carrusel de productos */
+.carousel-producto {
+  position: relative;
+  overflow: hidden; /* muy importante para que no se vean las otras imágenes */
+}
+
+.carousel-producto .carousel-images {
+  display: flex;
+  transition: transform 0.5s ease;
+}
+
+.carousel-producto .carousel-image {
+  min-width: 100%;
+  box-sizing: border-box;
+  display: block;
+}
+
+/* Flechas dentro del carrusel de producto */
+.carousel-producto .carousel-control {
+  position: absolute;
+  top: 50%;
+  width: 40px;
+  height: 40px;
+  border-radius: 8px;
+  background-color: rgba(0, 0, 0, 0.5);
+  color: white;
+  border: none;
+  cursor: pointer;
+  transform: translateY(-50%);
+  z-index: 2; /* que queden por encima de las imágenes */
+}
+
+.carousel-producto .carousel-control.prev { left: 0; }
+.carousel-producto .carousel-control.next { right: 0; }
+
+/* Fondo oscuro semitransparente */
+.modal {
+  display: none; /* Oculto por defecto */
+  position: fixed; /* Para que quede fijo en la pantalla */
+  z-index: 1000; /* Encima de todo */
+  left: 0;
+  top: 0;
+  width: 100%;
+  height: 100%;
+  overflow: auto; /* Scroll si el contenido es muy grande */
+  background-color: rgba(0, 0, 0, 0.6); /* Fondo oscuro */
+  justify-content: center; /* Centrado horizontal */
+  align-items: center; /* Centrado vertical */
+}
+
+/* Caja del modal */
+.modal-content {
+  background-color: #fff;
+  padding: 20px;
+  border-radius: 12px;
+  max-width: 500px;
+  width: 90%;
+  box-shadow: 0 5px 20px rgba(0, 0, 0, 0.3);
+  animation: fadeIn 0.3s ease-in-out;
+  position: relative;
+}
+
+/* Botón de cerrar (X) */
+.close-btn {
+  position: absolute;
+  top: 10px;
+  right: 15px;
+  font-size: 22px;
+  font-weight: bold;
+  color: #333;
+  cursor: pointer;
+}
+
+.close-btn:hover {
+  color: #e74c3c;
+}
+
+/* Animación suave */
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(-20px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+
+
 
 /* Botones de producto */
 .product-buttons {

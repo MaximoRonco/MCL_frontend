@@ -84,7 +84,7 @@ function displayProductosMCL(data) {
         card.id = `producto-${prod.id}`;
 
         const fotos = (prod.Fotos || []).map(f => f.url);
-        const carrusel = createCarouselMCL(fotos, prod.nombre);
+        const carrusel = createCarouselMCL(fotos, prod.nombre); // wrapper .carousel-producto
 
         const info = document.createElement('div');
         info.className = 'product-info';
@@ -94,35 +94,29 @@ function displayProductosMCL(data) {
           ? `$${Math.floor(precioNum).toLocaleString('es-AR')}`
           : `$${prod.precio}`;
 
-        const kmFmt = prod.kilometros != null
+        const kmFmt = prod.kilometros != null && prod.kilometros !== ''
           ? `${Number(prod.kilometros).toLocaleString('es-AR')} km`
           : '';
 
+        // === SOLO lo pedido en la tarjeta (nombre, versión, modelo, precio) ===
         info.innerHTML = `
           <strong>${escapeHTML(prod.nombre)}</strong><br>
           <p class="producto_descripcion">
             ${prod.version ? `<b>Versión:</b> ${escapeHTML(prod.version)}<br>` : ''}
-            ${prod.modelo ? `<b>Modelo:</b> ${escapeHTML(String(prod.modelo))}<br>` : ''}
-            ${kmFmt ? `<b>Kilómetros:</b> ${kmFmt}<br>` : ''}
-            ${prod.descripcion ? `${escapeHTML(prod.descripcion)}` : ''}
+            ${prod.modelo  ? `<b>Modelo:</b> ${escapeHTML(String(prod.modelo))}<br>` : ''}
           </p>
           <div class="divPrecio">${precioFmt}</div>
-
-          <!-- 🔹 Extra: mostrar prioridad -->
-          <div class="divPrioridad">
-            <label><b>Prioridad:</b> ${prod.prioridad ?? '—'}</label>
-          </div>
-
-          <!-- 🔹 Extra: selector de oculto -->
-          <div class="divOculto">
-            <label for="oculto-${prod.id}"><b>Oculto:</b></label>
-            <select id="oculto-${prod.id}" onchange="toggleOculto(${prod.id}, this.value)">
-              <option value="false" ${!prod.esOculto ? 'selected' : ''}>No</option>
-              <option value="true" ${prod.esOculto ? 'selected' : ''}>Sí</option>
-            </select>
-          </div>
         `;
 
+        // Botón "Ver más" → abre modal
+        const verMasBtn = document.createElement('button');
+        verMasBtn.classList.add('ver-mas-btn');
+        verMasBtn.innerHTML = 'Ver más';
+        verMasBtn.onclick = function () {
+          openModal(prod); // usamos openModal(prod) como pediste
+        };
+
+        // Botonera admin (mantener)
         const btns = document.createElement('div');
         btns.className = 'product-buttons';
         btns.innerHTML = `
@@ -134,8 +128,10 @@ function displayProductosMCL(data) {
           </button>
         `;
 
+        // Armado
         card.appendChild(carrusel);
         card.appendChild(info);
+        card.appendChild(verMasBtn);
         cardWrap.appendChild(card);
         cardWrap.appendChild(btns);
         row.appendChild(cardWrap);
@@ -149,6 +145,74 @@ function displayProductosMCL(data) {
   });
 }
 
+
+// ===== Modal =====
+function openModal(prod) {
+  const modal = document.getElementById('productModal');
+  const modalContent = document.getElementById('modal-product-info');
+  if (!modal || !modalContent) return;
+
+  // Formateos
+  const precioNum = parseFloat(prod.precio);
+  const precioFmt = isFinite(precioNum)
+    ? `$${Math.floor(precioNum).toLocaleString('es-AR')}`
+    : `$${prod.precio}`;
+
+  const kmFmt = (prod.kilometros != null && prod.kilometros !== '')
+    ? `${Number(prod.kilometros).toLocaleString('es-AR')} km`
+    : '';
+
+  // Carrusel dentro del modal (reusa tu createCarouselMCL)
+  // Lo insertamos arriba del contenido textual
+  const modalContentWrapper = modal.querySelector('.modal-content');
+  if (modalContentWrapper) {
+    // limpiar carrusel previo si lo hubiera
+    const previous = modalContentWrapper.querySelector('.carousel-producto');
+    if (previous) previous.remove();
+
+    const fotos = (prod.Fotos || []).map(f => f.url);
+    const modalCarousel = createCarouselMCL(fotos, prod.nombre);
+    modalContentWrapper.insertBefore(modalCarousel, modalContent); // arriba del texto
+  }
+
+  // Llenar el modal con la información (SIN prioridad, SIN oculto, SIN descripción)
+  modalContent.innerHTML = `
+    <strong>${escapeHTML(prod.nombre)}</strong><br>
+    <p class="producto_descripcion">
+      ${prod.version ? `<b>Versión:</b> ${escapeHTML(prod.version)}<br>` : ''}
+      ${prod.modelo ? `<b>Modelo:</b> ${escapeHTML(String(prod.modelo))}<br>` : ''}
+      ${kmFmt ? `<b>Kilómetros:</b> ${kmFmt}<br>` : ''}
+      ${prod.descripcion ? `<b>Descripción:</b> ${escapeHTML(prod.descripcion)}<br>` : ''}
+    </p>
+    <div class="divPrecio">${precioFmt}</div>
+
+    <!-- 🔹 Prioridad -->
+    <div class="divPrioridad">
+      <label><b>Prioridad:</b> ${prod.prioridad ?? '—'}</label>
+    </div>
+
+    <!-- 🔹 Oculto -->
+    <div class="divOculto">
+      <label for="oculto-${prod.id}"><b>Oculto:</b></label>
+      <select id="oculto-${prod.id}" onchange="toggleOculto(${prod.id}, this.value)">
+        <option value="false" ${!prod.esOculto ? 'selected' : ''}>No</option>
+        <option value="true" ${prod.esOculto ? 'selected' : ''}>Sí</option>
+      </select>
+    </div>
+    `;
+
+  // Mostrar el modal
+  modal.style.display = 'flex';
+}
+
+function closeModal() {
+  const modal = document.getElementById('productModal');
+  if (!modal) return;
+  modal.style.display = 'none';
+}
+
+
+
 // función placeholder para manejar el cambio de "esOculto"
 function toggleOculto(idProducto, value) {
   console.log(`Producto ${idProducto} oculto = ${value}`);
@@ -156,13 +220,15 @@ function toggleOculto(idProducto, value) {
 }
 
 
-// 3) Carrusel simple (soporta N imágenes)
+
+
 function createCarouselMCL(urls = [], altBase = 'foto') {
   const wrap = document.createElement('div');
-  wrap.className = 'carousel';
+  wrap.className = 'carousel-producto';
 
   const imgsWrap = document.createElement('div');
   imgsWrap.className = 'carousel-images';
+  imgsWrap.dataset.index = "0"; // índice actual
 
   if (!urls.length) {
     const empty = document.createElement('div');
@@ -175,7 +241,6 @@ function createCarouselMCL(urls = [], altBase = 'foto') {
       img.src = src;
       img.alt = `${altBase} ${i + 1}`;
       img.className = 'carousel-image';
-      if (i === 0) img.classList.add('active');
       imgsWrap.appendChild(img);
     });
   }
@@ -193,21 +258,24 @@ function createCarouselMCL(urls = [], altBase = 'foto') {
   wrap.appendChild(prev);
   wrap.appendChild(imgsWrap);
   wrap.appendChild(next);
+
+  // Posicionar en la primera imagen
+  imgsWrap.style.transform = 'translateX(0%)';
+
   return wrap;
 }
 
 function moveCarouselMCL(step, imgsWrap) {
   const imgs = imgsWrap.querySelectorAll('.carousel-image');
   if (!imgs.length) return;
-  let current = Array.from(imgs).findIndex(img => img.classList.contains('active'));
-  if (current === -1) current = 0;
 
-  imgs[current].classList.remove('active');
-  let next = current + step;
-  if (next < 0) next = imgs.length - 1;
-  if (next >= imgs.length) next = 0;
-  imgs[next].classList.add('active');
+  let index = Number(imgsWrap.dataset.index || 0);
+  index = (index + step + imgs.length) % imgs.length;
+
+  imgsWrap.dataset.index = String(index);
+  imgsWrap.style.transform = `translateX(-${index * 100}%)`;
 }
+
 
 // 4) Util
 function escapeHTML(str) {
