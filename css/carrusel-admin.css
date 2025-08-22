@@ -48,3 +48,11 @@
     margin-left: 5px;
     background-color: var(--color-primary) !important;
 }
+
+@media (max-width: 768px) {
+    #addImageBtn, #deleteImageBtn{
+        width: 180px;
+        padding: 5px;
+        font-size: 11px !important;
+    }
+}

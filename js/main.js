@@ -96,6 +96,19 @@ const observerContacto = new IntersectionObserver((entries) => {
 contactoElements.forEach(el => observerContacto.observe(el));
 // Fin animación de la sección de contacto
 
+
+
+
+
+
+
+
+
+
+
+
+
+
 // Menu hamburguesa
 /*
 document.addEventListener('DOMContentLoaded', function() {

@@ -364,3 +364,5 @@ function escapeHTML(str) {
 
 // 5) Iniciar
 document.addEventListener('DOMContentLoaded', fetchProductosMCL);
+
+window.openModal = openModal;

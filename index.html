@@ -146,7 +146,7 @@
 
 <!--FIN SERVICIOS -->
 
-<div id="barra-busqueda">
+<!--<div id="barra-busqueda">
         <div id="input-busqueda">
             <input type="text" id="buscar-input" placeholder="Buscar" onkeyup="filtrarPorBusqueda()">
             <button id="buscar-btn">
@@ -154,18 +154,20 @@
             </button>
         </div>
         <div id="categorias-contenedor" class="categorias-contenedor"></div> <!-- Contenedor para las categorías -->
-        <div id="marcas-contenedor" class="marcas-contenedor" style="display: none;"></div> <!-- Contenedor para las marcas (subcategorías) -->    
-    </div>    
-    <div id="productos">
-        <!-- El contenido se generará dinámicamente aquí -->
+        <!--<div id="marcas-contenedor" class="marcas-contenedor" style="display: none;"></div> <!-- Contenedor para las marcas (subcategorías) -->    
+    <!--</div>-->  
+    <div class="featured-grid" id="productos-index">
+
     </div>
 
-    <div id="productModal" class="modal" style="display: none;">
+          <!-- Botón para ver más -->
+    <div class="ver-mas">
+        <a href="catalogo.html" class="btn">Ver catálogo completo</a>
+    </div>
+
+    <div id="productModal" class="modal">
     <div class="modal-content">
-        <span class="close-btn" onclick="closeModal()">&times;</span>
-        <div id="modal-product-info">
-        <!-- Aquí se llenará la información del producto -->
-        </div>
+        <div id="modal-product-info"></div>
     </div>
     </div>
 
@@ -268,6 +270,7 @@
 </footer>
 
   <script src="js/main.js"></script>
+  <script src="js/index-productos.js"></script>
   <script src="js/catalogo.js"></script>
   <script src="js/carrusel.js"></script>
   <script src="js/menu-hamburguesa.js"></script>
