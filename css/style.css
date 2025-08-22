@@ -588,7 +588,7 @@ h2 {
   text-align: center;
 }
 
-#title-servicios h2 {
+#title-servicios h2, .titulo-ultimos {
   font-family: 'Montserrat', sans-serif !important;
   font-size: 2rem;
   margin-bottom: 40px;
