@@ -9,6 +9,7 @@ async function fetchProductosMCL() {
     const resp = await fetch(URL);
     if (!resp.ok) throw new Error(`HTTP ${resp.status} ${resp.statusText}`);
     const data = await resp.json();
+    window.productosMCL_ORIGINAL = data; // <-- AGREGA ESTA LÍNEA
     displayProductosMCL(data);
   } catch (err) {
     console.error('Error trayendo productos MCL:', err);
@@ -984,7 +985,7 @@ async function deleteProduct(productId) {
 // =============================
 // Editar Producto (MCL)
 // =============================
-/*async function editProduct(productId) {
+async function editProduct(productId) {
   try {
     // 1. Obtener datos actuales del producto
     const { data: prod, ok } = await fetchWithAuth(`${MCL_API_BASE}/productos/${productId}`, {
@@ -1078,7 +1079,7 @@ async function deleteProduct(productId) {
 
     if (!formValues) return;
 
-    // 3. Preparar y hacer el PUT (o el método que tu backend espere)
+    // 3. Preparar y hacer el PUT
     const {
       name, version, modelo, km, description, price, prioridad, esOculto, imageFiles
     } = formValues;
@@ -1095,7 +1096,9 @@ async function deleteProduct(productId) {
       esOculto: !!esOculto
     };
     formData.append('data', JSON.stringify(dataPayload));
-    if (imageFiles && imageFiles.length) {
+
+    // Solo agregar archivos si el usuario seleccionó nuevas imágenes
+    if (imageFiles && imageFiles.length > 0) {
       for (let i = 0; i < imageFiles.length; i++) {
         formData.append('files', imageFiles[i]);
       }
@@ -1112,10 +1115,11 @@ async function deleteProduct(productId) {
         fetchProductosMCL();
       }
     } else {
-      Swal.fire('Error', (dataPut && dataPut.error) || 'Error al editar el producto.', 'error');
+      Swal.fire('Error', (dataPut && (dataPut.error || dataPut.message)) || 'Error al editar el producto.', 'error');
     }
   } catch (err) {
     console.error('Error al editar producto:', err);
     Swal.fire('Error', 'Hubo un error al editar el producto.', 'error');
   }
-}*/
+}
+

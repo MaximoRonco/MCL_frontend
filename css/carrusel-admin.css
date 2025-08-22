@@ -7,6 +7,7 @@
 }
 
 .carousel-editor{
+    font-family: 'Montserrat', sans-serif !important;
     display: flex;
     flex-direction: column;
     align-items: center;

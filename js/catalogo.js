@@ -9,6 +9,7 @@ async function fetchProductosMCL() {
     const resp = await fetch(URL);
     if (!resp.ok) throw new Error(`HTTP ${resp.status} ${resp.statusText}`);
     const data = await resp.json();
+    window.productosMCL_ORIGINAL = data;
     displayProductosMCL(data);
   } catch (err) {
     console.error('Error trayendo productos MCL:', err);
@@ -24,8 +25,6 @@ function displayProductosMCL(data) {
   const productosDiv = document.getElementById('productos');
   productosDiv.innerHTML = '';
 
-
-
   data.forEach(categoria => {
     const catDiv = document.createElement('div');
     catDiv.className = 'category';
@@ -40,7 +39,6 @@ function displayProductosMCL(data) {
       subDiv.id = `subcategoria-${sub.id}`;
       subDiv.innerHTML = `
         <h3>${escapeHTML(sub.nombre)}</h3>
-
       `;
 
       const row = document.createElement('div');
@@ -69,7 +67,6 @@ function displayProductosMCL(data) {
           ? `${Number(prod.kilometros).toLocaleString('es-AR')} km`
           : '';
 
-        // === SOLO lo pedido en la tarjeta (nombre, versión, modelo, precio) ===
         info.innerHTML = `
           <strong>${escapeHTML(prod.nombre)}</strong><br>
           <p class="producto_descripcion">
@@ -80,24 +77,45 @@ function displayProductosMCL(data) {
           <div class="divPrecio">${precioFmt}</div>
         `;
 
-        // Botón "Ver más" → abre modal
+        // Botón "Ver más"
         const verMasBtn = document.createElement('button');
         verMasBtn.classList.add('ver-mas-btn');
         verMasBtn.innerHTML = 'Ver más';
         verMasBtn.onclick = function () {
-          openModal(prod); // usamos openModal(prod) como pediste
+          openModal(prod);
         };
 
-        // Botonera admin (mantener)
+        // Botón WhatsApp
+        const wppBtn = document.createElement('a');
+        wppBtn.className = 'wpp-contact-btn';
+        wppBtn.target = '_blank';
+        wppBtn.rel = 'noopener';
+
+        // Mensaje personalizado
+        const mensaje = encodeURIComponent(
+          `¡Hola! Quiero consultar por este vehículo:\n` +
+          `• Nombre: ${prod.nombre}\n` +
+          (prod.version ? `• Versión: ${prod.version}\n` : '') +
+          (prod.modelo ? `• Modelo: ${prod.modelo}\n` : '') +
+          (prod.kilometros ? `• Kilómetros: ${prod.kilometros}\n` : '') +
+          `• Precio: ${precioFmt}`
+        );
+        // Reemplaza el número por el tuyo real (sin + ni espacios, solo números y código país)
+        const numeroWpp = '5493572503289';
+        wppBtn.href = `https://wa.me/${numeroWpp}?text=${mensaje}`;
+        wppBtn.innerHTML = `<i class="fab fa-whatsapp"></i>`;
+
+        // Botonera
         const btns = document.createElement('div');
         btns.className = 'product-buttons';
-
+        btns.appendChild(verMasBtn);
+        btns.appendChild(wppBtn);
 
         // Armado
         card.appendChild(cover);
         card.appendChild(info);
-        card.appendChild(verMasBtn);
         cardWrap.appendChild(card);
+        cardWrap.appendChild(btns);
         row.appendChild(cardWrap);
       });
 

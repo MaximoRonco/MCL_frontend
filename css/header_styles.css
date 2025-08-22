@@ -179,6 +179,7 @@ img {
 
 /*header*/
 .header{
+    font-family: 'Montserrat', sans-serif !important;
     background-color: var(--color-black);
     /*background-color: black;*/
     position: sticky;
@@ -213,6 +214,7 @@ img {
 
 
 .logo, .navegacion-enlace {
+    font-family: 'Montserrat', sans-serif !important;
     display: flex;
     justify-content: center;
     align-items: center;
@@ -420,6 +422,7 @@ header .navegacion-enlace:hover{
 
 /* Estilos generales */
 .overlay {
+    font-family: 'Montserrat', sans-serif !important;
     position: fixed;
     top: 0;
     left: 0;
@@ -437,6 +440,7 @@ header .navegacion-enlace:hover{
 }
 
 .menu-close {
+    font-family: 'Montserrat', sans-serif !important;
     position: absolute;
     top: 0px;
     left: 280px;
