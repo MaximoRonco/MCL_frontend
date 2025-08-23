@@ -519,24 +519,26 @@ async function editCategory(categoryId, currentCategoryName) {
 /* CREAR ELEMENTO CATEGORIA */
 function createCategoryElement(categoryId, categoryTitle) {
   const productos = document.getElementById('productos');
+
   const categoryDiv = document.createElement('div');
-  categoryDiv.classList.add('category');
-  categoryDiv.id = `category-${categoryId}`;
+  categoryDiv.className = 'category';
+  categoryDiv.id = `category-${Number(categoryId)}`;
 
   categoryDiv.innerHTML = `
-    <h2>${categoryTitle}</h2>
+    <h2>${escapeHTML(categoryTitle)}</h2>
     <div class="contenedorBotonesCat">
-      <button class="edit" onclick="editCategory('${categoryId}')">
+      <button class="edit" onclick="editCategory(${Number(categoryId)}, '${escapeHTML(categoryTitle)}')">
         <i class="bi bi-pencil-square"></i> Categoría
       </button>
-      <button class="delete" onclick="deleteCategory('${categoryId}')">
+      <button class="delete" onclick="deleteCategory(${Number(categoryId)})">
         <i class="bi bi-trash"></i> Categoría
       </button>
-      <button class="add" onclick="addSubcategory('${categoryId}')">
+      <button class="add" onclick="addSubcategory(${Number(categoryId)})">
         <i class="bi bi-plus-circle"></i> Subcategoría
       </button>
-      <div id="subcategories-${categoryId}" class="subcategories"></div>
     </div>
+    <!-- 💡 Importante: el contenedor de subcategorías va FUERA de los botones -->
+    <div id="subcategories-${Number(categoryId)}" class="subcategories"></div>
   `;
 
   productos.appendChild(categoryDiv);
@@ -672,25 +674,25 @@ async function editSubcategory(categoryId, subcategoryId) {
 
 /* CREAR ELEMENTO SUBCATEGORÍA (DOM, estilo Cardelli) */
 function createSubcategoryElement(categoryId, subcategoryId, subcategoryTitle) {
-  const categoryDiv = document.getElementById(`category-${categoryId}`);
+  const categoryDiv = document.getElementById(`category-${Number(categoryId)}`);
   if (!categoryDiv) return;
 
   // Usar/crear contenedor de subcategorías bajo esta categoría
-  let subList = document.getElementById(`subcategories-${categoryId}`);
+  let subList = document.getElementById(`subcategories-${Number(categoryId)}`);
   if (!subList) {
     subList = document.createElement('div');
-    subList.id = `subcategories-${categoryId}`;
+    subList.id = `subcategories-${Number(categoryId)}`;
     subList.className = 'subcategories';
     categoryDiv.appendChild(subList);
   }
 
   const subDiv = document.createElement('div');
   subDiv.className = 'subcategory';
-  subDiv.id = `subcategoria-${subcategoryId}`;
+  subDiv.id = `subcategoria-${Number(subcategoryId)}`;
   subDiv.innerHTML = `
-    <h3>${subcategoryTitle}</h3>
+    <h3>${escapeHTML(subcategoryTitle)}</h3>
     <div class="contenedorBotonesSub">
-      <button class="edit" onclick="editSubcategory(${Number(categoryId)}, ${Number(subcategoryId)})">
+      <button class="edit" onclick="editSubcategory(${Number(categoryId)}, ${Number(subcategoryId)}, '${escapeHTML(subcategoryTitle)}')">
         <i class="bi bi-pencil-square"></i> Subcategoría
       </button>
       <button class="delete" onclick="deleteSubcategory(${Number(categoryId)}, ${Number(subcategoryId)})">
@@ -703,6 +705,7 @@ function createSubcategoryElement(categoryId, subcategoryId, subcategoryTitle) {
     <div class="products-row"></div>
   `;
 
+  // Inserto arriba para que se vea primero, como en tu flujo
   subList.prepend(subDiv);
 }
 
