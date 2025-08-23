@@ -646,6 +646,12 @@
   margin-bottom: .75rem; 
   margin-top: 30px;
 }
+
+@media (min-width: 768px) {
+   .modal.mcl-modal .carousel-producto { 
+  margin-top: 0;
+}
+}
 .modal.mcl-modal .carousel-control { z-index: 2; } /* flechas por encima de la imagen */
 
 
@@ -666,7 +672,8 @@
 /* a partir de 768px → 2 columnas */
 @media (min-width: 768px){
   .mcl-modal .mcl-modal-content{
-    grid-template-columns: minmax(420px, 1fr) minmax(320px, 520px);
+    /* grid-template-columns: minmax(420px, 1fr) minmax(320px, 520px); */
+    grid-template-columns: 1fr 1.5fr;
     align-items: start;
   }
 }
