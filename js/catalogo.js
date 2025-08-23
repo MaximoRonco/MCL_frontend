@@ -126,7 +126,6 @@ function displayProductosMCL(data) {
     productosDiv.appendChild(catDiv);
   });
 }
-
 // ===== Modal =====
 function openModal(prod) {
   const modal = document.getElementById('productModal');
@@ -149,7 +148,6 @@ function openModal(prod) {
     : '';
 
   // Carrusel dentro del modal (reusa tu createCarouselMCL)
-  // Lo insertamos arriba del contenido textual
   const modalContentWrapper = modal.querySelector('.modal-content');
   if (modalContentWrapper) {
     // limpiar carrusel previo si lo hubiera
@@ -161,7 +159,23 @@ function openModal(prod) {
     modalContentWrapper.insertBefore(modalCarousel, modalContent); // arriba del texto
   }
 
-  // Llenar el modal con la información (incluye descripción, prioridad y oculto)
+  // ----- Botón WhatsApp -----
+  const mensaje = encodeURIComponent(
+    `¡Hola! Quiero consultar por este vehículo:\n` +
+    `• Nombre: ${prod.nombre}\n` +
+    (prod.version ? `• Versión: ${prod.version}\n` : '') +
+    (prod.modelo ? `• Modelo: ${prod.modelo}\n` : '') +
+    (prod.kilometros ? `• Kilómetros: ${prod.kilometros}\n` : '') +
+    `• Precio: ${precioFmt}`
+  );
+  const numeroWpp = '5493572503289'; // tu número real
+  const wppBtnHtml = `
+    <a class="wpp-contact-btn-modal" href="https://wa.me/${numeroWpp}?text=${mensaje}" target="_blank" rel="noopener">
+      <i class="fab fa-whatsapp"></i> Consultar
+    </a>
+  `;
+
+  // ----- Llenar el modal con la información -----
   modalContent.innerHTML = `
     <strong class="product-nombre">${escapeHTML(prod.nombre)}</strong>
     <p class="producto_descripcion_modal">
@@ -171,11 +185,15 @@ function openModal(prod) {
       ${prod.descripcion ? `<b>Descripción:</b> ${escapeHTML(prod.descripcion)}<br>` : ''}
     </p>
     <div class="divPrecio-modal">${precioFmt}</div>
+    <div class="modal-buttons">
+      ${wppBtnHtml}
+    </div>
   `;
 
   // Mostrar el modal como overlay centrado
   modal.style.display = 'flex';
 }
+
 
 // CLOSE MODAL 
 function closeModal() {

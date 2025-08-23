@@ -393,7 +393,6 @@
   font-size: 1.48rem;
   color: var(--blanco);
   text-align:left;
-  margin-left: 20px;
 }
 
 .divPrecio {
@@ -789,12 +788,34 @@
 .wpp-contact-btn i {
   font-size: 2.2rem;
 }
-.wpp-contact-btn:hover {
+.wpp-contact-btn:hover, .wpp-contact-btn-modal:hover {
   background: #43b66c;
   color: #fff !important;
   transform: scale(1.05);
 }
 
+.wpp-contact-btn-modal{
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  background: var(--color-primary);
+  color: #fff !important;
+  border: none;
+  border-radius: 5px;
+  font-weight: 500;
+  cursor: pointer;
+  text-decoration: none;
+  transition: background 0.18s, transform 0.18s;
+  margin-left: 2px;
+  font-size: 0.9rem;
+  text-align: center;
+  width: 90%;
+}
+
+.modal-buttons{
+  text-align: center;
+}
 
 /* Cards del index.html */
 /* Featured grid para index */
