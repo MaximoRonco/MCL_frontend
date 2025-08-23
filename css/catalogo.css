@@ -642,7 +642,10 @@
 }
 
 /* Carrusel dentro del modal (si lo usás) */
-.modal.mcl-modal .carousel-producto { margin-bottom: .75rem; }
+.modal.mcl-modal .carousel-producto { 
+  margin-bottom: .75rem; 
+  margin-top: 30px;
+}
 .modal.mcl-modal .carousel-control { z-index: 2; } /* flechas por encima de la imagen */
 
 
