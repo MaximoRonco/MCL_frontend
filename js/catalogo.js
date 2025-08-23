@@ -164,7 +164,7 @@ function openModal(prod) {
   // Llenar el modal con la información (incluye descripción, prioridad y oculto)
   modalContent.innerHTML = `
     <strong class="product-nombre">${escapeHTML(prod.nombre)}</strong>
-    <p class="producto_descripcion">
+    <p class="producto_descripcion_modal">
       ${prod.version ? `<b>Versión:</b> ${escapeHTML(prod.version)}<br>` : ''}
       ${prod.modelo ? `<b>Modelo:</b> ${escapeHTML(String(prod.modelo))}<br>` : ''}
       ${kmFmt ? `<b>Kilómetros:</b> ${kmFmt}<br>` : ''}
