@@ -1,3 +1,4 @@
+
 /* CATALOGO DE AUTOS */
 .subcategory{
   color: var(--color-black);
@@ -988,7 +989,7 @@
 }
 
 .featured-card .card-body b{
-  font-size: 1.8rem;
+  font-size: 1.4rem;
 }
 
 .featured-card .card-body p{
@@ -1007,7 +1008,6 @@
   .featured-grid {
     display: flex;
     flex-direction: column;
-    gap: 1.2rem;
   }
   .featured-card, .mini-card {
     width: 100%;

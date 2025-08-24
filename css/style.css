@@ -29,13 +29,28 @@ h2 {
 
 /* ======= INFO HEAD ======= */
 .info-head {
-  background-color: var(--color-primary);
+  background: linear-gradient(90deg, #b91127 0%, #d7263d 100%);
   color: white;
   padding: 10px 0;
   display: flex;
   align-items: center;
-  overflow: hidden; /* Oculta lo que se sale */
-  height: 40px; /* Mantiene altura fija */
+  overflow: hidden;
+  height: 40px;
+  position: relative;
+  box-shadow: 0 2px 12px rgba(185,17,39,0.10);
+}
+.info-head::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  opacity: 0.10;
+  pointer-events: none;
+  background-image: url('https://www.transparenttextures.com/patterns/carbon-fibre.png');
+  z-index: 0;
+}
+.info-head > * {
+  position: relative;
+  z-index: 1;
 }
 
 .marquee {
