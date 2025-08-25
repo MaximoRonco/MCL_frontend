@@ -1017,3 +1017,44 @@
   .featured-card .card-img-wrap { height: 180px; }
   .mini-card .card-img-wrap { height: 100px; }
 }
+
+
+/* -------- Pantallas para manipular el catalogo (admin) -------- */
+.swal2-popup{
+  width: 90%;
+}
+
+@media (min-width: 768px) {
+  .swal2-popup{
+    width: 50%;
+  }
+   
+}
+.swal2-input{
+  width: 90%;
+  border: var(--color-bg) 1.5px solid !important;
+}
+
+
+
+#mcl-description, #mcl-description-edit{
+  width: 90%;
+  height: 200px;
+  padding: 8px;
+  font-size: 1.4rem;
+}
+
+.swal2-html-container{
+  display: flex !important;
+  flex-direction: column !important;
+  justify-content: center !important;
+  align-items: center !important;
+}
+
+
+
+.swal2-styled{
+  font-size: 1.4rem !important;
+  padding: 8px 24px !important;
+  border-radius: 8px !important;
+}
