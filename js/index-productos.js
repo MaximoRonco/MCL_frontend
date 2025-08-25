@@ -9,7 +9,9 @@ async function fetchUltimosProductos() {
     let productos = [];
     data.forEach(cat => {
       (cat.SubCategorias || []).forEach(sub => {
-        (sub.Productos || []).forEach(prod => {
+        (sub.Productos || [])
+        .filter(prod => !prod.esOculto)
+        .forEach(prod => {
           productos.push(prod);
         });
       });

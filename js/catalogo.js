@@ -10,6 +10,7 @@ async function fetchProductosMCL() {
     if (!resp.ok) throw new Error(`HTTP ${resp.status} ${resp.statusText}`);
     const data = await resp.json();
     window.productosMCL_ORIGINAL = data;
+    displayCategorias(data);
     displayProductosMCL(data);
   } catch (err) {
     console.error('Error trayendo productos MCL:', err);
@@ -17,6 +18,204 @@ async function fetchProductosMCL() {
     if (cont) cont.innerHTML = `<p style="color:#b11">Error cargando productos.</p>`;
   }
 }
+
+// Filtros
+let categoriaSeleccionadaId = null;
+let subcategoriaSeleccionadaId = null;
+
+// Mostrar categorías en la barra
+function displayCategorias(data) {
+    const categoriasContenedor = document.getElementById('categorias-contenedor');
+    categoriasContenedor.innerHTML = '';
+
+    // Botón "Todas"
+    const btnTodas = document.createElement('button');
+    btnTodas.className = 'categoria-btn selected';
+    btnTodas.textContent = 'Todas las categorías';
+    btnTodas.onclick = () => {
+        categoriaSeleccionadaId = null;
+        subcategoriaSeleccionadaId = null;
+        marcarSeleccionCategoria(null);
+        document.getElementById('marcas-contenedor').style.display = 'none';
+        categoriasContenedor.classList.remove('sin-radius-abajo');
+        displayProductosMCL(window.productosMCL_ORIGINAL);
+    };
+    categoriasContenedor.appendChild(btnTodas);
+
+    data.forEach(categoria => {
+        const categoriaBtn = document.createElement('button');
+        categoriaBtn.className = 'categoria-btn';
+        categoriaBtn.textContent = categoria.nombre;
+        categoriaBtn.onclick = () => filtrarPorCategoria(categoria.id, data);
+        categoriasContenedor.appendChild(categoriaBtn);
+    });
+}
+
+// Mostrar subcategorías en la barra
+function displayMarcas(subcategorias) {
+    const marcasContenedor = document.getElementById('marcas-contenedor');
+    marcasContenedor.innerHTML = '';
+
+    // Botón "Todas"
+    const btnTodas = document.createElement('button');
+    btnTodas.className = 'marca-btn selected';
+    btnTodas.textContent = 'Todas las subcategorías';
+    btnTodas.onclick = () => {
+        subcategoriaSeleccionadaId = null;
+        marcarSeleccionMarca(null);
+        filtrarPorCategoria(categoriaSeleccionadaId, window.productosMCL_ORIGINAL, false);
+    };
+    marcasContenedor.appendChild(btnTodas);
+
+    subcategorias.forEach(subcategoria => {
+        const marcaBtn = document.createElement('button');
+        marcaBtn.className = 'marca-btn';
+        marcaBtn.textContent = subcategoria.nombre;
+        marcaBtn.onclick = () => filtrarPorMarca(subcategoria.id, window.productosMCL_ORIGINAL);
+        marcasContenedor.appendChild(marcaBtn);
+    });
+}
+
+// Marcar seleccionado
+function marcarSeleccionCategoria(id) {
+    document.querySelectorAll('.categoria-btn').forEach(btn => btn.classList.remove('selected'));
+    if (id === null) {
+        document.querySelector('.categoria-btn').classList.add('selected');
+    } else {
+        document.querySelectorAll('.categoria-btn').forEach(btn => {
+            if (btn.textContent === getCategoriaNombreById(id)) btn.classList.add('selected');
+        });
+    }
+}
+function marcarSeleccionMarca(id) {
+    document.querySelectorAll('.marca-btn').forEach(btn => btn.classList.remove('selected'));
+    if (id === null) {
+        document.querySelector('.marca-btn').classList.add('selected');
+    } else {
+        document.querySelectorAll('.marca-btn').forEach(btn => {
+            if (btn.textContent === getSubcategoriaNombreById(id)) btn.classList.add('selected');
+        });
+    }
+}
+function getCategoriaNombreById(id) {
+    const cat = window.productosMCL_ORIGINAL.find(c => c.id === id);
+    return cat ? cat.nombre : '';
+}
+function getSubcategoriaNombreById(id) {
+    for (const cat of window.productosMCL_ORIGINAL) {
+        const sub = (cat.SubCategorias || []).find(s => s.id === id);
+        if (sub) return sub.nombre;
+    }
+    return '';
+}
+
+
+// Filtrar productos por categoría
+function filtrarPorCategoria(categoriaId, data, mostrarMarcas = true) {
+    categoriaSeleccionadaId = categoriaId;
+    subcategoriaSeleccionadaId = null;
+    marcarSeleccionCategoria(categoriaId);
+
+    const categoriasContenedor = document.querySelector('.categorias-contenedor');
+    const marcasContenedor = document.getElementById('marcas-contenedor');
+
+    if (!categoriaId) {
+        categoriasContenedor.classList.remove('sin-radius-abajo'); // <-- AQUÍ
+        marcasContenedor.style.display = 'none';
+        displayProductosMCL(data);
+        return;
+    }
+    categoriasContenedor.classList.add('sin-radius-abajo'); // <-- AQUÍ
+    const categoriaFiltrada = data.find(categoria => categoria.id === categoriaId);
+    if (categoriaFiltrada && categoriaFiltrada.SubCategorias && categoriaFiltrada.SubCategorias.length > 0 && mostrarMarcas) {
+        marcasContenedor.style.display = 'flex';
+        displayMarcas(categoriaFiltrada.SubCategorias);
+    } else {
+        marcasContenedor.style.display = 'none';
+    }
+    displayProductosMCL([categoriaFiltrada]);
+}
+// Filtrar productos por subcategoría
+function filtrarPorMarca(subcategoriaId, data) {
+    subcategoriaSeleccionadaId = subcategoriaId;
+    marcarSeleccionMarca(subcategoriaId);
+
+    const categoriasFiltradas = data.map(categoria => {
+        const subcategoriasFiltradas = (categoria.SubCategorias || []).filter(subcategoria => subcategoria.id === subcategoriaId);
+        if (subcategoriasFiltradas.length > 0) {
+            return { ...categoria, SubCategorias: subcategoriasFiltradas };
+        } else {
+            return null;
+        }
+    }).filter(categoria => categoria !== null);
+
+    displayProductosMCL(categoriasFiltradas);
+}
+
+function buscarYCargarCatalogo(query) {
+  const data = window.productosMCL_ORIGINAL;
+  if (!query || !query.trim()) {
+    displayCategorias(data);
+    displayProductosMCL(data);
+    return;
+  }
+  const q = query.trim().toLowerCase();
+
+  const resultado = data.map(cat => {
+    // Si la categoría coincide, la devolvemos completa
+    if (cat.nombre.toLowerCase().includes(q)) {
+      return cat;
+    }
+    // Si no, filtramos subcategorías
+    const subFiltradas = (cat.SubCategorias || []).map(sub => {
+      // Filtrar productos
+      const productosFiltrados = (sub.Productos || []).filter(prod =>
+        (prod.nombre && prod.nombre.toLowerCase().includes(q)) ||
+        (prod.version && prod.version.toLowerCase().includes(q)) ||
+        (prod.modelo && String(prod.modelo).toLowerCase().includes(q))
+      );
+      if (
+        sub.nombre.toLowerCase().includes(q) ||
+        productosFiltrados.length > 0
+      ) {
+        return { ...sub, Productos: productosFiltrados };
+      }
+      return null;
+    }).filter(Boolean);
+
+    if (subFiltradas.length > 0) {
+      return { ...cat, SubCategorias: subFiltradas };
+    }
+    return null;
+  }).filter(Boolean);
+
+  displayCategorias(resultado);
+  displayProductosMCL(resultado);
+}
+
+document.addEventListener('DOMContentLoaded', function() {
+  const input = document.getElementById('buscar-input'); // <--- este es el id correcto
+  if (input) {
+    input.addEventListener('input', function() {
+      buscarYCargarCatalogo(this.value);
+    });
+  }
+});
+
+document.addEventListener('DOMContentLoaded', function() {
+  const input = document.getElementById('buscar-input');
+  const btn = document.getElementById('buscar-btn');
+  if (input) {
+    input.addEventListener('input', function() {
+      buscarYCargarCatalogo(this.value);
+    });
+  }
+  if (btn && input) {
+    btn.addEventListener('click', function() {
+      buscarYCargarCatalogo(input.value);
+    });
+  }
+});
 
 // 2) Render como Cardelli (categoría > subcategoría > productos)
 function displayProductosMCL(data) {
@@ -44,7 +243,9 @@ function displayProductosMCL(data) {
       const row = document.createElement('div');
       row.className = 'products-row';
 
-      (sub.Productos || []).forEach(prod => {
+      (sub.Productos || [])
+      .filter(prod => !prod.esOculto)
+      .forEach(prod => {
         const cardWrap = document.createElement('div');
         cardWrap.className = 'product-container';
 
@@ -250,7 +451,6 @@ function createCoverImageMCL(urls = [], altBase = 'foto', onClick = null) {
   wrap.appendChild(img);
   return wrap;
 }
-
 
 // CARRUSEL DE IMAGENES PARA LA PANTALLA MODAL //
 function createCarouselMCL(urls = [], altBase = 'foto') {

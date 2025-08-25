@@ -249,7 +249,7 @@ h2 {
 
 .ver-mas .btn{
   background-color: var(--color-primary);
-  color: var(--color-light);
+  color: white;
   padding: 0.7rem 1.2rem;
   border-radius: 5px;
   text-decoration: none;
