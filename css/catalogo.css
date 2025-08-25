@@ -46,10 +46,10 @@
 #barra-busqueda {
   font-family: 'Montserrat', sans-serif !important;
   width: 100%;
-  background: #fff;
+  background: white;
   padding: 24px 18px 12px 18px;
   border-radius: 16px;
-  box-shadow: 0 2px 12px rgba(44,44,44,0.06);
+  /*box-shadow: 0 2px 12px rgba(44,44,44,0.06);*/
   margin-bottom: 24px;
   display: flex;
   flex-direction: column;
@@ -163,6 +163,7 @@
 
 /* Contenedor de productos */
 #productos {
+  background-color: white !important;
   margin-top: 24px;
   width: 100%;
   display: flex;
@@ -173,9 +174,9 @@
 
 /* Categoría */
 .category {
-  background: #fff;
+  background: white;
   border-radius: 14px;
-  box-shadow: 0 2px 12px rgba(44,44,44,0.07);
+  /*box-shadow: 0 2px 12px rgba(44,44,44,0.07);*/
   padding: 18px 22px;
   margin-bottom: 18px;
   width: 100%;
@@ -253,7 +254,7 @@
 
 /* Subcategoría */
 .subcategory {
-  background: #f8f8f8;
+  background: white;
   border-radius: 10px;
   padding: 14px 18px;
   margin-bottom: 12px;
@@ -340,7 +341,7 @@
 
 /* Card de producto */
 .product-container {
-  background: #fff;
+  background: white;
   border-radius: 10px;
   box-shadow: 0 2px 8px rgba(36, 36, 36, 0.267);
   padding: 0 0;

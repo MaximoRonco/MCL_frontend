@@ -15,7 +15,7 @@
 }
 
 body {
-  background-color: white;
+  background-color: white !important;
   color: var(--color-bg);
   line-height: 1.5;
 }
