@@ -1005,10 +1005,9 @@ async function editProduct(productId) {
       html: `
         <input id="mcl-name-edit" class="swal2-input" placeholder="Nombre *" value="${escapeHTML(prod.nombre) || ''}">
         <input id="mcl-version-edit" class="swal2-input" placeholder="Versión" value="${escapeHTML(prod.version || '')}">
-        <input id="mcl-modelo-edit" type="number" class="swal2-input" placeholder="Modelo (año)" value="${prod.modelo || ''}">
-        <input id="mcl-km-edit" type="number" class="swal2-input" placeholder="Kilómetros" value="${prod.kilometros || ''}">
+        <input id="mcl-modelo-edit" type="text" class="swal2-input" placeholder="Modelo (ej: 2024 o 0km)" value="${prod.modelo ?? ''}">        <input id="mcl-km-edit" type="number" class="swal2-input" placeholder="Kilómetros" value="${prod.kilometros || ''}">
         <textarea id="mcl-description-edit" class="swal2-input" placeholder="Descripción *">${escapeHTML(prod.descripcion || '')}</textarea>
-        <input id="mcl-price-edit" type="number" class="swal2-input" placeholder="Precio *" value="${prod.precio || ''}">
+        <input id="mcl-price-edit" type="number" class="swal2-input" placeholder="Precio *" value="${prod.precio ? Math.floor(Number(prod.precio)) : ''}">
         <input id="mcl-prioridad-edit" type="number" class="swal2-input" placeholder="Prioridad" value="${prod.prioridad ?? ''}">
         <label style="display:block; text-align:left; margin:0 0 4px 5px;"><b>Oculto *</b></label>
         <select id="mcl-oculto-edit" class="swal2-select" style="width:100%; padding:6px;">
@@ -1027,7 +1026,7 @@ async function editProduct(productId) {
       preConfirm: () => {
         const name = document.getElementById('mcl-name-edit').value.trim();
         const version = document.getElementById('mcl-version-edit').value.trim();
-        const modelo = document.getElementById('mcl-modelo-edit').value;
+        const modelo = document.getElementById('mcl-modelo-edit').value.trim();
         const km = document.getElementById('mcl-km-edit').value;
         const description = document.getElementById('mcl-description-edit').value.trim();
         const price = document.getElementById('mcl-price-edit').value;
@@ -1052,12 +1051,6 @@ async function editProduct(productId) {
           return false;
         }
 
-        const modeloNum = modelo ? Number(modelo) : null;
-        if (modelo && (!Number.isFinite(modeloNum) || modeloNum < 1900)) {
-          Swal.showValidationMessage('Modelo inválido.');
-          return false;
-        }
-
         const prioridadNum = prioridad ? Number(prioridad) : null;
         if (prioridad && (!Number.isFinite(prioridadNum) || prioridadNum < 0)) {
           Swal.showValidationMessage('Prioridad inválida (número >= 0).');
@@ -1069,7 +1062,7 @@ async function editProduct(productId) {
         return {
           name,
           version,
-          modelo: modeloNum,
+          modelo,
           km: kmNum,
           description,
           price: precioNum,
