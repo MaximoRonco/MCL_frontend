@@ -280,6 +280,7 @@ function displayProductosMCL(data) {
     productosDiv.appendChild(catDiv);
   });
 }
+
 function buscarYCargarCatalogo(query) {
   const data = window.productosMCL_ORIGINAL;
   if (!query || !query.trim()) {
@@ -396,11 +397,8 @@ function openModal(prod) {
     </div>
 
     <div class="divOculto">
-      <label for="oculto-${prod.id}"><b>Oculto:</b></label>
-      <select id="oculto-${prod.id}" onchange="toggleOculto(${prod.id}, this.value)">
-        <option value="false" ${!prod.esOculto ? 'selected' : ''}>No</option>
-        <option value="true" ${prod.esOculto ? 'selected' : ''}>Sí</option>
-      </select>
+      <label for="oculto-${prod.id}"><b>Oculto:</b>
+      ${prod.esOculto ? 'Si' : 'No'}</label>
     </div>
   `;
 

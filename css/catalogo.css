@@ -412,14 +412,6 @@
   margin-bottom: 20px;
 }
 
-.divOculto select {
-  border-radius: 6px;
-  padding: 2px 8px;
-  border: 1px solid #b91127;
-  background: #fff;
-  color: #b91127;
-  font-size: 1.38rem; 
-}
 
 /* Botones de producto */
 .product-buttons {
