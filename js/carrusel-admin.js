@@ -93,14 +93,15 @@ async function addImageToCarouselMCL() {
 }
 
 async function deleteImageFromCarouselMCL() {
-  Swal.fire({
-    title: '¿Estás seguro?',
-    text: "¡No podrás revertir esto!",
-    icon: 'warning',
-    showCancelButton: true,
-    confirmButtonText: 'Sí, eliminar'
-  }).then(async (result) => {
-    if (!result.isConfirmed) return;
+  try {
+    const { isConfirmed } = await Swal.fire({
+      title: '¿Estás seguro?',
+      text: '¡No podrás revertir esto!',
+      icon: 'warning',
+      showCancelButton: true,
+      confirmButtonText: 'Sí, eliminar'
+    });
+    if (!isConfirmed) return;
 
     const activeItem = document.querySelector('.carousel-inner .active');
     if (!activeItem) {
@@ -109,28 +110,87 @@ async function deleteImageFromCarouselMCL() {
     }
 
     const img = activeItem.querySelector('img');
-    const imageUrl = img.src;
+    if (!img) {
+      Swal.fire('Error', 'No se encontró la imagen activa.', 'error');
+      return;
+    }
 
-    try {
-      const { data, ok } = await fetchWithAuth('https://mcl-backend-ten.vercel.app/carrusel/img', {
+    // Preferí borrar por ID si lo tenés en el <img>
+    const imageId = img.dataset.imageId || img.getAttribute('data-image-id') || null;
+
+    // URL original (de Supabase/CDN) y normalización para JPG/JPEG
+    const rawUrl = img.dataset.imageSrc || img.currentSrc || img.src || '';
+    const u = new URL(rawUrl, window.location.href);
+    const pathOriginal = decodeURIComponent(u.pathname);   // sin host ni query
+    const pathLower    = pathOriginal.toLowerCase();
+    const base         = pathLower.replace(/\.(jpe?g|png|webp)$/i, '');
+
+    // Candidatos (maneja .jpg/.jpeg y case)
+    const candidates = [
+      pathOriginal,
+      pathLower,
+      `${base}.jpg`,
+      `${base}.jpeg`,
+    ].filter((v, i, a) => v && a.indexOf(v) === i);
+
+    // ---- API base con fallback para evitar "MCL_API_BASE is not defined"
+    const API_BASE = (typeof MCL_API_BASE !== 'undefined' && MCL_API_BASE)
+      ? MCL_API_BASE
+      : 'https://mcl-backend-ten.vercel.app';
+    const endpoint = `${API_BASE.replace(/\/+$/, '')}/carrusel/img`;
+
+    const tryDelete = async (payload) => {
+      const { data, ok } = await fetchWithAuth(endpoint, {
         method: 'DELETE',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ src: imageUrl }) // ⚠️ confirmá si tu backend espera { src } o { url }
+        body: JSON.stringify(payload)
       });
+      return { ok, data };
+    };
 
-      if (ok) {
-        Swal.fire('Éxito', 'Imagen eliminada correctamente.', 'success');
-        await fetchCarruselMCL(); // refresca el carrusel
-      } else {
-        const msg = (data && (data.error || data.message)) || 'No se pudo eliminar la imagen';
-        Swal.fire('Error', msg, 'error');
-      }
-    } catch (error) {
-      console.error('Error al eliminar la imagen:', error);
-      Swal.fire('Error', 'Hubo un error al eliminar la imagen.', 'error');
+    let ok = false, data = null;
+
+    // 1) Intento por ID (ideal)
+    if (imageId) {
+      ({ ok, data } = await tryDelete({ id: Number(imageId) }));
     }
-  });
+
+    // 2) Si no hay ID o falló, pruebo por URL con variantes (.jpg/.jpeg)
+    if (!ok) {
+      for (const c of candidates) {
+        // Usá la key que espere tu backend: 'src' o 'url'
+        ({ ok, data } = await tryDelete({ src: c }));
+        if (ok) break;
+
+        ({ ok, data } = await tryDelete({ url: c }));
+        if (ok) break;
+      }
+    }
+
+    if (!ok) {
+      Swal.fire('Error', (data && (data.error || data.message)) || 'No se pudo eliminar la imagen.', 'error');
+      return;
+    }
+
+    Swal.fire('Éxito', 'Imagen eliminada correctamente.', 'success');
+
+    // Refrescar carrusel (si tu fetch cachea, agregale un bust param)
+    if (typeof fetchCarruselMCL === 'function') {
+      await fetchCarruselMCL(/* { bust: Date.now() } */);
+    } else {
+      // feedback inmediato en DOM
+      const next = activeItem.nextElementSibling || activeItem.previousElementSibling;
+      activeItem.remove();
+      next?.classList.add('active');
+    }
+
+  } catch (error) {
+    console.error('Error al eliminar la imagen:', error);
+    Swal.fire('Error', 'Hubo un error al eliminar la imagen.', 'error');
+  }
 }
+
+
 
 document.addEventListener('DOMContentLoaded', () => {
     // Función para inicializar el carrusel
