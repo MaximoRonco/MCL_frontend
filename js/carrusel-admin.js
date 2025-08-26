@@ -132,6 +132,18 @@ async function deleteImageFromCarouselMCL() {
   });
 }
 
+document.addEventListener('DOMContentLoaded', () => {
+    // Función para inicializar el carrusel
+    const initializeCarousel = () => {
+        const carousel = new bootstrap.Carousel(document.querySelector('#carouselExampleFade'), {
+            interval: 2000, // Intervalo de 2 segundos
+            ride: 'carousel'
+        });
+    };
+    initializeCarousel();
+});
+
+
 /* Eventos de botones */
 document.getElementById('addImageBtn').addEventListener('click', addImageToCarouselMCL);
 document.getElementById('deleteImageBtn').addEventListener('click', deleteImageFromCarouselMCL);
