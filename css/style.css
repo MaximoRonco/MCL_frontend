@@ -757,6 +757,90 @@ h2 {
 }
 
 
+/* ======= SOBRE NOSOTROS ======= */
+/* ---- Reset mínimo útil ---- */
+#sobre-nosotros img,
+#sobre-nosotros video {
+  max-width: 100%;
+  height: auto;
+  display: block;
+}
 
+/* ---- Contenedor principal ---- */
+#sobre-nosotros {
+  display: flex;
+  justify-content: center;
+  padding: 32px 0;
+}
 
+/* Grid responsivo */
+.sobre-nosotros-container {
+  width: min(90vw, 1200px);   /* 90% de pantalla, con tope */
+  margin: 0 auto;
+  display: grid;
+  gap: 24px;
+  grid-template-areas:
+    "video"
+    "texto"
+    "imagen";
+}
+
+/* Móvil/tabla por defecto: apilado y centrado */
+.video_sobre_nosotros     { grid-area: video; }
+.texto-nosotros           { grid-area: texto; }
+.imagen-nosotros          { grid-area: imagen; }
+
+/* Video con recorte elegante si quisieras fijar alto */
+.video_sobre_nosotros video {
+  width: 100%;
+  border-radius: 12px;
+  /* Si tu video es muy alto, podés usar:
+  aspect-ratio: 16 / 9;
+  object-fit: cover;
+  */
+}
+
+/* Imagen */
+.imagen-nosotros img {
+  width: 100%;
+  border-radius: 12px;
+}
+
+/* Texto */
+.texto-nosotros {
+  background: #0f0f0f0a;      /* leve fondo, opcional */
+  border-radius: 12px;
+  padding: 18px;
+  line-height: 1.5;
+}
+
+/* ---- Desktop / pantallas grandes ---- */
+@media (min-width: 992px) {
+  .sobre-nosotros-container {
+    /* Video arriba a lo ancho; abajo 2 columnas */
+    grid-template-columns: 1fr 1fr;
+    grid-template-areas:
+      "video  video"
+      "texto  imagen";
+    gap: 32px;
+  }
+
+  /* El contenedor ya mide 90vw: suficiente para que el video “ocupe el 90%” */
+  .video_sobre_nosotros {
+    justify-self: center;  /* centrado */
+  }
+
+  /* Alineaciones finas */
+  .texto-nosotros {
+    align-self: center;    /* centra verticalmente junto a la imagen */
+  }
+}
+
+.title-sobre-nosotros {
+  font-family: 'Montserrat', sans-serif !important;
+  font-size: 2rem;
+  color: #b91127;
+  font-weight: bold;
+  margin-top: 100px;
+}
 
