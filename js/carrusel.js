@@ -49,7 +49,7 @@ document.addEventListener('DOMContentLoaded', () => {
     // Función para inicializar el carrusel
     const initializeCarousel = () => {
         const carousel = new bootstrap.Carousel(document.querySelector('#carouselExampleFade'), {
-            interval: 2000, // Intervalo de 2 segundos
+            interval: 3000, // Intervalo de 2 segundos
             ride: 'carousel'
         });
     };
