@@ -96,3 +96,21 @@ const observerContacto = new IntersectionObserver((entries) => {
 contactoElements.forEach(el => observerContacto.observe(el));
 // Fin animación de la sección de contacto
 
+/* Animación de la sección Nosotros */
+
+document.addEventListener("DOMContentLoaded", () => {
+  const observer = new IntersectionObserver((entries, obs) => {
+    entries.forEach(entry => {
+      if (entry.isIntersecting) {
+        entry.target.classList.add("in-view");
+        obs.unobserve(entry.target); // solo una vez
+      }
+    });
+  }, { threshold: 0.2 }); // 20% visible para disparar
+
+  // Elementos a animar
+  const targets = document.querySelectorAll(".video_sobre_nosotros, .imagen-nosotros, .texto-nosotros");
+  targets.forEach(el => observer.observe(el));
+});
+
+

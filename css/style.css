@@ -839,14 +839,6 @@ h2 {
 }
 
 
-/* Animación suave al aparecer */
-@keyframes fadeUp {
-  from { opacity: 0; transform: translateY(15px); }
-  to   { opacity: 1; transform: translateY(0); }
-}
-.texto-nosotros {
-  animation: fadeUp 0.8s ease forwards;
-}
 
 /* ---- Desktop / pantallas grandes ---- */
 @media (min-width: 992px) {
@@ -945,3 +937,29 @@ h2 {
   max-width: 100%;
 }
 
+/* Estado inicial común */
+.video_sobre_nosotros,
+.imagen-nosotros,
+.texto-nosotros {
+  opacity: 0;
+  transition: opacity 0.8s ease, transform 0.8s ease;
+}
+
+/* Animaciones distintas */
+.video_sobre_nosotros {
+  transform: translateX(50px); /* entra desde la derecha */
+}
+
+.imagen-nosotros {
+  transform: translateX(-50px); /* entra desde la izquierda */
+}
+
+.texto-nosotros {
+  transform: translateY(15px); /* entra desde abajo */
+}
+
+/* Cuando entran en pantalla */
+.in-view {
+  opacity: 1;
+  transform: translateX(0) translateY(0);
+}
