@@ -808,10 +808,44 @@ h2 {
 
 /* Texto */
 .texto-nosotros {
-  background: #0f0f0f0a;      /* leve fondo, opcional */
+  background: #ffffff;              /* fondo blanco limpio */
   border-radius: 12px;
-  padding: 18px;
-  line-height: 1.5;
+  padding: 32px;
+  line-height: 1.7;
+  box-shadow: 0 4px 15px rgba(0,0,0,0.08); /* sombra sutil */
+  font-family: 'Montserrat', sans-serif;
+  color: #333;
+}
+
+.texto-nosotros h3 {
+  font-size: 2rem;
+  font-weight: 700;
+  color: #b91127;       /* tu color destacado */
+  margin-bottom: 20px;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+}
+/* Decoración sutil a la izquierda (barra) */
+.texto-nosotros {
+  border-left: 5px solid #b91127;
+  padding-left: 28px;
+}
+
+.texto-nosotros strong {
+  font-weight: 600;       /* un poquito más pesado, no full bold */
+  color: #222;            /* apenas más oscuro que el texto normal */
+  border-bottom: 1px solid #b91127; /* subrayado finito en rojo */
+  padding-bottom: 2px;
+}
+
+
+/* Animación suave al aparecer */
+@keyframes fadeUp {
+  from { opacity: 0; transform: translateY(15px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+.texto-nosotros {
+  animation: fadeUp 0.8s ease forwards;
 }
 
 /* ---- Desktop / pantallas grandes ---- */
@@ -842,5 +876,72 @@ h2 {
   color: #b91127;
   font-weight: bold;
   margin-top: 100px;
+}
+
+
+/* Wrapper para el iframe responsivo */
+.video-wrapper {
+  position: relative;
+  width: 100%;        /* ocupa el 100% dentro del grid → ya está limitado al 90vw */
+  padding-top: 56.25%; /* mantiene proporción 16:9 */
+  border-radius: 12px;
+  overflow: hidden;
+}
+
+.video-wrapper iframe {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  border: 0;
+}
+
+/* --- VIDEO YOUTUBE RESPONSIVO --- */
+
+/* Asegura que el área del grid tenga ancho completo */
+.video_sobre_nosotros {
+  grid-area: video;
+  width: 100%;
+  justify-self: center; /* ya lo tenías en desktop */
+}
+
+/* Wrapper del iframe: sin “magia”, sólo contenedor */
+.video-wrapper {
+  position: relative;
+  width: 100%;         /* dentro de .sobre-nosotros-container ya estás en 90vw */
+  max-width: 100%;
+  border-radius: 12px;
+  overflow: hidden;
+}
+
+/* Usa aspect-ratio moderno cuando esté disponible */
+@supports (aspect-ratio: 16/9) {
+  .video-wrapper { aspect-ratio: 16 / 9; }
+  .video-wrapper iframe {
+    width: 100%;
+    height: 100%;
+    display: block;
+    border: 0;
+  }
+}
+
+/* Fallback para navegadores sin aspect-ratio */
+@supports not (aspect-ratio: 16/9) {
+  .video-wrapper { padding-top: 56.25%; }  /* 16:9 */
+  .video-wrapper iframe {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    display: block;
+    border: 0;
+  }
+}
+
+/* Por si tenés algún reset que pise iframes */
+.video_sobre_nosotros iframe {
+  display: block;
+  max-width: 100%;
 }
 
