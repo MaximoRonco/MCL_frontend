@@ -9,6 +9,24 @@ document.getElementById('btnWpp').addEventListener('click', function() {
     window.open(whatsappURL, '_blank');
 });
 
+/* Funcionalidad btn wpp footer */
+function openWhatsappContact() {
+  const phoneNumber = '3572503289'; 
+  const message = encodeURIComponent('Hola, me gustaría obtener más información sobre los vehículos en MCL Automotores. ¡Gracias!'); 
+  const whatsappURL = `https://wa.me/${phoneNumber}?text=${message}`;
+  window.open(whatsappURL, '_blank');
+}
+
+document.getElementById('btnWpp').addEventListener('click', openWhatsappContact);
+
+const footerWpp = document.getElementById('footerWpp');
+if (footerWpp) {
+  footerWpp.addEventListener('click', function(e) {
+    e.preventDefault();
+    openWhatsappContact();
+  });
+}
+
 /* Fin btn wpp */
 
 /* ANIMACION DE LOS SERVICIOS */

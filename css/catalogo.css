@@ -814,7 +814,7 @@
 /* Featured grid para index */
 .featured-grid {
   display: grid;
-  grid-template-columns: 2fr 1fr 1fr;
+  grid-template-columns: 1.4fr 1fr 1fr; /* Menos ancho a la grande, más a las chicas */
   grid-template-rows: 1fr 1fr;
   gap: 1.5rem;
   max-width: 1200px;
@@ -839,7 +839,7 @@
 
 .featured-card .card-img-wrap {
   width: 100%;
-  height: 483px;
+  height: 800px;
   background: #f8f8f8;
   display: flex;
   align-items: center;
@@ -900,13 +900,13 @@
   opacity: 0;
   transform: translateY(50px);
   animation: none;
+  cursor: pointer;
 }
 .mini-card.show { opacity: 1; transform: none; transition: all 0.6s; }
 
 .mini-card .card-img-wrap {
-  cursor: pointer;
   width: 100%;
-  height: 140px;
+  height: 350px !important;
   background: #f8f8f8;
   display: flex;
   align-items: center;
@@ -949,6 +949,7 @@
   font-size: 1.8rem;
 }
 
+
 /* Responsive */
 @media (max-width: 900px) {
   .featured-grid {
@@ -961,6 +962,10 @@
     grid-row: 1 / span 2;
     grid-column: 1 / 2;
   }
+
+  .featured-card .card-img-wrap   {
+    height: 450px !important;
+  }
   .mini-card:nth-child(2) { grid-row: 1; grid-column: 2; }
   .mini-card:nth-child(3) { grid-row: 2; grid-column: 2; }
   .mini-card:nth-child(4) { grid-row: 3; grid-column: 1; }
@@ -968,7 +973,7 @@
   .mini-card .card-img-wrap {
   cursor: pointer;
   width: 100%;
-  height: 180px !important;
+  height: 450px !important;
   background: #f8f8f8;
   display: flex;
   align-items: center;
