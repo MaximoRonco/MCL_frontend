@@ -915,6 +915,10 @@ const MCL_UPLOAD_PATH = '/productos';               // <- CAMBIA si tu ruta es d
 // Crear Producto (MCL)
 // =============================
 
+function isMobileDevice() {
+  return /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
+}
+
 async function addProduct(subcategoryId) {
   let selectedFiles = [];
 
@@ -928,21 +932,21 @@ async function addProduct(subcategoryId) {
       <textarea id="mcl-description" class="swal2-input" placeholder="Descripción *"></textarea>
       <input id="mcl-price" type="number" class="swal2-input" placeholder="Precio *">
       <input id="mcl-prioridad" type="number" class="swal2-input" placeholder="Prioridad (orden)">
-      
       <label style="display:block; text-align:left; margin:0 0 4px 5px;"><b>Oculto *</b></label>
       <select id="mcl-oculto" class="swal2-select" style="width:100%; padding:6px;">
         <option value="false" selected>No</option>
         <option value="true">Sí</option>
       </select>
-
       <label style="display:block; text-align:left; margin:12px 0 4px 5px;"><b>Imágenes *</b></label>
       <input id="mcl-images" type="file" class="swal2-file" multiple>
       <div id="mcl-images-preview" style="display:flex; gap:8px; flex-wrap:wrap; margin-top:8px; min-height:70px;"></div>
-      <small>Arrastrá las imágenes para reordenarlas antes de subir.</small>
+      <small id="mcl-images-help"></small>
     `,
     didOpen: () => {
       const input = document.getElementById('mcl-images');
       const preview = document.getElementById('mcl-images-preview');
+      const help = document.getElementById('mcl-images-help');
+      const isMobile = isMobileDevice();
 
       input.addEventListener('change', function () {
         selectedFiles = Array.from(this.files);
@@ -957,9 +961,7 @@ async function addProduct(subcategoryId) {
             const imgWrap = document.createElement('div');
             imgWrap.style.position = 'relative';
             imgWrap.style.display = 'inline-block';
-            imgWrap.style.cursor = 'grab';
-            imgWrap.draggable = true;
-            imgWrap.dataset.idx = idx;
+            imgWrap.style.marginRight = '4px';
 
             const img = document.createElement('img');
             img.src = e.target.result;
@@ -969,39 +971,56 @@ async function addProduct(subcategoryId) {
             img.style.borderRadius = '6px';
             img.title = file.name;
 
+            // Solo en desktop: flechitas para reordenar
+            if (!isMobile) {
+              if (selectedFiles.length > 1 && idx > 0) {
+                const btnLeft = document.createElement('button');
+                btnLeft.textContent = '⬅️';
+                btnLeft.style.position = 'absolute';
+                btnLeft.style.left = '-12px';
+                btnLeft.style.top = '20px';
+                btnLeft.style.background = 'rgba(255,255,255,0.7)';
+                btnLeft.style.border = 'none';
+                btnLeft.style.cursor = 'pointer';
+                btnLeft.style.fontSize = '14px';
+                btnLeft.onclick = (ev) => {
+                  ev.preventDefault();
+                  const moved = selectedFiles.splice(idx, 1)[0];
+                  selectedFiles.splice(idx - 1, 0, moved);
+                  renderPreview();
+                };
+                imgWrap.appendChild(btnLeft);
+              }
+              if (selectedFiles.length > 1 && idx < selectedFiles.length - 1) {
+                const btnRight = document.createElement('button');
+                btnRight.textContent = '➡️';
+                btnRight.style.position = 'absolute';
+                btnRight.style.right = '-12px';
+                btnRight.style.top = '20px';
+                btnRight.style.background = 'rgba(255,255,255,0.7)';
+                btnRight.style.border = 'none';
+                btnRight.style.cursor = 'pointer';
+                btnRight.style.fontSize = '14px';
+                btnRight.onclick = (ev) => {
+                  ev.preventDefault();
+                  const moved = selectedFiles.splice(idx, 1)[0];
+                  selectedFiles.splice(idx + 1, 0, moved);
+                  renderPreview();
+                };
+                imgWrap.appendChild(btnRight);
+              }
+            }
+
             imgWrap.appendChild(img);
             preview.appendChild(imgWrap);
-
-            // Drag events
-            imgWrap.addEventListener('dragstart', (ev) => {
-              ev.dataTransfer.setData('text/plain', idx);
-              imgWrap.style.opacity = '0.5';
-            });
-            imgWrap.addEventListener('dragend', (ev) => {
-              imgWrap.style.opacity = '';
-            });
-            imgWrap.addEventListener('dragover', (ev) => {
-              ev.preventDefault();
-              imgWrap.style.outline = '2px solid #2f2f8f';
-            });
-            imgWrap.addEventListener('dragleave', (ev) => {
-              imgWrap.style.outline = '';
-            });
-            imgWrap.addEventListener('drop', (ev) => {
-              ev.preventDefault();
-              imgWrap.style.outline = '';
-              const fromIdx = Number(ev.dataTransfer.getData('text/plain'));
-              const toIdx = Number(imgWrap.dataset.idx);
-              if (fromIdx !== toIdx) {
-                const moved = selectedFiles.splice(fromIdx, 1)[0];
-                selectedFiles.splice(toIdx, 0, moved);
-                renderPreview();
-              }
-            });
           };
           reader.readAsDataURL(file);
         });
       }
+
+      help.textContent = isMobile
+        ? 'El orden de las imágenes será el de selección. Para reordenar, usá una computadora.'
+        : 'Usá las flechas para reordenar antes de subir.';
     },
     focusConfirm: false,
     confirmButtonText: 'Crear',
@@ -1247,6 +1266,10 @@ async function deleteProduct(productId) {
 // =============================
 // Editar Producto (MCL)
 // =============================
+function isMobileDevice() {
+  return /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
+}
+
 async function editProduct(productId) {
   try {
     // 1. Obtener datos actuales del producto
@@ -1258,13 +1281,18 @@ async function editProduct(productId) {
       return;
     }
 
+    // Variables para manejo de imágenes
+    let selectedFiles = [];
+    let currentFotos = (prod.Fotos || []).map(f => f.url);
+
     // 2. Mostrar modal de edición
     const { value: formValues } = await Swal.fire({
       title: 'Editar Producto',
       html: `
         <input id="mcl-name-edit" class="swal2-input" placeholder="Nombre *" value="${escapeHTML(prod.nombre) || ''}">
         <input id="mcl-version-edit" class="swal2-input" placeholder="Versión" value="${escapeHTML(prod.version || '')}">
-        <input id="mcl-modelo-edit" type="text" class="swal2-input" placeholder="Modelo (ej: 2024 o 0km)" value="${prod.modelo ?? ''}">        <input id="mcl-km-edit" type="number" class="swal2-input" placeholder="Kilómetros" value="${prod.kilometros || ''}">
+        <input id="mcl-modelo-edit" type="text" class="swal2-input" placeholder="Modelo (ej: 2024 o 0km)" value="${prod.modelo ?? ''}">
+        <input id="mcl-km-edit" type="number" class="swal2-input" placeholder="Kilómetros" value="${prod.kilometros || ''}">
         <textarea id="mcl-description-edit" class="swal2-input" placeholder="Descripción *">${escapeHTML(prod.descripcion || '')}</textarea>
         <input id="mcl-price-edit" type="number" class="swal2-input" placeholder="Precio *" value="${prod.precio ? Math.floor(Number(prod.precio)) : ''}">
         <input id="mcl-prioridad-edit" type="number" class="swal2-input" placeholder="Prioridad" value="${prod.prioridad ?? ''}">
@@ -1273,12 +1301,122 @@ async function editProduct(productId) {
           <option value="false" ${!prod.esOculto ? 'selected' : ''}>No</option>
           <option value="true" ${prod.esOculto ? 'selected' : ''}>Sí</option>
         </select>
+        <label style="display:block; text-align:left; margin:12px 0 4px 5px;"><b>Imágenes actuales</b></label>
+        <div id="mcl-images-preview-edit" style="display:flex; gap:8px; flex-wrap:wrap; margin-bottom:8px; min-height:70px;"></div>
         <label style="display:block; text-align:left; margin:12px 0 4px 5px;"><b>Cambiar Imágenes</b></label>
         <input id="mcl-images-edit" type="file" class="swal2-file" multiple>
+        <div id="mcl-images-preview-new" style="display:flex; gap:8px; flex-wrap:wrap; margin-top:8px; min-height:70px;"></div>
+        <small id="mcl-images-help-edit"></small>
         <div style="margin-top:8px;font-size:.8em;color:#888;">
           (Las imágenes existentes se mantienen si no seleccionás nuevas)
         </div>
       `,
+      didOpen: () => {
+        const isMobile = isMobileDevice();
+        const previewEdit = document.getElementById('mcl-images-preview-edit');
+        const inputEdit = document.getElementById('mcl-images-edit');
+        const previewNew = document.getElementById('mcl-images-preview-new');
+        const help = document.getElementById('mcl-images-help-edit');
+
+        // Renderiza las imágenes actuales (solo visual, no se pueden borrar ni reordenar)
+        function renderCurrentFotos() {
+          previewEdit.innerHTML = '';
+          currentFotos.forEach(url => {
+            const imgWrap = document.createElement('div');
+            imgWrap.style.position = 'relative';
+            imgWrap.style.display = 'inline-block';
+            imgWrap.style.marginRight = '4px';
+
+            const img = document.createElement('img');
+            img.src = url;
+            img.style.width = '60px';
+            img.style.height = '60px';
+            img.style.objectFit = 'cover';
+            img.style.borderRadius = '6px';
+            img.title = 'Imagen actual';
+
+            imgWrap.appendChild(img);
+            previewEdit.appendChild(imgWrap);
+          });
+        }
+
+        // Renderiza las nuevas imágenes seleccionadas (drag & drop solo en desktop)
+        function renderPreviewNew() {
+          previewNew.innerHTML = '';
+          selectedFiles.forEach((file, idx) => {
+            const reader = new FileReader();
+            reader.onload = function (e) {
+              const imgWrap = document.createElement('div');
+              imgWrap.style.position = 'relative';
+              imgWrap.style.display = 'inline-block';
+              imgWrap.style.marginRight = '4px';
+
+              const img = document.createElement('img');
+              img.src = e.target.result;
+              img.style.width = '60px';
+              img.style.height = '60px';
+              img.style.objectFit = 'cover';
+              img.style.borderRadius = '6px';
+              img.title = file.name;
+
+              // Solo en desktop: flechitas para reordenar
+              if (!isMobile) {
+                if (selectedFiles.length > 1 && idx > 0) {
+                  const btnLeft = document.createElement('button');
+                  btnLeft.textContent = '⬅️';
+                  btnLeft.style.position = 'absolute';
+                  btnLeft.style.left = '-12px';
+                  btnLeft.style.top = '20px';
+                  btnLeft.style.background = 'rgba(255,255,255,0.7)';
+                  btnLeft.style.border = 'none';
+                  btnLeft.style.cursor = 'pointer';
+                  btnLeft.style.fontSize = '14px';
+                  btnLeft.onclick = (ev) => {
+                    ev.preventDefault();
+                    const moved = selectedFiles.splice(idx, 1)[0];
+                    selectedFiles.splice(idx - 1, 0, moved);
+                    renderPreviewNew();
+                  };
+                  imgWrap.appendChild(btnLeft);
+                }
+                if (selectedFiles.length > 1 && idx < selectedFiles.length - 1) {
+                  const btnRight = document.createElement('button');
+                  btnRight.textContent = '➡️';
+                  btnRight.style.position = 'absolute';
+                  btnRight.style.right = '-12px';
+                  btnRight.style.top = '20px';
+                  btnRight.style.background = 'rgba(255,255,255,0.7)';
+                  btnRight.style.border = 'none';
+                  btnRight.style.cursor = 'pointer';
+                  btnRight.style.fontSize = '14px';
+                  btnRight.onclick = (ev) => {
+                    ev.preventDefault();
+                    const moved = selectedFiles.splice(idx, 1)[0];
+                    selectedFiles.splice(idx + 1, 0, moved);
+                    renderPreviewNew();
+                  };
+                  imgWrap.appendChild(btnRight);
+                }
+              }
+
+              imgWrap.appendChild(img);
+              previewNew.appendChild(imgWrap);
+            };
+            reader.readAsDataURL(file);
+          });
+        }
+
+        renderCurrentFotos();
+
+        inputEdit.addEventListener('change', function () {
+          selectedFiles = Array.from(this.files);
+          renderPreviewNew();
+        });
+
+        help.textContent = isMobile
+          ? 'El orden de las imágenes será el de selección. Para reordenar, usá una computadora.'
+          : 'Arrastrá las imágenes o usá las flechas para reordenarlas antes de guardar.';
+      },
       focusConfirm: false,
       confirmButtonText: 'Guardar',
       showCancelButton: true,
@@ -1291,7 +1429,7 @@ async function editProduct(productId) {
         const price = document.getElementById('mcl-price-edit').value;
         const prioridad = document.getElementById('mcl-prioridad-edit').value;
         const esOcultoStr = document.getElementById('mcl-oculto-edit').value;
-        const imageFiles = document.getElementById('mcl-images-edit').files;
+        // selectedFiles ya está actualizado
 
         if (!name || !description || !price) {
           Swal.showValidationMessage('Campos obligatorios: Nombre, Descripción y Precio.');
@@ -1327,7 +1465,7 @@ async function editProduct(productId) {
           price: precioNum,
           prioridad: prioridadNum,
           esOculto,
-          imageFiles
+          imageFiles: selectedFiles
         };
       }
     });
@@ -1377,6 +1515,3 @@ async function editProduct(productId) {
     Swal.fire('Error', 'Hubo un error al editar el producto.', 'error');
   }
 }
-
-// =============================
-
