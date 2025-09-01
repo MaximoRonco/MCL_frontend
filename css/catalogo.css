@@ -1017,6 +1017,10 @@
 
 
 /* -------- Pantallas para manipular el catalogo (admin) -------- */
+
+.mcl-images-preview{
+  gap: 20px;
+}
 .swal2-popup{
   width: 90%;
 }

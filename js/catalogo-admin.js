@@ -957,9 +957,7 @@ async function addProduct(subcategoryId) {
             const imgWrap = document.createElement('div');
             imgWrap.style.position = 'relative';
             imgWrap.style.display = 'inline-block';
-            imgWrap.style.cursor = 'grab';
-            imgWrap.draggable = true;
-            imgWrap.dataset.idx = idx;
+            imgWrap.style.marginRight = '4px';
 
             const img = document.createElement('img');
             img.src = e.target.result;
@@ -969,35 +967,47 @@ async function addProduct(subcategoryId) {
             img.style.borderRadius = '6px';
             img.title = file.name;
 
-            imgWrap.appendChild(img);
-            preview.appendChild(imgWrap);
-
-            // Drag events
-            imgWrap.addEventListener('dragstart', (ev) => {
-              ev.dataTransfer.setData('text/plain', idx);
-              imgWrap.style.opacity = '0.5';
-            });
-            imgWrap.addEventListener('dragend', (ev) => {
-              imgWrap.style.opacity = '';
-            });
-            imgWrap.addEventListener('dragover', (ev) => {
+            // Botones de mover
+            const btnLeft = document.createElement('button');
+            btnLeft.textContent = '⬅️';
+            btnLeft.style.position = 'absolute';
+            btnLeft.style.left = '-12px';
+            btnLeft.style.top = '20px';
+            btnLeft.style.background = 'rgba(255,255,255,0.7)';
+            btnLeft.style.border = 'none';
+            btnLeft.style.cursor = 'pointer';
+            btnLeft.style.fontSize = '14px';
+            btnLeft.onclick = (ev) => {
               ev.preventDefault();
-              imgWrap.style.outline = '2px solid #2f2f8f';
-            });
-            imgWrap.addEventListener('dragleave', (ev) => {
-              imgWrap.style.outline = '';
-            });
-            imgWrap.addEventListener('drop', (ev) => {
-              ev.preventDefault();
-              imgWrap.style.outline = '';
-              const fromIdx = Number(ev.dataTransfer.getData('text/plain'));
-              const toIdx = Number(imgWrap.dataset.idx);
-              if (fromIdx !== toIdx) {
-                const moved = selectedFiles.splice(fromIdx, 1)[0];
-                selectedFiles.splice(toIdx, 0, moved);
+              if (idx > 0) {
+                const moved = selectedFiles.splice(idx, 1)[0];
+                selectedFiles.splice(idx - 1, 0, moved);
                 renderPreview();
               }
-            });
+            };
+
+            const btnRight = document.createElement('button');
+            btnRight.textContent = '➡️';
+            btnRight.style.position = 'absolute';
+            btnRight.style.right = '-12px';
+            btnRight.style.top = '20px';
+            btnRight.style.background = 'rgba(255,255,255,0.7)';
+            btnRight.style.border = 'none';
+            btnRight.style.cursor = 'pointer';
+            btnRight.style.fontSize = '14px';
+            btnRight.onclick = (ev) => {
+              ev.preventDefault();
+              if (idx < selectedFiles.length - 1) {
+                const moved = selectedFiles.splice(idx, 1)[0];
+                selectedFiles.splice(idx + 1, 0, moved);
+                renderPreview();
+              }
+            };
+
+            imgWrap.appendChild(img);
+            if (selectedFiles.length > 1 && idx > 0) imgWrap.appendChild(btnLeft);
+            if (selectedFiles.length > 1 && idx < selectedFiles.length - 1) imgWrap.appendChild(btnRight);
+            preview.appendChild(imgWrap);
           };
           reader.readAsDataURL(file);
         });
