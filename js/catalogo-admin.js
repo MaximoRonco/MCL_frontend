@@ -914,8 +914,10 @@ const MCL_UPLOAD_PATH = '/productos';               // <- CAMBIA si tu ruta es d
 // =============================
 // Crear Producto (MCL)
 // =============================
+
 async function addProduct(subcategoryId) {
-  // Modal con campos de MCL
+  let selectedFiles = [];
+
   const { value: formValues } = await Swal.fire({
     title: 'Agregar Producto',
     html: `
@@ -935,7 +937,72 @@ async function addProduct(subcategoryId) {
 
       <label style="display:block; text-align:left; margin:12px 0 4px 5px;"><b>Imágenes *</b></label>
       <input id="mcl-images" type="file" class="swal2-file" multiple>
+      <div id="mcl-images-preview" style="display:flex; gap:8px; flex-wrap:wrap; margin-top:8px; min-height:70px;"></div>
+      <small>Arrastrá las imágenes para reordenarlas antes de subir.</small>
     `,
+    didOpen: () => {
+      const input = document.getElementById('mcl-images');
+      const preview = document.getElementById('mcl-images-preview');
+
+      input.addEventListener('change', function () {
+        selectedFiles = Array.from(this.files);
+        renderPreview();
+      });
+
+      function renderPreview() {
+        preview.innerHTML = '';
+        selectedFiles.forEach((file, idx) => {
+          const reader = new FileReader();
+          reader.onload = function (e) {
+            const imgWrap = document.createElement('div');
+            imgWrap.style.position = 'relative';
+            imgWrap.style.display = 'inline-block';
+            imgWrap.style.cursor = 'grab';
+            imgWrap.draggable = true;
+            imgWrap.dataset.idx = idx;
+
+            const img = document.createElement('img');
+            img.src = e.target.result;
+            img.style.width = '60px';
+            img.style.height = '60px';
+            img.style.objectFit = 'cover';
+            img.style.borderRadius = '6px';
+            img.title = file.name;
+
+            imgWrap.appendChild(img);
+            preview.appendChild(imgWrap);
+
+            // Drag events
+            imgWrap.addEventListener('dragstart', (ev) => {
+              ev.dataTransfer.setData('text/plain', idx);
+              imgWrap.style.opacity = '0.5';
+            });
+            imgWrap.addEventListener('dragend', (ev) => {
+              imgWrap.style.opacity = '';
+            });
+            imgWrap.addEventListener('dragover', (ev) => {
+              ev.preventDefault();
+              imgWrap.style.outline = '2px solid #2f2f8f';
+            });
+            imgWrap.addEventListener('dragleave', (ev) => {
+              imgWrap.style.outline = '';
+            });
+            imgWrap.addEventListener('drop', (ev) => {
+              ev.preventDefault();
+              imgWrap.style.outline = '';
+              const fromIdx = Number(ev.dataTransfer.getData('text/plain'));
+              const toIdx = Number(imgWrap.dataset.idx);
+              if (fromIdx !== toIdx) {
+                const moved = selectedFiles.splice(fromIdx, 1)[0];
+                selectedFiles.splice(toIdx, 0, moved);
+                renderPreview();
+              }
+            });
+          };
+          reader.readAsDataURL(file);
+        });
+      }
+    },
     focusConfirm: false,
     confirmButtonText: 'Crear',
     showCancelButton: true,
@@ -948,15 +1015,12 @@ async function addProduct(subcategoryId) {
       const price = document.getElementById('mcl-price').value;
       const prioridad = document.getElementById('mcl-prioridad').value;
       const esOcultoStr = document.getElementById('mcl-oculto').value;
-      const imageFiles = document.getElementById('mcl-images').files;
 
-      // Validaciones mínimas
-      if (!name || !description || !price || imageFiles.length === 0) {
+      if (!name || !description || !price || selectedFiles.length === 0) {
         Swal.showValidationMessage('Campos obligatorios: Nombre, Descripción, Precio e Imágenes.');
         return false;
       }
 
-      // Sanitización
       const precioNum = Number(price);
       if (!Number.isFinite(precioNum) || precioNum <= 0) {
         Swal.showValidationMessage('Ingresá un precio válido.');
@@ -992,7 +1056,7 @@ async function addProduct(subcategoryId) {
         price: precioNum,
         prioridad: prioridadNum,
         esOculto,
-        imageFiles
+        imageFiles: selectedFiles
       };
     }
   });
@@ -1003,7 +1067,7 @@ async function addProduct(subcategoryId) {
     name, version, modelo, km, description, price, prioridad, esOculto, imageFiles
   } = formValues;
 
-  // ✅ Preview inmediato en el DOM (igual que Cardelli)
+  // Preview inmediato en el DOM (igual que Cardelli)
   createProductElementMCL(subcategoryId, {
     nombre: name,
     version,
@@ -1015,7 +1079,7 @@ async function addProduct(subcategoryId) {
     esOculto
   }, imageFiles);
 
-  // 📦 Armado del payload según tu modelo MCL
+  // Armado del payload según tu modelo MCL
   const formData = new FormData();
   const dataPayload = {
     nombre: name,
@@ -1023,8 +1087,8 @@ async function addProduct(subcategoryId) {
     modelo: modelo ?? null,
     kilometros: km ?? null,
     descripcion: description,
-    precio: price.toFixed(2),     // backend ejemplo usa string "13500000.00"
-    prioridad: prioridad ?? null, // puede ir null si no la cargaron
+    precio: price.toFixed(2),
+    prioridad: prioridad ?? null,
     idSubCategoria: subcategoryId,
     esOculto: !!esOculto
   };
@@ -1033,7 +1097,7 @@ async function addProduct(subcategoryId) {
     formData.append('files', imageFiles[i]);
   }
 
-  // 🚀 POST al backend (autenticado)
+  // POST al backend (autenticado)
   try {
     const { data, ok } = await fetchWithAuth(`${MCL_API_BASE}${MCL_UPLOAD_PATH}`, {
       method: 'POST',
@@ -1042,7 +1106,6 @@ async function addProduct(subcategoryId) {
 
     if (ok) {
       Swal.fire('Éxito', 'Producto agregado con éxito.', 'success');
-      // Si querés traer ID/fotos reales del backend:
       if (typeof fetchProductosMCL === 'function') {
         fetchProductosMCL();
       }
@@ -1055,6 +1118,8 @@ async function addProduct(subcategoryId) {
     Swal.fire('Error', 'Hubo un error al agregar el producto', 'error');
   }
 }
+
+
 
 // =============================
 // Preview en DOM (MCL)
