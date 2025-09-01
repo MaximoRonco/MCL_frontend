@@ -967,46 +967,47 @@ async function addProduct(subcategoryId) {
             img.style.borderRadius = '6px';
             img.title = file.name;
 
-            // Botones de mover
-            const btnLeft = document.createElement('button');
-            btnLeft.textContent = '⬅️';
-            btnLeft.style.position = 'absolute';
-            btnLeft.style.left = '-12px';
-            btnLeft.style.top = '20px';
-            btnLeft.style.background = 'rgba(255,255,255,0.7)';
-            btnLeft.style.border = 'none';
-            btnLeft.style.cursor = 'pointer';
-            btnLeft.style.fontSize = '14px';
-            btnLeft.onclick = (ev) => {
-              ev.preventDefault();
-              if (idx > 0) {
+            // Botón izquierda (solo si no es el primero)
+            if (selectedFiles.length > 1 && idx > 0) {
+              const btnLeft = document.createElement('button');
+              btnLeft.textContent = '⬅️';
+              btnLeft.style.position = 'absolute';
+              btnLeft.style.left = '-12px';
+              btnLeft.style.top = '20px';
+              btnLeft.style.background = 'rgba(255,255,255,0.7)';
+              btnLeft.style.border = 'none';
+              btnLeft.style.cursor = 'pointer';
+              btnLeft.style.fontSize = '14px';
+              btnLeft.onclick = (ev) => {
+                ev.preventDefault();
                 const moved = selectedFiles.splice(idx, 1)[0];
                 selectedFiles.splice(idx - 1, 0, moved);
                 renderPreview();
-              }
-            };
+              };
+              imgWrap.appendChild(btnLeft);
+            }
 
-            const btnRight = document.createElement('button');
-            btnRight.textContent = '➡️';
-            btnRight.style.position = 'absolute';
-            btnRight.style.right = '-12px';
-            btnRight.style.top = '20px';
-            btnRight.style.background = 'rgba(255,255,255,0.7)';
-            btnRight.style.border = 'none';
-            btnRight.style.cursor = 'pointer';
-            btnRight.style.fontSize = '14px';
-            btnRight.onclick = (ev) => {
-              ev.preventDefault();
-              if (idx < selectedFiles.length - 1) {
+            // Botón derecha (solo si no es el último)
+            if (selectedFiles.length > 1 && idx < selectedFiles.length - 1) {
+              const btnRight = document.createElement('button');
+              btnRight.textContent = '➡️';
+              btnRight.style.position = 'absolute';
+              btnRight.style.right = '-12px';
+              btnRight.style.top = '20px';
+              btnRight.style.background = 'rgba(255,255,255,0.7)';
+              btnRight.style.border = 'none';
+              btnRight.style.cursor = 'pointer';
+              btnRight.style.fontSize = '14px';
+              btnRight.onclick = (ev) => {
+                ev.preventDefault();
                 const moved = selectedFiles.splice(idx, 1)[0];
                 selectedFiles.splice(idx + 1, 0, moved);
                 renderPreview();
-              }
-            };
+              };
+              imgWrap.appendChild(btnRight);
+            }
 
             imgWrap.appendChild(img);
-            if (selectedFiles.length > 1 && idx > 0) imgWrap.appendChild(btnLeft);
-            if (selectedFiles.length > 1 && idx < selectedFiles.length - 1) imgWrap.appendChild(btnRight);
             preview.appendChild(imgWrap);
           };
           reader.readAsDataURL(file);

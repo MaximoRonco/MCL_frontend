@@ -1018,9 +1018,10 @@
 
 /* -------- Pantallas para manipular el catalogo (admin) -------- */
 
-.mcl-images-preview{
-  gap: 20px;
+#mcl-images-preview{
+  gap: 20px !important;
 }
+
 .swal2-popup{
   width: 90%;
 }
