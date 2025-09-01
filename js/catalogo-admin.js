@@ -949,70 +949,70 @@ async function addProduct(subcategoryId) {
         renderPreview();
       });
 
-      function renderPreview() {
-        preview.innerHTML = '';
-        selectedFiles.forEach((file, idx) => {
-          const reader = new FileReader();
-          reader.onload = function (e) {
-            const imgWrap = document.createElement('div');
-            imgWrap.style.position = 'relative';
-            imgWrap.style.display = 'inline-block';
-            imgWrap.style.marginRight = '4px';
+    function renderPreview() {
+      preview.innerHTML = '';
+      selectedFiles.forEach((file, idx) => {
+        const reader = new FileReader();
+        reader.onload = function (e) {
+          const imgWrap = document.createElement('div');
+          imgWrap.style.position = 'relative';
+          imgWrap.style.display = 'inline-block';
+          imgWrap.style.marginRight = '4px';
 
-            const img = document.createElement('img');
-            img.src = e.target.result;
-            img.style.width = '60px';
-            img.style.height = '60px';
-            img.style.objectFit = 'cover';
-            img.style.borderRadius = '6px';
-            img.title = file.name;
+          const img = document.createElement('img');
+          img.src = e.target.result;
+          img.style.width = '60px';
+          img.style.height = '60px';
+          img.style.objectFit = 'cover';
+          img.style.borderRadius = '6px';
+          img.title = file.name;
 
-            // Botón izquierda (solo si no es el primero)
-            if (selectedFiles.length > 1 && idx > 0) {
-              const btnLeft = document.createElement('button');
-              btnLeft.textContent = '⬅️';
-              btnLeft.style.position = 'absolute';
-              btnLeft.style.left = '-12px';
-              btnLeft.style.top = '20px';
-              btnLeft.style.background = 'rgba(255,255,255,0.7)';
-              btnLeft.style.border = 'none';
-              btnLeft.style.cursor = 'pointer';
-              btnLeft.style.fontSize = '14px';
-              btnLeft.onclick = (ev) => {
-                ev.preventDefault();
-                const moved = selectedFiles.splice(idx, 1)[0];
-                selectedFiles.splice(idx - 1, 0, moved);
-                renderPreview();
-              };
-              imgWrap.appendChild(btnLeft);
-            }
+          // Botón izquierda (solo si no es el primero)
+          if (selectedFiles.length > 1 && idx > 0) {
+            const btnLeft = document.createElement('button');
+            btnLeft.textContent = '⬅️';
+            btnLeft.style.position = 'absolute';
+            btnLeft.style.left = '-12px';
+            btnLeft.style.top = '20px';
+            btnLeft.style.background = 'rgba(255,255,255,0.7)';
+            btnLeft.style.border = 'none';
+            btnLeft.style.cursor = 'pointer';
+            btnLeft.style.fontSize = '14px';
+            btnLeft.onclick = (ev) => {
+              ev.preventDefault();
+              const moved = selectedFiles.splice(idx, 1)[0];
+              selectedFiles.splice(idx - 1, 0, moved);
+              renderPreview();
+            };
+            imgWrap.appendChild(btnLeft);
+          }
 
-            // Botón derecha (solo si no es el último)
-            if (selectedFiles.length > 1 && idx < selectedFiles.length - 1) {
-              const btnRight = document.createElement('button');
-              btnRight.textContent = '➡️';
-              btnRight.style.position = 'absolute';
-              btnRight.style.right = '-12px';
-              btnRight.style.top = '20px';
-              btnRight.style.background = 'rgba(255,255,255,0.7)';
-              btnRight.style.border = 'none';
-              btnRight.style.cursor = 'pointer';
-              btnRight.style.fontSize = '14px';
-              btnRight.onclick = (ev) => {
-                ev.preventDefault();
-                const moved = selectedFiles.splice(idx, 1)[0];
-                selectedFiles.splice(idx + 1, 0, moved);
-                renderPreview();
-              };
-              imgWrap.appendChild(btnRight);
-            }
+          // Botón derecha (solo si no es el último)
+          if (selectedFiles.length > 1 && idx < selectedFiles.length - 1) {
+            const btnRight = document.createElement('button');
+            btnRight.textContent = '➡️';
+            btnRight.style.position = 'absolute';
+            btnRight.style.right = '-12px';
+            btnRight.style.top = '20px';
+            btnRight.style.background = 'rgba(255,255,255,0.7)';
+            btnRight.style.border = 'none';
+            btnRight.style.cursor = 'pointer';
+            btnRight.style.fontSize = '14px';
+            btnRight.onclick = (ev) => {
+              ev.preventDefault();
+              const moved = selectedFiles.splice(idx, 1)[0];
+              selectedFiles.splice(idx + 1, 0, moved);
+              renderPreview();
+            };
+            imgWrap.appendChild(btnRight);
+          }
 
-            imgWrap.appendChild(img);
-            preview.appendChild(imgWrap);
-          };
-          reader.readAsDataURL(file);
-        });
-      }
+          imgWrap.appendChild(img);
+          preview.appendChild(imgWrap);
+        };
+        reader.readAsDataURL(file);
+      });
+    }
     },
     focusConfirm: false,
     confirmButtonText: 'Crear',
