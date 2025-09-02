@@ -971,47 +971,41 @@ async function addProduct(subcategoryId) {
             img.style.borderRadius = '6px';
             img.title = file.name;
 
-            // Solo en desktop: flechitas para reordenar
+            imgWrap.appendChild(img);
+
+            // Drag & drop solo en PC
             if (!isMobile) {
-              if (selectedFiles.length > 1 && idx > 0) {
-                const btnLeft = document.createElement('button');
-                btnLeft.textContent = '⬅️';
-                btnLeft.style.position = 'absolute';
-                btnLeft.style.left = '-12px';
-                btnLeft.style.top = '20px';
-                btnLeft.style.background = 'rgba(255,255,255,0.7)';
-                btnLeft.style.border = 'none';
-                btnLeft.style.cursor = 'pointer';
-                btnLeft.style.fontSize = '14px';
-                btnLeft.onclick = (ev) => {
-                  ev.preventDefault();
-                  const moved = selectedFiles.splice(idx, 1)[0];
-                  selectedFiles.splice(idx - 1, 0, moved);
+              imgWrap.draggable = true;
+              imgWrap.style.cursor = 'grab';
+              imgWrap.dataset.idx = idx;
+
+              imgWrap.addEventListener('dragstart', (ev) => {
+                ev.dataTransfer.setData('text/plain', idx);
+                imgWrap.style.opacity = '0.5';
+              });
+              imgWrap.addEventListener('dragend', () => {
+                imgWrap.style.opacity = '';
+              });
+              imgWrap.addEventListener('dragover', (ev) => {
+                ev.preventDefault();
+                imgWrap.style.outline = '2px solid #2f2f8f';
+              });
+              imgWrap.addEventListener('dragleave', () => {
+                imgWrap.style.outline = '';
+              });
+              imgWrap.addEventListener('drop', (ev) => {
+                ev.preventDefault();
+                imgWrap.style.outline = '';
+                const fromIdx = Number(ev.dataTransfer.getData('text/plain'));
+                const toIdx = Number(imgWrap.dataset.idx);
+                if (fromIdx !== toIdx) {
+                  const moved = selectedFiles.splice(fromIdx, 1)[0];
+                  selectedFiles.splice(toIdx, 0, moved);
                   renderPreview();
-                };
-                imgWrap.appendChild(btnLeft);
-              }
-              if (selectedFiles.length > 1 && idx < selectedFiles.length - 1) {
-                const btnRight = document.createElement('button');
-                btnRight.textContent = '➡️';
-                btnRight.style.position = 'absolute';
-                btnRight.style.right = '-12px';
-                btnRight.style.top = '20px';
-                btnRight.style.background = 'rgba(255,255,255,0.7)';
-                btnRight.style.border = 'none';
-                btnRight.style.cursor = 'pointer';
-                btnRight.style.fontSize = '14px';
-                btnRight.onclick = (ev) => {
-                  ev.preventDefault();
-                  const moved = selectedFiles.splice(idx, 1)[0];
-                  selectedFiles.splice(idx + 1, 0, moved);
-                  renderPreview();
-                };
-                imgWrap.appendChild(btnRight);
-              }
+                }
+              });
             }
 
-            imgWrap.appendChild(img);
             preview.appendChild(imgWrap);
           };
           reader.readAsDataURL(file);
@@ -1020,7 +1014,7 @@ async function addProduct(subcategoryId) {
 
       help.textContent = isMobile
         ? 'El orden de las imágenes será el de selección. Para reordenar, usá una computadora.'
-        : 'Usá las flechas para reordenar antes de subir.';
+        : 'Arrastrá las imágenes para reordenarlas antes de subir.';
     },
     focusConfirm: false,
     confirmButtonText: 'Crear',
@@ -1086,7 +1080,6 @@ async function addProduct(subcategoryId) {
     name, version, modelo, km, description, price, prioridad, esOculto, imageFiles
   } = formValues;
 
-  // Preview inmediato en el DOM (igual que Cardelli)
   createProductElementMCL(subcategoryId, {
     nombre: name,
     version,
@@ -1098,7 +1091,6 @@ async function addProduct(subcategoryId) {
     esOculto
   }, imageFiles);
 
-  // Armado del payload según tu modelo MCL
   const formData = new FormData();
   const dataPayload = {
     nombre: name,
@@ -1116,7 +1108,6 @@ async function addProduct(subcategoryId) {
     formData.append('files', imageFiles[i]);
   }
 
-  // POST al backend (autenticado)
   try {
     const { data, ok } = await fetchWithAuth(`${MCL_API_BASE}${MCL_UPLOAD_PATH}`, {
       method: 'POST',
@@ -1281,11 +1272,9 @@ async function editProduct(productId) {
       return;
     }
 
-    // Variables para manejo de imágenes
     let selectedFiles = [];
     let currentFotos = (prod.Fotos || []).map(f => f.url);
 
-    // 2. Mostrar modal de edición
     const { value: formValues } = await Swal.fire({
       title: 'Editar Producto',
       html: `
@@ -1318,7 +1307,7 @@ async function editProduct(productId) {
         const previewNew = document.getElementById('mcl-images-preview-new');
         const help = document.getElementById('mcl-images-help-edit');
 
-        // Renderiza las imágenes actuales (solo visual, no se pueden borrar ni reordenar)
+        // Renderiza las imágenes actuales (solo visual)
         function renderCurrentFotos() {
           previewEdit.innerHTML = '';
           currentFotos.forEach(url => {
@@ -1359,47 +1348,41 @@ async function editProduct(productId) {
               img.style.borderRadius = '6px';
               img.title = file.name;
 
-              // Solo en desktop: flechitas para reordenar
+              imgWrap.appendChild(img);
+
+              // Drag & drop solo en PC
               if (!isMobile) {
-                if (selectedFiles.length > 1 && idx > 0) {
-                  const btnLeft = document.createElement('button');
-                  btnLeft.textContent = '⬅️';
-                  btnLeft.style.position = 'absolute';
-                  btnLeft.style.left = '-12px';
-                  btnLeft.style.top = '20px';
-                  btnLeft.style.background = 'rgba(255,255,255,0.7)';
-                  btnLeft.style.border = 'none';
-                  btnLeft.style.cursor = 'pointer';
-                  btnLeft.style.fontSize = '14px';
-                  btnLeft.onclick = (ev) => {
-                    ev.preventDefault();
-                    const moved = selectedFiles.splice(idx, 1)[0];
-                    selectedFiles.splice(idx - 1, 0, moved);
+                imgWrap.draggable = true;
+                imgWrap.style.cursor = 'grab';
+                imgWrap.dataset.idx = idx;
+
+                imgWrap.addEventListener('dragstart', (ev) => {
+                  ev.dataTransfer.setData('text/plain', idx);
+                  imgWrap.style.opacity = '0.5';
+                });
+                imgWrap.addEventListener('dragend', () => {
+                  imgWrap.style.opacity = '';
+                });
+                imgWrap.addEventListener('dragover', (ev) => {
+                  ev.preventDefault();
+                  imgWrap.style.outline = '2px solid #2f2f8f';
+                });
+                imgWrap.addEventListener('dragleave', () => {
+                  imgWrap.style.outline = '';
+                });
+                imgWrap.addEventListener('drop', (ev) => {
+                  ev.preventDefault();
+                  imgWrap.style.outline = '';
+                  const fromIdx = Number(ev.dataTransfer.getData('text/plain'));
+                  const toIdx = Number(imgWrap.dataset.idx);
+                  if (fromIdx !== toIdx) {
+                    const moved = selectedFiles.splice(fromIdx, 1)[0];
+                    selectedFiles.splice(toIdx, 0, moved);
                     renderPreviewNew();
-                  };
-                  imgWrap.appendChild(btnLeft);
-                }
-                if (selectedFiles.length > 1 && idx < selectedFiles.length - 1) {
-                  const btnRight = document.createElement('button');
-                  btnRight.textContent = '➡️';
-                  btnRight.style.position = 'absolute';
-                  btnRight.style.right = '-12px';
-                  btnRight.style.top = '20px';
-                  btnRight.style.background = 'rgba(255,255,255,0.7)';
-                  btnRight.style.border = 'none';
-                  btnRight.style.cursor = 'pointer';
-                  btnRight.style.fontSize = '14px';
-                  btnRight.onclick = (ev) => {
-                    ev.preventDefault();
-                    const moved = selectedFiles.splice(idx, 1)[0];
-                    selectedFiles.splice(idx + 1, 0, moved);
-                    renderPreviewNew();
-                  };
-                  imgWrap.appendChild(btnRight);
-                }
+                  }
+                });
               }
 
-              imgWrap.appendChild(img);
               previewNew.appendChild(imgWrap);
             };
             reader.readAsDataURL(file);
@@ -1415,7 +1398,7 @@ async function editProduct(productId) {
 
         help.textContent = isMobile
           ? 'El orden de las imágenes será el de selección. Para reordenar, usá una computadora.'
-          : 'Arrastrá las imágenes o usá las flechas para reordenarlas antes de guardar.';
+          : 'Arrastrá las imágenes para reordenarlas antes de guardar.';
       },
       focusConfirm: false,
       confirmButtonText: 'Guardar',
@@ -1429,7 +1412,6 @@ async function editProduct(productId) {
         const price = document.getElementById('mcl-price-edit').value;
         const prioridad = document.getElementById('mcl-prioridad-edit').value;
         const esOcultoStr = document.getElementById('mcl-oculto-edit').value;
-        // selectedFiles ya está actualizado
 
         if (!name || !description || !price) {
           Swal.showValidationMessage('Campos obligatorios: Nombre, Descripción y Precio.');
@@ -1472,7 +1454,6 @@ async function editProduct(productId) {
 
     if (!formValues) return;
 
-    // 3. Preparar y hacer el PUT
     const {
       name, version, modelo, km, description, price, prioridad, esOculto, imageFiles
     } = formValues;

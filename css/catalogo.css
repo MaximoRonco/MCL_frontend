@@ -1018,8 +1018,8 @@
 
 /* -------- Pantallas para manipular el catalogo (admin) -------- */
 
-#mcl-images-preview{
-  gap: 20px !important;
+#mcl-images-preview, #mcl-images-preview-new{
+  gap: 25px !important;
 }
 
 .swal2-popup{
