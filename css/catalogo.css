@@ -1018,6 +1018,16 @@
 
 /* -------- Pantallas para manipular el catalogo (admin) -------- */
 
+.swal2-input-label{
+  font-size: 1.5rem !important;
+}
+
+.swal2-input::placeholder {
+  color: #333; /* Más oscuro */
+  opacity: 1;  /* Asegura que se vea igual en todos los navegadores */
+  font-weight: 500; /* Opcional, si lo querés más marcado */
+}
+
 #mcl-images-preview, #mcl-images-preview-new{
   gap: 25px !important;
 }
