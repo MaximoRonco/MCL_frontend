@@ -45,7 +45,7 @@ function renderFeaturedGrid(productos) {
     const mensaje = encodeURIComponent(
       `¡Hola! Quiero consultar por este vehículo:\n• Nombre: ${prod.nombre}`
     );
-    const numeroWpp = '5493572503289';
+    const numeroWpp = '5493572587819';
     const wppBtn = `<a class="wpp-contact-btn" target="_blank" rel="noopener" href="https://wa.me/${numeroWpp}?text=${mensaje}" title="Consultar por WhatsApp"><i class="fab fa-whatsapp"></i></a>`;
 
     // Botón Ver más (solo muestra nombre e imagen en modal si lo deseas)
@@ -176,7 +176,7 @@ window.openModalIndexProducto = function(prodStr) {
     (prod.kilometros ? `• Kilómetros: ${prod.kilometros}\n` : '') +
     `• Precio: ${precioFmt}`
   );
-  const numeroWpp = '5493572503289';
+  const numeroWpp = '5493572587819';
   const wppBtnHtml = `
     <a class="wpp-contact-btn-modal" href="https://wa.me/${numeroWpp}?text=${mensaje}" target="_blank" rel="noopener">
       <i class="fab fa-whatsapp"></i> Consultar
