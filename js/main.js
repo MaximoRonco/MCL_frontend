@@ -19,6 +19,8 @@ function openWhatsappContact() {
 
 document.getElementById('btnWpp').addEventListener('click', openWhatsappContact);
 
+document.getElementById('wsp_contacto').addEventListener('click', openWhatsappContact);
+
 const footerWpp = document.getElementById('footerWpp');
 if (footerWpp) {
   footerWpp.addEventListener('click', function(e) {
