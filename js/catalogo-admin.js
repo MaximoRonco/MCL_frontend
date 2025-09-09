@@ -919,6 +919,76 @@ function isMobileDevice() {
   return /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
 }
 
+/* =============================
+   Cloudinary (conversión a JPG)
+   ============================= */
+const CLOUDINARY = {
+  cloudName: 'dxdfjjz4f',               // <-- completá
+  uploadPreset: 'mcl_unsigned',   // <-- el preset unsigned que crees
+  targetWidth: 1600,                        // "estándar" tipo WhatsApp
+  quality: 'auto:good'
+};
+
+// Sube el archivo en el formato que sea y obtiene un JPG "normalizado"
+async function cldUploadAndGetJpgUrl(file) {
+  const url = `https://api.cloudinary.com/v1_1/${CLOUDINARY.cloudName}/auto/upload`;
+
+  const fd = new FormData();
+  fd.append('file', file);
+  fd.append('upload_preset', CLOUDINARY.uploadPreset);
+  // Pedimos el JPG ya procesado como "resultado eager"
+
+  const res = await fetch(url, { method: 'POST', body: fd });
+  const data = await res.json();
+  if (!res.ok) throw new Error(data?.error?.message || 'Error subiendo a Cloudinary');
+
+  // Si por alguna razón no vuelve "eager", construimos la URL on-the-fly
+  const eager = data.eager?.[0]?.secure_url;
+  const onTheFly = data.secure_url?.replace(
+    '/upload/',
+    `/upload/c_limit,w_${CLOUDINARY.targetWidth}/f_jpg/q_${CLOUDINARY.quality}/`
+  );
+
+  return eager || onTheFly;
+}
+
+// Convierte la URL JPG a un File (para seguir mandando "files" a tu backend)
+async function jpgUrlToFile(jpgUrl, baseName = 'foto') {
+  const r = await fetch(jpgUrl);
+  const b = await r.blob();
+  return new File([b], `${baseName}.jpg`, { type: 'image/jpeg' });
+}
+
+// Atajo: archivo cualquiera -> (Cloudinary) -> JPG File
+async function toJpgFileViaCloudinary(file) {
+  // 1) Si parece venir de WhatsApp y ya es JPG, lo dejamos tal cual
+  if (shouldBypassTransform(file)) {
+    return file; // sin subir a Cloudinary, sin convertir
+  }
+
+  // 2) Para el resto (HEIC/HEIF/PNG/WebP/JPEG no-WhatsApp), normalizamos a JPG
+  const base = (file.name || 'foto').replace(/\.[^.]+$/, '');
+  const url  = await cldUploadAndGetJpgUrl(file);  // on-the-fly c_limit,w_1600/f_jpg/q_auto:good
+  return await jpgUrlToFile(url, base);
+}
+
+// --- Detectar archivos de WhatsApp (heurísticas de nombre) ---
+const WHATSAPP_PATTERNS = [
+  /^IMG-\d{8}-WA\d+/i,                          // IMG-20250909-WA0001.jpg
+  /^WhatsApp Image \d{4}-\d{2}-\d{2} at /i,     // WhatsApp Image 2025-09-09 at 10.22.33.jpeg
+  /^WA-\d{6,}/i                                 // WA-1234567.jpg (algunas variantes)
+];
+function isWhatsAppFilename(name = "") {
+  return /whatsapp|wa/i.test(name) || WHATSAPP_PATTERNS.some(r => r.test(name));
+}
+function shouldBypassTransform(file) {
+  // Dejamos “tal cual” si:
+  // - ya es JPEG (lo que WhatsApp usa) Y
+  // - su nombre parece venir de WhatsApp (patrones típicos)
+  return file && file.type === 'image/jpeg' && isWhatsAppFilename(file.name || '');
+}
+
+
 async function addProduct(subcategoryId) {
   let selectedFiles = [];
 
@@ -1080,6 +1150,7 @@ async function addProduct(subcategoryId) {
     name, version, modelo, km, description, price, prioridad, esOculto, imageFiles
   } = formValues;
 
+
   createProductElementMCL(subcategoryId, {
     nombre: name,
     version,
@@ -1091,22 +1162,31 @@ async function addProduct(subcategoryId) {
     esOculto
   }, imageFiles);
 
-  const formData = new FormData();
-  const dataPayload = {
-    nombre: name,
-    version: version || null,
-    modelo: modelo ?? null,
-    kilometros: km ?? null,
-    descripcion: description,
-    precio: price.toFixed(2),
-    prioridad: prioridad ?? null,
-    idSubCategoria: subcategoryId,
-    esOculto: !!esOculto
-  };
-  formData.append('data', JSON.stringify(dataPayload));
-  for (let i = 0; i < imageFiles.length; i++) {
-    formData.append('files', imageFiles[i]);
-  }
+    // 1) Convertimos SIEMPRE a JPG vía Cloudinary (HEIC/HEIF, PNG, lo que sea)
+    const jpgFiles = [];
+    for (const f of imageFiles) {
+      const jpgFile = await toJpgFileViaCloudinary(f);
+      jpgFiles.push(jpgFile);
+    }
+
+    // 2) Armamos el FormData como siempre, pero con los JPG normalizados
+    const formData = new FormData();
+    const dataPayload = {
+      nombre: name,
+      version: version || null,
+      modelo: modelo ?? null,
+      kilometros: km ?? null,
+      descripcion: description,
+      precio: price.toFixed(2),
+      prioridad: prioridad ?? null,
+      idSubCategoria: subcategoryId,
+      esOculto: !!esOculto
+    };
+    formData.append('data', JSON.stringify(dataPayload));
+
+    for (const f of jpgFiles) {
+      formData.append('files', f);
+    }
 
   try {
     const { data, ok } = await fetchWithAuth(`${MCL_API_BASE}${MCL_UPLOAD_PATH}`, {
@@ -1263,10 +1343,8 @@ function isMobileDevice() {
 
 async function editProduct(productId) {
   try {
-    // 1. Obtener datos actuales del producto
-    const { data: prod, ok } = await fetchWithAuth(`${MCL_API_BASE}/productos/${productId}`, {
-      method: 'GET'
-    });
+    // 1) Traer datos actuales
+    const { data: prod, ok } = await fetchWithAuth(`${MCL_API_BASE}/productos/${productId}`, { method: 'GET' });
     if (!ok) {
       Swal.fire('Error', 'No se pudo obtener la información del producto.', 'error');
       return;
@@ -1307,7 +1385,6 @@ async function editProduct(productId) {
         const previewNew = document.getElementById('mcl-images-preview-new');
         const help = document.getElementById('mcl-images-help-edit');
 
-        // Renderiza las imágenes actuales (solo visual)
         function renderCurrentFotos() {
           previewEdit.innerHTML = '';
           currentFotos.forEach(url => {
@@ -1329,7 +1406,6 @@ async function editProduct(productId) {
           });
         }
 
-        // Renderiza las nuevas imágenes seleccionadas (drag & drop solo en desktop)
         function renderPreviewNew() {
           previewNew.innerHTML = '';
           selectedFiles.forEach((file, idx) => {
@@ -1350,7 +1426,6 @@ async function editProduct(productId) {
 
               imgWrap.appendChild(img);
 
-              // Drag & drop solo en PC
               if (!isMobile) {
                 imgWrap.draggable = true;
                 imgWrap.style.cursor = 'grab';
@@ -1454,10 +1529,9 @@ async function editProduct(productId) {
 
     if (!formValues) return;
 
-    const {
-      name, version, modelo, km, description, price, prioridad, esOculto, imageFiles
-    } = formValues;
+    const { name, version, modelo, km, description, price, prioridad, esOculto, imageFiles } = formValues;
 
+    // 2) Armado del FormData
     const formData = new FormData();
     const dataPayload = {
       nombre: name,
@@ -1471,13 +1545,17 @@ async function editProduct(productId) {
     };
     formData.append('data', JSON.stringify(dataPayload));
 
-    // Solo agregar archivos si el usuario seleccionó nuevas imágenes
+    // ⬇️⬇️ CAMBIO CLAVE: convertir nuevas imágenes a JPG vía Cloudinary ⬇️⬇️
     if (imageFiles && imageFiles.length > 0) {
-      for (let i = 0; i < imageFiles.length; i++) {
-        formData.append('files', imageFiles[i]);
+      for (const f of imageFiles) {
+        const jpgFile = await toJpgFileViaCloudinary(f); // <- mismo helper que en "crear"
+        formData.append('files', jpgFile);
       }
     }
+    // ⬆️⬆️ FIN CAMBIO CLAVE ⬆️⬆️
+    // (Si no se seleccionan nuevas, el backend mantiene las existentes)
 
+    // 3) Enviar
     const { ok: okPut, data: dataPut } = await fetchWithAuth(`${MCL_API_BASE}/productos/${productId}`, {
       method: 'PUT',
       body: formData
@@ -1485,9 +1563,7 @@ async function editProduct(productId) {
 
     if (okPut) {
       Swal.fire('Éxito', 'Producto editado correctamente.', 'success');
-      if (typeof fetchProductosMCL === 'function') {
-        fetchProductosMCL();
-      }
+      if (typeof fetchProductosMCL === 'function') fetchProductosMCL();
     } else {
       Swal.fire('Error', (dataPut && (dataPut.error || dataPut.message)) || 'Error al editar el producto.', 'error');
     }
