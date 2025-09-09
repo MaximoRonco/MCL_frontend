@@ -991,8 +991,13 @@ function shouldBypassTransform(file) {
 
 async function addProduct(subcategoryId) {
   let selectedFiles = [];
-  // Mapa clave -> File para mantener identidad estable en el DOM
   let fileMap = new Map();
+
+  const MAX_FILES = 15;                 // límite sano para mobile
+  const MAX_FILE_MB = 8;                // por archivo (ajustable)
+  const MAX_TOTAL_MB = 80;              // total del payload (ajustable)
+  const UPLOAD_TIMEOUT_MS = 120000;     // 120s por red móvil lenta
+  const RETRY_UPLOADS = 1;              // 1 reintento si falla la subida
 
   const { value: formValues } = await Swal.fire({
     title: 'Agregar Producto',
@@ -1010,7 +1015,7 @@ async function addProduct(subcategoryId) {
         <option value="true">Sí</option>
       </select>
       <label style="display:block; text-align:left; margin:12px 0 4px 5px;"><b>Imágenes *</b></label>
-      <input id="mcl-images" type="file" class="swal2-file" multiple>
+      <input id="mcl-images" type="file" class="swal2-file" accept="image/*" multiple>
       <div id="mcl-images-preview" style="display:flex; gap:8px; flex-wrap:wrap; margin-top:8px; min-height:70px;"></div>
       <small id="mcl-images-help"></small>
     `,
@@ -1021,62 +1026,57 @@ async function addProduct(subcategoryId) {
 
       input.addEventListener('change', function () {
         selectedFiles = Array.from(this.files);
-        // construir claves estables
+
+        // límite de cantidad
+        if (selectedFiles.length > MAX_FILES) {
+          selectedFiles = selectedFiles.slice(0, MAX_FILES);
+          Swal.fire('Aviso', `Se permiten hasta ${MAX_FILES} imágenes por producto.`, 'info');
+        }
+
+        // reconstruir map
         fileMap = new Map(selectedFiles.map((f, i) => [makeKey(f, i), f]));
         renderPreview();
         ensureSortable();
+        help.textContent = 'Arrastrá para reordenar (funciona en celular y PC).';
       });
 
       function makeKey(file, idx) {
-        // clave suficientemente única por sesión
         return `${file.name}__${file.size}__${file.lastModified}__${idx}`;
       }
 
       function renderPreview() {
         preview.innerHTML = '';
+        let idxFallback = 0;
 
-        // Si por alguna razón se vació el map y hay files, lo reconstruimos
         if (fileMap.size === 0 && selectedFiles.length > 0) {
           fileMap = new Map(selectedFiles.map((f, i) => [makeKey(f, i), f]));
         }
 
-        let idxFallback = 0;
         for (const f of selectedFiles) {
           const key = [...fileMap.entries()].find(([, file]) => file === f)?.[0] ?? makeKey(f, idxFallback++);
           if (!fileMap.has(key)) fileMap.set(key, f);
 
           const reader = new FileReader();
           reader.onload = (e) => {
-            const imgWrap = document.createElement('div');
-            imgWrap.style.position = 'relative';
-            imgWrap.style.display = 'inline-block';
-            imgWrap.style.marginRight = '4px';
-            imgWrap.dataset.key = key; // <- lo usa Sortable para reconstruir el orden
+            const wrap = document.createElement('div');
+            wrap.style.position = 'relative';
+            wrap.dataset.key = key;
 
             const img = document.createElement('img');
             img.src = e.target.result;
-            img.style.width = '60px';
-            img.style.height = '60px';
+            img.style.width = '64px';
+            img.style.height = '64px';
             img.style.objectFit = 'cover';
             img.style.borderRadius = '6px';
-            img.title = f.name;
 
-            // Botón Quitar (opcional, cómodo en mobile)
             const del = document.createElement('button');
             del.textContent = '×';
-            del.style.position = 'absolute';
-            del.style.top = '-6px';
-            del.style.right = '-6px';
-            del.style.width = '20px';
-            del.style.height = '20px';
-            del.style.borderRadius = '50%';
-            del.style.border = 'none';
-            del.style.cursor = 'pointer';
-            del.style.lineHeight = '20px';
-            del.style.fontSize = '14px';
-            del.style.background = '#f33';
-            del.style.color = '#fff';
-            del.title = 'Quitar imagen';
+            Object.assign(del.style, {
+              position: 'absolute', top: '-6px', right: '-6px',
+              width: '20px', height: '20px', borderRadius: '50%',
+              border: 'none', cursor: 'pointer', lineHeight: '20px',
+              fontSize: '14px', background: '#f33', color: '#fff'
+            });
             del.addEventListener('click', () => {
               fileMap.delete(key);
               selectedFiles = selectedFiles.filter(ff => ff !== f);
@@ -1084,9 +1084,9 @@ async function addProduct(subcategoryId) {
               ensureSortable();
             });
 
-            imgWrap.appendChild(img);
-            imgWrap.appendChild(del);
-            preview.appendChild(imgWrap);
+            wrap.appendChild(img);
+            wrap.appendChild(del);
+            preview.appendChild(wrap);
           };
           reader.readAsDataURL(f);
         }
@@ -1102,19 +1102,16 @@ async function addProduct(subcategoryId) {
           animation: 150,
           ghostClass: 'drag-ghost',
           onEnd: () => {
-            // reconstruimos selectedFiles según el orden visual actual
-            const newOrder = [];
+            const ordered = [];
             preview.querySelectorAll('[data-key]').forEach(node => {
               const key = node.dataset.key;
-              const file = fileMap.get(key);
-              if (file) newOrder.push(file);
+              const f = fileMap.get(key);
+              if (f) ordered.push(f);
             });
-            selectedFiles = newOrder;
+            selectedFiles = ordered;
           }
         });
       }
-
-      help.textContent = 'Arrastrá para reordenar (funciona en celular y PC).';
     },
     focusConfirm: false,
     confirmButtonText: 'Crear',
@@ -1122,52 +1119,60 @@ async function addProduct(subcategoryId) {
     preConfirm: () => {
       const name = document.getElementById('mcl-name').value.trim();
       const version = document.getElementById('mcl-version').value.trim();
-      const modelo = document.getElementById('mcl-modelo').value;
-      const km = document.getElementById('mcl-km').value;
+      const modelo = document.getElementById('mcl-modelo').value.trim();
+      const kmStr = document.getElementById('mcl-km').value;
       const description = document.getElementById('mcl-description').value.trim();
-      const price = document.getElementById('mcl-price').value;
-      const prioridad = document.getElementById('mcl-prioridad').value;
+      const priceStr = document.getElementById('mcl-price').value;
+      const prioridadStr = document.getElementById('mcl-prioridad').value;
       const esOcultoStr = document.getElementById('mcl-oculto').value;
 
-      if (!name || !description || !price || selectedFiles.length === 0) {
+      if (!name || !description || !priceStr || selectedFiles.length === 0) {
         Swal.showValidationMessage('Campos obligatorios: Nombre, Descripción, Precio e Imágenes.');
         return false;
       }
 
-      const precioNum = Number(price);
-      if (!Number.isFinite(precioNum) || precioNum <= 0) {
+      const price = Number(priceStr);
+      if (!Number.isFinite(price) || price <= 0) {
         Swal.showValidationMessage('Ingresá un precio válido.');
         return false;
       }
 
-      const kmNum = km ? Number(km) : null;
-      if (km && (!Number.isFinite(kmNum) || kmNum < 0)) {
+      const km = kmStr ? Number(kmStr) : null;
+      if (kmStr && (!Number.isFinite(km) || km < 0)) {
         Swal.showValidationMessage('Kilómetros inválidos.');
         return false;
       }
 
-      const modeloNum = modelo ? Number(modelo) : null;
-      if (modelo && (!Number.isFinite(modeloNum) || modeloNum < 1900)) {
-        Swal.showValidationMessage('Modelo inválido.');
-        return false;
-      }
-
-      const prioridadNum = prioridad ? Number(prioridad) : null;
-      if (prioridad && (!Number.isFinite(prioridadNum) || prioridadNum < 0)) {
+      const prioridad = prioridadStr ? Number(prioridadStr) : null;
+      if (prioridadStr && (!Number.isFinite(prioridad) || prioridad < 0)) {
         Swal.showValidationMessage('Prioridad inválida (número >= 0).');
         return false;
       }
 
       const esOculto = esOcultoStr === 'true';
 
+      // Chequeos de tamaño
+      const totalBytes = selectedFiles.reduce((acc, f) => acc + f.size, 0);
+      const mb = (b) => (b / (1024 * 1024));
+      if (mb(totalBytes) > MAX_TOTAL_MB) {
+        Swal.showValidationMessage(`El total de imágenes supera ${MAX_TOTAL_MB} MB.`);
+        return false;
+      }
+      for (const f of selectedFiles) {
+        if (mb(f.size) > MAX_FILE_MB) {
+          Swal.showValidationMessage(`"${f.name}" supera ${MAX_FILE_MB} MB.`);
+          return false;
+        }
+      }
+
       return {
         name,
         version,
-        modelo: modeloNum,
-        km: kmNum,
+        modelo,        // texto libre (ej: "0km")
+        km,
         description,
-        price: precioNum,
-        prioridad: prioridadNum,
+        price,         // numérico (NO toFixed)
+        prioridad,
         esOculto,
         imageFiles: selectedFiles
       };
@@ -1176,77 +1181,126 @@ async function addProduct(subcategoryId) {
 
   if (!formValues) return;
 
-  const {
-    name, version, modelo, km, description, price, prioridad, esOculto, imageFiles
-  } = formValues;
+  const { name, version, modelo, km, description, price, prioridad, esOculto, imageFiles } = formValues;
 
-  // Render inmediato en UI local (como ya hacías)
-  createProductElementMCL(subcategoryId, {
-    nombre: name,
-    version,
-    modelo,
-    kilometros: km,
-    descripcion: description,
-    precio: price,
-    prioridad,
-    esOculto
-  }, imageFiles);
+  // Render optimista local (si ya lo usás)
+  if (typeof createProductElementMCL === 'function') {
+    createProductElementMCL(subcategoryId, {
+      nombre: name, version, modelo, kilometros: km,
+      descripcion: description, precio: price, prioridad, esOculto
+    }, imageFiles);
+  }
 
-  // === 1) Conversión a JPG con spinner indeterminado ===
+  // ===== 1) Preparar imágenes (conversión segura + skip WhatsApp) =====
   showIndeterminate('Preparando imágenes…');
 
-  const jpgFiles = [];
+  const preparedFiles = [];
   for (let i = 0; i < imageFiles.length; i++) {
-    updateIndeterminate(`Convirtiendo imagen ${i + 1} de ${imageFiles.length}…`);
     const f = imageFiles[i];
-    const jpgFile = await toJpgFileViaCloudinary(f);
-    jpgFiles.push(jpgFile);
+    updateIndeterminate(`Procesando imagen ${i + 1} de ${imageFiles.length}…`);
+
+    const isWhatsApp = /WA|WhatsApp|IMG-\d{8}-WA/g.test(f.name) || /whatsapp/i.test(f.name);
+    const isAlreadyWebFriendly = /^image\/(jpeg|png|webp)$/i.test(f.type);
+
+    try {
+      let out = f;
+
+      // 1) Si parece de WhatsApp o ya está OK, no transformamos (tu requerimiento)
+      if (!(isWhatsApp || isAlreadyWebFriendly)) {
+        // 2) Intentar convertir a JPG vía tu helper
+        out = await toJpgFileViaCloudinary(f);   // debe devolver un File/Blob
+      }
+
+      // 3) Nombre seguro para formData (unique)
+      const safeName = makeSafeName(out.name || `img_${i}.jpg`, i);
+      const finalFile = new File([out], safeName, { type: out.type || 'image/jpeg', lastModified: Date.now() });
+      preparedFiles.push(finalFile);
+
+    } catch (e) {
+      console.warn('Conversión fallida, subo original:', f.name, e);
+      // Fallback: subimos el original
+      const safeName = makeSafeName(f.name || `img_${i}_orig`, i);
+      const finalFile = new File([f], safeName, { type: f.type || 'application/octet-stream', lastModified: Date.now() });
+      preparedFiles.push(finalFile);
+    }
+
+    // Evita picos de memoria en Safari/iOS
+    await microDelay();
   }
 
   closeIndeterminate();
 
-  // === 2) Armamos el FormData con JPG normalizados ===
+  // ===== 2) Armar payload =====
   const formData = new FormData();
   const dataPayload = {
     nombre: name,
     version: version || null,
-    modelo: modelo ?? null,
+    modelo: modelo || null,
     kilometros: km ?? null,
     descripcion: description,
-    precio: price.toFixed(2),
+    precio: price,                 // numérico
     prioridad: prioridad ?? null,
     idSubCategoria: subcategoryId,
     esOculto: !!esOculto
   };
   formData.append('data', JSON.stringify(dataPayload));
-  for (const f of jpgFiles) formData.append('files', f);
+  for (const f of preparedFiles) formData.append('files', f, f.name);
 
-showUploadProgress('Subiendo producto…');
+  // ===== 3) Subir con barra + timeout + reintento =====
+  showUploadProgress('Subiendo producto…');
 
-try {
-  const { ok, data } = await uploadWithProgress({
-    url: `${MCL_API_BASE}${MCL_UPLOAD_PATH}`,
-    method: 'POST',
-    formData,
-    onProgress: (p) => updateUploadProgress(p, 'Enviando archivos')
-  });
+  let lastError = null;
+  for (let attempt = 0; attempt <= RETRY_UPLOADS; attempt++) {
+    try {
+      const { ok, data } = await uploadWithProgress({
+        url: `${MCL_API_BASE}${MCL_UPLOAD_PATH}`,
+        method: 'POST',
+        formData,
+        onProgress: (p) => updateUploadProgress(p, `Enviando archivos${attempt ? ` (reintento ${attempt})` : ''}`),
+        timeoutMs: UPLOAD_TIMEOUT_MS
+      });
 
-  closeUploadProgress();
+      closeUploadProgress();
 
-  if (ok) {
-    Swal.fire('Éxito', 'Producto agregado con éxito.', 'success');
-    if (typeof fetchProductosMCL === 'function') fetchProductosMCL();
-  } else {
-    console.error('Error en la respuesta:', data);
-    Swal.fire('Error', (data && data.error) || 'Hubo un error al agregar el producto', 'error');
+      if (ok) {
+        Swal.fire('Éxito', 'Producto agregado con éxito.', 'success');
+        if (typeof fetchProductosMCL === 'function') fetchProductosMCL();
+        return;
+      } else {
+        console.error('Error en la respuesta del servidor:', data);
+        lastError = (data && data.error) || 'Hubo un error al agregar el producto';
+        // si no reintenta, corta acá
+        if (attempt === RETRY_UPLOADS) {
+          Swal.fire('Error', lastError, 'error');
+          return;
+        }
+      }
+    } catch (err) {
+      console.error('Error de red/subida:', err);
+      lastError = 'Problema de conexión durante la subida.';
+      if (attempt === RETRY_UPLOADS) {
+        closeUploadProgress();
+        Swal.fire('Error', lastError, 'error');
+        return;
+      } else {
+        // breve espera antes del reintento
+        await delay(1200);
+      }
+    }
   }
-} catch (err) {
-  closeUploadProgress();
-  console.error('Error al agregar el producto:', err);
-  Swal.fire('Error', 'Hubo un error al agregar el producto', 'error');
+
+  // ===== Helpers internos =====
+  function makeSafeName(name, idx) {
+    const base = name.replace(/[^\w.\-]/g, '_');
+    const dot = base.lastIndexOf('.');
+    const stem = dot >= 0 ? base.slice(0, dot) : base;
+    const ext = dot >= 0 ? base.slice(dot) : '';
+    return `${stem}_${Date.now()}_${idx}${ext || '.jpg'}`;
+  }
+  function delay(ms) { return new Promise(r => setTimeout(r, ms)); }
+  function microDelay() { return new Promise(r => setTimeout(r, 0)); }
 }
 
-}
 
 
 
@@ -1412,8 +1466,7 @@ async function editProduct(productId) {
         <input id="mcl-modelo-edit" type="number" class="swal2-input" placeholder="Modelo (año)" value="${prod.modelo ?? ''}">
         <input id="mcl-km-edit" type="number" class="swal2-input" placeholder="Kilómetros" value="${prod.kilometros ?? ''}">
         <textarea id="mcl-description-edit" class="swal2-input" placeholder="Descripción *">${escapeHTML(prod.descripcion || '')}</textarea>
-        <input id="mcl-price-edit" type="number" class="swal2-input" placeholder="Precio *" value="${prod.precio ?? ''}">
-        <input id="mcl-prioridad-edit" type="number" class="swal2-input" placeholder="Prioridad" value="${prod.prioridad ?? ''}">
+        <input id="mcl-price-edit" type="number" class="swal2-input" placeholder="Precio *" step="1" value="${prod.precio ? Math.trunc(prod.precio) : ''}">        <input id="mcl-prioridad-edit" type="number" class="swal2-input" placeholder="Prioridad" value="${prod.prioridad ?? ''}">
         <label style="display:block; text-align:left; margin:0 0 4px 5px;"><b>Oculto *</b></label>
         <select id="mcl-oculto-edit" class="swal2-select" style="width:100%; padding:6px;">
           <option value="false" ${!prod.esOculto ? 'selected' : ''}>No</option>
