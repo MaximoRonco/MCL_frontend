@@ -1391,13 +1391,14 @@ async function editProduct(productId) {
     }
 
     // Solo mostramos las actuales (sin eliminar ni reordenar)
-    const fotosRaw = Array.isArray(prod.Fotos) ? prod.Fotos : [];
-    const currentFotos = fotosRaw
-      .map((f, i) => ({
-        id: (f && (f.id ?? f._id ?? f.public_id ?? f.publicId)) ?? i,
-        url: f?.url ?? f?.secure_url ?? ''
-      }))
-      .filter(x => x.url);
+    const currentFotos = Array.isArray(prod.Fotos)
+      ? prod.Fotos
+          .map((f, i) => ({
+            id: (f && (f.id ?? f._id ?? f.public_id ?? f.publicId)) ?? i,
+            url: f?.url ?? f?.secure_url ?? ''
+          }))
+          .filter(x => x.url)
+      : [];
 
     // Nuevas imágenes (estas sí se pueden reordenar)
     let selectedFiles = [];
@@ -1408,10 +1409,10 @@ async function editProduct(productId) {
       html: `
         <input id="mcl-name-edit" class="swal2-input" placeholder="Nombre *" value="${escapeHTML(prod.nombre) || ''}">
         <input id="mcl-version-edit" class="swal2-input" placeholder="Versión" value="${escapeHTML(prod.version || '')}">
-        <input id="mcl-modelo-edit" type="text" class="swal2-input" placeholder="Modelo (ej: 2024 o 0km)" value="${prod.modelo ?? ''}">
-        <input id="mcl-km-edit" type="number" class="swal2-input" placeholder="Kilómetros" value="${prod.kilometros || ''}">
+        <input id="mcl-modelo-edit" type="number" class="swal2-input" placeholder="Modelo (año)" value="${prod.modelo ?? ''}">
+        <input id="mcl-km-edit" type="number" class="swal2-input" placeholder="Kilómetros" value="${prod.kilometros ?? ''}">
         <textarea id="mcl-description-edit" class="swal2-input" placeholder="Descripción *">${escapeHTML(prod.descripcion || '')}</textarea>
-        <input id="mcl-price-edit" type="number" class="swal2-input" placeholder="Precio *" value="${prod.precio ? Math.floor(Number(prod.precio)) : ''}">
+        <input id="mcl-price-edit" type="number" class="swal2-input" placeholder="Precio *" value="${prod.precio ?? ''}">
         <input id="mcl-prioridad-edit" type="number" class="swal2-input" placeholder="Prioridad" value="${prod.prioridad ?? ''}">
         <label style="display:block; text-align:left; margin:0 0 4px 5px;"><b>Oculto *</b></label>
         <select id="mcl-oculto-edit" class="swal2-select" style="width:100%; padding:6px;">
@@ -1435,7 +1436,7 @@ async function editProduct(productId) {
         const help = document.getElementById('mcl-images-help-edit');
 
         // Render SOLO para ver las actuales (sin drag, sin borrar)
-        function renderCurrentFotos() {
+        (function renderCurrentFotos() {
           previewCurrent.innerHTML = '';
           for (const f of currentFotos) {
             const wrap = document.createElement('div');
@@ -1454,8 +1455,7 @@ async function editProduct(productId) {
             wrap.appendChild(img);
             previewCurrent.appendChild(wrap);
           }
-        }
-        renderCurrentFotos();
+        })();
 
         // Nuevas imágenes: sí se pueden reordenar
         inputNew.addEventListener('change', function () {
@@ -1532,32 +1532,38 @@ async function editProduct(productId) {
       preConfirm: () => {
         const name = document.getElementById('mcl-name-edit').value.trim();
         const version = document.getElementById('mcl-version-edit').value.trim();
-        const modelo = document.getElementById('mcl-modelo-edit').value.trim();
-        const km = document.getElementById('mcl-km-edit').value;
+        const modeloVal = document.getElementById('mcl-modelo-edit').value;
+        const kmVal = document.getElementById('mcl-km-edit').value;
         const description = document.getElementById('mcl-description-edit').value.trim();
-        const price = document.getElementById('mcl-price-edit').value;
-        const prioridad = document.getElementById('mcl-prioridad-edit').value;
+        const priceVal = document.getElementById('mcl-price-edit').value;
+        const prioridadVal = document.getElementById('mcl-prioridad-edit').value;
         const esOcultoStr = document.getElementById('mcl-oculto-edit').value;
 
-        if (!name || !description || !price) {
+        if (!name || !description || !priceVal) {
           Swal.showValidationMessage('Campos obligatorios: Nombre, Descripción y Precio.');
           return false;
         }
 
-        const precioNum = Number(price);
+        const precioNum = Number(priceVal);
         if (!Number.isFinite(precioNum) || precioNum <= 0) {
           Swal.showValidationMessage('Ingresá un precio válido.');
           return false;
         }
 
-        const kmNum = km ? Number(km) : null;
-        if (km && (!Number.isFinite(kmNum) || kmNum < 0)) {
+        const kmNum = kmVal ? Number(kmVal) : null;
+        if (kmVal && (!Number.isFinite(kmNum) || kmNum < 0)) {
           Swal.showValidationMessage('Kilómetros inválidos.');
           return false;
         }
 
-        const prioridadNum = prioridad ? Number(prioridad) : null;
-        if (prioridad && (!Number.isFinite(prioridadNum) || prioridadNum < 0)) {
+        const modeloNum = modeloVal ? Number(modeloVal) : null;
+        if (modeloVal && (!Number.isFinite(modeloNum) || modeloNum < 1900)) {
+          Swal.showValidationMessage('Modelo inválido.');
+          return false;
+        }
+
+        const prioridadNum = prioridadVal ? Number(prioridadVal) : null;
+        if (prioridadVal && (!Number.isFinite(prioridadNum) || prioridadNum < 0)) {
           Swal.showValidationMessage('Prioridad inválida (número >= 0).');
           return false;
         }
@@ -1567,10 +1573,10 @@ async function editProduct(productId) {
         return {
           name,
           version,
-          modelo,
-          km: kmNum,
+          modelo: modeloNum,   // número o null
+          km: kmNum,           // número o null
           description,
-          price: precioNum,
+          price: precioNum,    // número
           prioridad: prioridadNum,
           esOculto,
           imageFiles: selectedFiles // SOLO nuevas (ordenadas)
@@ -1581,8 +1587,7 @@ async function editProduct(productId) {
     if (!formValues) return;
 
     const {
-      name, version, modelo, km, description, price, prioridad, esOculto,
-      imageFiles
+      name, version, modelo, km, description, price, prioridad, esOculto, imageFiles
     } = formValues;
 
     // === 1) Preparar FormData
@@ -1593,17 +1598,17 @@ async function editProduct(productId) {
       modelo: modelo ?? null,
       kilometros: km ?? null,
       descripcion: description,
-      precio: price.toFixed(2),
+      // precio como number con 2 decimales (evita strings vacías)
+      precio: Math.round((price + Number.EPSILON) * 100) / 100,
       prioridad: prioridad ?? null,
       esOculto: !!esOculto
     };
     formData.append('data', JSON.stringify(dataPayload));
 
     // === 2) Convertir SOLO NUEVAS imágenes a JPG con spinner (si hay)
-    let jpgFiles = [];
     if (imageFiles && imageFiles.length > 0) {
       showIndeterminate('Preparando imágenes…');
-      jpgFiles = [];
+      const jpgFiles = [];
       for (let i = 0; i < imageFiles.length; i++) {
         updateIndeterminate(`Convirtiendo imagen ${i + 1} de ${imageFiles.length}…`);
         const f = imageFiles[i];
@@ -1636,14 +1641,15 @@ async function editProduct(productId) {
       }
     } catch (err) {
       closeUploadProgress();
-      console.error('Error al editar producto:', err);
-      Swal.fire('Error', 'Hubo un error al editar el producto.', 'error');
+      console.error('Error al editar producto (upload):', err);
+      Swal.fire('Error', 'Hubo un error al subir los cambios.', 'error');
     }
   } catch (err) {
-    console.error('Error al editar producto:', err);
+    console.error('Error al editar producto (fetch inicial):', err);
     Swal.fire('Error', 'Hubo un error al editar el producto.', 'error');
   }
 }
+
 
 
 
