@@ -991,6 +991,8 @@ function shouldBypassTransform(file) {
 
 async function addProduct(subcategoryId) {
   let selectedFiles = [];
+  // Mapa clave -> File para mantener identidad estable en el DOM
+  let fileMap = new Map();
 
   const { value: formValues } = await Swal.fire({
     title: 'Agregar Producto',
@@ -1016,22 +1018,40 @@ async function addProduct(subcategoryId) {
       const input = document.getElementById('mcl-images');
       const preview = document.getElementById('mcl-images-preview');
       const help = document.getElementById('mcl-images-help');
-      const isMobile = isMobileDevice();
 
       input.addEventListener('change', function () {
         selectedFiles = Array.from(this.files);
+        // construir claves estables
+        fileMap = new Map(selectedFiles.map((f, i) => [makeKey(f, i), f]));
         renderPreview();
+        ensureSortable();
       });
+
+      function makeKey(file, idx) {
+        // clave suficientemente única por sesión
+        return `${file.name}__${file.size}__${file.lastModified}__${idx}`;
+      }
 
       function renderPreview() {
         preview.innerHTML = '';
-        selectedFiles.forEach((file, idx) => {
+
+        // Si por alguna razón se vació el map y hay files, lo reconstruimos
+        if (fileMap.size === 0 && selectedFiles.length > 0) {
+          fileMap = new Map(selectedFiles.map((f, i) => [makeKey(f, i), f]));
+        }
+
+        let idxFallback = 0;
+        for (const f of selectedFiles) {
+          const key = [...fileMap.entries()].find(([, file]) => file === f)?.[0] ?? makeKey(f, idxFallback++);
+          if (!fileMap.has(key)) fileMap.set(key, f);
+
           const reader = new FileReader();
-          reader.onload = function (e) {
+          reader.onload = (e) => {
             const imgWrap = document.createElement('div');
             imgWrap.style.position = 'relative';
             imgWrap.style.display = 'inline-block';
             imgWrap.style.marginRight = '4px';
+            imgWrap.dataset.key = key; // <- lo usa Sortable para reconstruir el orden
 
             const img = document.createElement('img');
             img.src = e.target.result;
@@ -1039,52 +1059,62 @@ async function addProduct(subcategoryId) {
             img.style.height = '60px';
             img.style.objectFit = 'cover';
             img.style.borderRadius = '6px';
-            img.title = file.name;
+            img.title = f.name;
+
+            // Botón Quitar (opcional, cómodo en mobile)
+            const del = document.createElement('button');
+            del.textContent = '×';
+            del.style.position = 'absolute';
+            del.style.top = '-6px';
+            del.style.right = '-6px';
+            del.style.width = '20px';
+            del.style.height = '20px';
+            del.style.borderRadius = '50%';
+            del.style.border = 'none';
+            del.style.cursor = 'pointer';
+            del.style.lineHeight = '20px';
+            del.style.fontSize = '14px';
+            del.style.background = '#f33';
+            del.style.color = '#fff';
+            del.title = 'Quitar imagen';
+            del.addEventListener('click', () => {
+              fileMap.delete(key);
+              selectedFiles = selectedFiles.filter(ff => ff !== f);
+              renderPreview();
+              ensureSortable();
+            });
 
             imgWrap.appendChild(img);
-
-            // Drag & drop solo en PC
-            if (!isMobile) {
-              imgWrap.draggable = true;
-              imgWrap.style.cursor = 'grab';
-              imgWrap.dataset.idx = idx;
-
-              imgWrap.addEventListener('dragstart', (ev) => {
-                ev.dataTransfer.setData('text/plain', idx);
-                imgWrap.style.opacity = '0.5';
-              });
-              imgWrap.addEventListener('dragend', () => {
-                imgWrap.style.opacity = '';
-              });
-              imgWrap.addEventListener('dragover', (ev) => {
-                ev.preventDefault();
-                imgWrap.style.outline = '2px solid #2f2f8f';
-              });
-              imgWrap.addEventListener('dragleave', () => {
-                imgWrap.style.outline = '';
-              });
-              imgWrap.addEventListener('drop', (ev) => {
-                ev.preventDefault();
-                imgWrap.style.outline = '';
-                const fromIdx = Number(ev.dataTransfer.getData('text/plain'));
-                const toIdx = Number(imgWrap.dataset.idx);
-                if (fromIdx !== toIdx) {
-                  const moved = selectedFiles.splice(fromIdx, 1)[0];
-                  selectedFiles.splice(toIdx, 0, moved);
-                  renderPreview();
-                }
-              });
-            }
-
+            imgWrap.appendChild(del);
             preview.appendChild(imgWrap);
           };
-          reader.readAsDataURL(file);
+          reader.readAsDataURL(f);
+        }
+      }
+
+      let sortableInstance = null;
+      function ensureSortable() {
+        if (sortableInstance) {
+          sortableInstance.destroy();
+          sortableInstance = null;
+        }
+        sortableInstance = Sortable.create(preview, {
+          animation: 150,
+          ghostClass: 'drag-ghost',
+          onEnd: () => {
+            // reconstruimos selectedFiles según el orden visual actual
+            const newOrder = [];
+            preview.querySelectorAll('[data-key]').forEach(node => {
+              const key = node.dataset.key;
+              const file = fileMap.get(key);
+              if (file) newOrder.push(file);
+            });
+            selectedFiles = newOrder;
+          }
         });
       }
 
-      help.textContent = isMobile
-        ? 'El orden de las imágenes será el de selección. Para reordenar, usá una computadora.'
-        : 'Arrastrá las imágenes para reordenarlas antes de subir.';
+      help.textContent = 'Arrastrá para reordenar (funciona en celular y PC).';
     },
     focusConfirm: false,
     confirmButtonText: 'Crear',
@@ -1150,7 +1180,7 @@ async function addProduct(subcategoryId) {
     name, version, modelo, km, description, price, prioridad, esOculto, imageFiles
   } = formValues;
 
-
+  // Render inmediato en UI local (como ya hacías)
   createProductElementMCL(subcategoryId, {
     nombre: name,
     version,
@@ -1162,31 +1192,28 @@ async function addProduct(subcategoryId) {
     esOculto
   }, imageFiles);
 
-    // 1) Convertimos SIEMPRE a JPG vía Cloudinary (HEIC/HEIF, PNG, lo que sea)
-    const jpgFiles = [];
-    for (const f of imageFiles) {
-      const jpgFile = await toJpgFileViaCloudinary(f);
-      jpgFiles.push(jpgFile);
-    }
+  // 1) Convertimos SIEMPRE a JPG vía Cloudinary (HEIC/HEIF, PNG, etc.)
+  const jpgFiles = [];
+  for (const f of imageFiles) {
+    const jpgFile = await toJpgFileViaCloudinary(f);
+    jpgFiles.push(jpgFile);
+  }
 
-    // 2) Armamos el FormData como siempre, pero con los JPG normalizados
-    const formData = new FormData();
-    const dataPayload = {
-      nombre: name,
-      version: version || null,
-      modelo: modelo ?? null,
-      kilometros: km ?? null,
-      descripcion: description,
-      precio: price.toFixed(2),
-      prioridad: prioridad ?? null,
-      idSubCategoria: subcategoryId,
-      esOculto: !!esOculto
-    };
-    formData.append('data', JSON.stringify(dataPayload));
-
-    for (const f of jpgFiles) {
-      formData.append('files', f);
-    }
+  // 2) Armamos el FormData con JPG normalizados
+  const formData = new FormData();
+  const dataPayload = {
+    nombre: name,
+    version: version || null,
+    modelo: modelo ?? null,
+    kilometros: km ?? null,
+    descripcion: description,
+    precio: price.toFixed(2),
+    prioridad: prioridad ?? null,
+    idSubCategoria: subcategoryId,
+    esOculto: !!esOculto
+  };
+  formData.append('data', JSON.stringify(dataPayload));
+  for (const f of jpgFiles) formData.append('files', f);
 
   try {
     const { data, ok } = await fetchWithAuth(`${MCL_API_BASE}${MCL_UPLOAD_PATH}`, {
