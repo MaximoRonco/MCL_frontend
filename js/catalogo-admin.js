@@ -1192,14 +1192,20 @@ async function addProduct(subcategoryId) {
     esOculto
   }, imageFiles);
 
-  // 1) Convertimos SIEMPRE a JPG vía Cloudinary (HEIC/HEIF, PNG, etc.)
+  // === 1) Conversión a JPG con spinner indeterminado ===
+  showIndeterminate('Preparando imágenes…');
+
   const jpgFiles = [];
-  for (const f of imageFiles) {
+  for (let i = 0; i < imageFiles.length; i++) {
+    updateIndeterminate(`Convirtiendo imagen ${i + 1} de ${imageFiles.length}…`);
+    const f = imageFiles[i];
     const jpgFile = await toJpgFileViaCloudinary(f);
     jpgFiles.push(jpgFile);
   }
 
-  // 2) Armamos el FormData con JPG normalizados
+  closeIndeterminate();
+
+  // === 2) Armamos el FormData con JPG normalizados ===
   const formData = new FormData();
   const dataPayload = {
     nombre: name,
@@ -1215,26 +1221,33 @@ async function addProduct(subcategoryId) {
   formData.append('data', JSON.stringify(dataPayload));
   for (const f of jpgFiles) formData.append('files', f);
 
-  try {
-    const { data, ok } = await fetchWithAuth(`${MCL_API_BASE}${MCL_UPLOAD_PATH}`, {
-      method: 'POST',
-      body: formData
-    });
+showUploadProgress('Subiendo producto…');
 
-    if (ok) {
-      Swal.fire('Éxito', 'Producto agregado con éxito.', 'success');
-      if (typeof fetchProductosMCL === 'function') {
-        fetchProductosMCL();
-      }
-    } else {
-      console.error('Error en la respuesta:', data);
-      Swal.fire('Error', (data && data.error) || 'Hubo un error al agregar el producto', 'error');
-    }
-  } catch (err) {
-    console.error('Error al agregar el producto:', err);
-    Swal.fire('Error', 'Hubo un error al agregar el producto', 'error');
+try {
+  const { ok, data } = await uploadWithProgress({
+    url: `${MCL_API_BASE}${MCL_UPLOAD_PATH}`,
+    method: 'POST',
+    formData,
+    onProgress: (p) => updateUploadProgress(p, 'Enviando archivos')
+  });
+
+  closeUploadProgress();
+
+  if (ok) {
+    Swal.fire('Éxito', 'Producto agregado con éxito.', 'success');
+    if (typeof fetchProductosMCL === 'function') fetchProductosMCL();
+  } else {
+    console.error('Error en la respuesta:', data);
+    Swal.fire('Error', (data && data.error) || 'Hubo un error al agregar el producto', 'error');
   }
+} catch (err) {
+  closeUploadProgress();
+  console.error('Error al agregar el producto:', err);
+  Swal.fire('Error', 'Hubo un error al agregar el producto', 'error');
 }
+
+}
+
 
 
 
@@ -1572,7 +1585,7 @@ async function editProduct(productId) {
       imageFiles
     } = formValues;
 
-    // 2) Armado del FormData
+    // === 1) Preparar FormData
     const formData = new FormData();
     const dataPayload = {
       nombre: name,
@@ -1586,26 +1599,45 @@ async function editProduct(productId) {
     };
     formData.append('data', JSON.stringify(dataPayload));
 
-    // 3) Convertir SOLO NUEVAS imágenes a JPG vía Cloudinary y adjuntar
+    // === 2) Convertir SOLO NUEVAS imágenes a JPG con spinner (si hay)
+    let jpgFiles = [];
     if (imageFiles && imageFiles.length > 0) {
-      for (const f of imageFiles) {
+      showIndeterminate('Preparando imágenes…');
+      jpgFiles = [];
+      for (let i = 0; i < imageFiles.length; i++) {
+        updateIndeterminate(`Convirtiendo imagen ${i + 1} de ${imageFiles.length}…`);
+        const f = imageFiles[i];
         const jpgFile = await toJpgFileViaCloudinary(f);
-        formData.append('files', jpgFile);
+        jpgFiles.push(jpgFile);
       }
+      closeIndeterminate();
+      for (const f of jpgFiles) formData.append('files', f);
     }
 
-    // 4) Enviar PUT
-    const { ok: okPut, data: dataPut } = await fetchWithAuth(`${MCL_API_BASE}/productos/${productId}`, {
-      method: 'PUT',
-      body: formData
-    });
+    // === 3) Subir con barra de progreso REAL (usa authToken de localStorage) ===
+    showUploadProgress('Guardando cambios…');
 
-    if (okPut) {
-      Swal.fire('Éxito', 'Producto editado correctamente.', 'success');
-      if (typeof fetchProductosMCL === 'function') fetchProductosMCL();
-    } else {
-      console.error('Error en la respuesta:', dataPut);
-      Swal.fire('Error', (dataPut && (dataPut.error || dataPut.message)) || 'Error al editar el producto.', 'error');
+    try {
+      const { ok: okPut, data: dataPut } = await uploadWithProgress({
+        url: `${MCL_API_BASE}/productos/${productId}`,
+        method: 'PUT',
+        formData,
+        onProgress: (p) => updateUploadProgress(p, 'Enviando archivos')
+      });
+
+      closeUploadProgress();
+
+      if (okPut) {
+        Swal.fire('Éxito', 'Producto editado correctamente.', 'success');
+        if (typeof fetchProductosMCL === 'function') fetchProductosMCL();
+      } else {
+        console.error('Error en la respuesta:', dataPut);
+        Swal.fire('Error', (dataPut && (dataPut.error || dataPut.message)) || 'Error al editar el producto.', 'error');
+      }
+    } catch (err) {
+      closeUploadProgress();
+      console.error('Error al editar producto:', err);
+      Swal.fire('Error', 'Hubo un error al editar el producto.', 'error');
     }
   } catch (err) {
     console.error('Error al editar producto:', err);
@@ -1615,3 +1647,98 @@ async function editProduct(productId) {
 
 
 
+
+
+// === Auth helpers (Opción A) ===
+function getAuthToken() {
+  // Ajustá estas fuentes a tu app si usás otra clave
+  return window.MCL_AUTH_TOKEN
+      || localStorage.getItem('MCL_TOKEN')
+      || localStorage.getItem('token')
+      || null;
+}
+function authHeaders() {
+  const t = getAuthToken();
+  return t ? { Authorization: `Bearer ${t}` } : {};
+}
+
+// === SweetAlert: Spinner indeterminado ===
+function showIndeterminate(msg = 'Procesando...') {
+  Swal.fire({
+    title: msg,
+    html: `<div style="display:flex;align-items:center;gap:10px;justify-content:center;">
+             <div class="swal2-loader"></div>
+             <span id="mcl-indeterminate-text">Por favor, esperá…</span>
+           </div>`,
+    allowOutsideClick: false,
+    allowEscapeKey: false,
+    didOpen: () => Swal.showLoading()
+  });
+}
+function updateIndeterminate(msg) {
+  const el = document.getElementById('mcl-indeterminate-text');
+  if (el) el.textContent = msg;
+}
+function closeIndeterminate() {
+  if (Swal.isVisible()) Swal.close();
+}
+
+// === SweetAlert: Barra de progreso de subida ===
+function showUploadProgress(title = 'Subiendo…') {
+  Swal.fire({
+    title,
+    html: `
+      <div style="text-align:left">
+        <div id="mcl-progress-text" style="margin-bottom:6px;font-size:14px;">0%</div>
+        <div style="width:100%;height:10px;background:#eee;border-radius:6px;overflow:hidden">
+          <div id="mcl-progress-fill" style="height:100%;width:0%;background:#4CAF50"></div>
+        </div>
+      </div>
+    `,
+    allowOutsideClick: false,
+    allowEscapeKey: false,
+    showConfirmButton: false
+  });
+}
+function updateUploadProgress(percent, extraText) {
+  const fill = document.getElementById('mcl-progress-fill');
+  const txt  = document.getElementById('mcl-progress-text');
+  const p = Math.max(0, Math.min(100, Math.round(percent)));
+  if (fill) fill.style.width = p + '%';
+  if (txt) txt.textContent = (extraText ? `${p}% — ${extraText}` : `${p}%`);
+}
+function closeUploadProgress() {
+  if (Swal.isVisible()) Swal.close();
+}
+// === Subida con progreso usando el MISMO token que fetchWithAuth ===
+function uploadWithProgress({ url, method = 'POST', formData, onProgress }) {
+  return new Promise((resolve, reject) => {
+    const xhr = new XMLHttpRequest();
+    xhr.open(method, url, true);
+
+    // Usa el MISMO token que tu fetchWithAuth
+    const token = localStorage.getItem('authToken');
+    if (!token) {
+      reject(new Error('Token not found'));
+      return;
+    }
+    xhr.setRequestHeader('Authorization', `Bearer ${token}`);
+    // ¡NO seteamos Content-Type! XHR lo define solo para FormData.
+
+    xhr.upload.onprogress = (e) => {
+      if (e.lengthComputable && typeof onProgress === 'function') {
+        onProgress((e.loaded / e.total) * 100, e);
+      }
+    };
+
+    xhr.onload = () => {
+      let json = null;
+      try { json = JSON.parse(xhr.responseText || '{}'); } catch {}
+      const ok = xhr.status >= 200 && xhr.status < 300;
+      resolve({ ok, data: json, status: xhr.status });
+    };
+
+    xhr.onerror = () => reject(new Error('Network error'));
+    xhr.send(formData);
+  });
+}
