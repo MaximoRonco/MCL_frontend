@@ -1377,8 +1377,18 @@ async function editProduct(productId) {
       return;
     }
 
+    // Solo mostramos las actuales (sin eliminar ni reordenar)
+    const fotosRaw = Array.isArray(prod.Fotos) ? prod.Fotos : [];
+    const currentFotos = fotosRaw
+      .map((f, i) => ({
+        id: (f && (f.id ?? f._id ?? f.public_id ?? f.publicId)) ?? i,
+        url: f?.url ?? f?.secure_url ?? ''
+      }))
+      .filter(x => x.url);
+
+    // Nuevas imágenes (estas sí se pueden reordenar)
     let selectedFiles = [];
-    let currentFotos = (prod.Fotos || []).map(f => f.url);
+    let fileMap = new Map();
 
     const { value: formValues } = await Swal.fire({
       title: 'Editar Producto',
@@ -1395,53 +1405,75 @@ async function editProduct(productId) {
           <option value="false" ${!prod.esOculto ? 'selected' : ''}>No</option>
           <option value="true" ${prod.esOculto ? 'selected' : ''}>Sí</option>
         </select>
-        <label style="display:block; text-align:left; margin:12px 0 4px 5px;"><b>Imágenes actuales</b></label>
+
+        <label style="display:block; text-align:left; margin:12px 0 4px 5px;"><b>Imágenes actuales (solo visualización)</b></label>
         <div id="mcl-images-preview-edit" style="display:flex; gap:8px; flex-wrap:wrap; margin-bottom:8px; min-height:70px;"></div>
-        <label style="display:block; text-align:left; margin:12px 0 4px 5px;"><b>Cambiar Imágenes</b></label>
+        <small style="display:block;margin-bottom:8px;color:#888">No se pueden eliminar ni reordenar las imágenes actuales.</small>
+
+        <label style="display:block; text-align:left; margin:12px 0 4px 5px;"><b>Agregar imágenes nuevas</b></label>
         <input id="mcl-images-edit" type="file" class="swal2-file" multiple>
         <div id="mcl-images-preview-new" style="display:flex; gap:8px; flex-wrap:wrap; margin-top:8px; min-height:70px;"></div>
         <small id="mcl-images-help-edit"></small>
-        <div style="margin-top:8px;font-size:.8em;color:#888;">
-          (Las imágenes existentes se mantienen si no seleccionás nuevas)
-        </div>
       `,
       didOpen: () => {
-        const isMobile = isMobileDevice();
-        const previewEdit = document.getElementById('mcl-images-preview-edit');
-        const inputEdit = document.getElementById('mcl-images-edit');
+        const previewCurrent = document.getElementById('mcl-images-preview-edit');
+        const inputNew = document.getElementById('mcl-images-edit');
         const previewNew = document.getElementById('mcl-images-preview-new');
         const help = document.getElementById('mcl-images-help-edit');
 
+        // Render SOLO para ver las actuales (sin drag, sin borrar)
         function renderCurrentFotos() {
-          previewEdit.innerHTML = '';
-          currentFotos.forEach(url => {
-            const imgWrap = document.createElement('div');
-            imgWrap.style.position = 'relative';
-            imgWrap.style.display = 'inline-block';
-            imgWrap.style.marginRight = '4px';
+          previewCurrent.innerHTML = '';
+          for (const f of currentFotos) {
+            const wrap = document.createElement('div');
+            wrap.style.position = 'relative';
+            wrap.style.display = 'inline-block';
+            wrap.style.marginRight = '4px';
 
             const img = document.createElement('img');
-            img.src = url;
+            img.src = f.url;
             img.style.width = '60px';
             img.style.height = '60px';
             img.style.objectFit = 'cover';
             img.style.borderRadius = '6px';
             img.title = 'Imagen actual';
 
-            imgWrap.appendChild(img);
-            previewEdit.appendChild(imgWrap);
-          });
+            wrap.appendChild(img);
+            previewCurrent.appendChild(wrap);
+          }
+        }
+        renderCurrentFotos();
+
+        // Nuevas imágenes: sí se pueden reordenar
+        inputNew.addEventListener('change', function () {
+          selectedFiles = Array.from(this.files);
+          fileMap = new Map(selectedFiles.map((f, i) => [makeKey(f, i), f]));
+          renderPreviewNew();
+          ensureSortableNew();
+        });
+
+        function makeKey(file, idx) {
+          return `${file.name}__${file.size}__${file.lastModified}__${idx}`;
         }
 
         function renderPreviewNew() {
           previewNew.innerHTML = '';
-          selectedFiles.forEach((file, idx) => {
+          if (fileMap.size === 0 && selectedFiles.length > 0) {
+            fileMap = new Map(selectedFiles.map((f, i) => [makeKey(f, i), f]));
+          }
+
+          let i = 0;
+          for (const f of selectedFiles) {
+            const key = [...fileMap.entries()].find(([, file]) => file === f)?.[0] ?? makeKey(f, i++);
+            if (!fileMap.has(key)) fileMap.set(key, f);
+
             const reader = new FileReader();
-            reader.onload = function (e) {
-              const imgWrap = document.createElement('div');
-              imgWrap.style.position = 'relative';
-              imgWrap.style.display = 'inline-block';
-              imgWrap.style.marginRight = '4px';
+            reader.onload = (e) => {
+              const wrap = document.createElement('div');
+              wrap.style.position = 'relative';
+              wrap.style.display = 'inline-block';
+              wrap.style.marginRight = '4px';
+              wrap.dataset.key = key;
 
               const img = document.createElement('img');
               img.src = e.target.result;
@@ -1449,58 +1481,37 @@ async function editProduct(productId) {
               img.style.height = '60px';
               img.style.objectFit = 'cover';
               img.style.borderRadius = '6px';
-              img.title = file.name;
+              img.title = f.name;
 
-              imgWrap.appendChild(img);
-
-              if (!isMobile) {
-                imgWrap.draggable = true;
-                imgWrap.style.cursor = 'grab';
-                imgWrap.dataset.idx = idx;
-
-                imgWrap.addEventListener('dragstart', (ev) => {
-                  ev.dataTransfer.setData('text/plain', idx);
-                  imgWrap.style.opacity = '0.5';
-                });
-                imgWrap.addEventListener('dragend', () => {
-                  imgWrap.style.opacity = '';
-                });
-                imgWrap.addEventListener('dragover', (ev) => {
-                  ev.preventDefault();
-                  imgWrap.style.outline = '2px solid #2f2f8f';
-                });
-                imgWrap.addEventListener('dragleave', () => {
-                  imgWrap.style.outline = '';
-                });
-                imgWrap.addEventListener('drop', (ev) => {
-                  ev.preventDefault();
-                  imgWrap.style.outline = '';
-                  const fromIdx = Number(ev.dataTransfer.getData('text/plain'));
-                  const toIdx = Number(imgWrap.dataset.idx);
-                  if (fromIdx !== toIdx) {
-                    const moved = selectedFiles.splice(fromIdx, 1)[0];
-                    selectedFiles.splice(toIdx, 0, moved);
-                    renderPreviewNew();
-                  }
-                });
-              }
-
-              previewNew.appendChild(imgWrap);
+              wrap.appendChild(img);
+              previewNew.appendChild(wrap);
             };
-            reader.readAsDataURL(file);
+            reader.readAsDataURL(f);
+          }
+        }
+
+        let sortableNew = null;
+        function ensureSortableNew() {
+          if (sortableNew) {
+            sortableNew.destroy();
+            sortableNew = null;
+          }
+          sortableNew = Sortable.create(previewNew, {
+            animation: 150,
+            ghostClass: 'drag-ghost',
+            onEnd: () => {
+              const newOrder = [];
+              previewNew.querySelectorAll('[data-key]').forEach(node => {
+                const key = node.dataset.key;
+                const file = fileMap.get(key);
+                if (file) newOrder.push(file);
+              });
+              selectedFiles = newOrder;
+            }
           });
         }
 
-        renderCurrentFotos();
-
-        inputEdit.addEventListener('change', function () {
-          selectedFiles = Array.from(this.files);
-          renderPreviewNew();
-        });
-
-        help.textContent = isMobile
-          ? 'El orden de las imágenes será el de selección. Para reordenar, usá una computadora.'
-          : 'Arrastrá las imágenes para reordenarlas antes de guardar.';
+        help.textContent = 'Arrastrá para reordenar las imágenes NUEVAS (funciona en celular y PC).';
       },
       focusConfirm: false,
       confirmButtonText: 'Guardar',
@@ -1549,14 +1560,17 @@ async function editProduct(productId) {
           price: precioNum,
           prioridad: prioridadNum,
           esOculto,
-          imageFiles: selectedFiles
+          imageFiles: selectedFiles // SOLO nuevas (ordenadas)
         };
       }
     });
 
     if (!formValues) return;
 
-    const { name, version, modelo, km, description, price, prioridad, esOculto, imageFiles } = formValues;
+    const {
+      name, version, modelo, km, description, price, prioridad, esOculto,
+      imageFiles
+    } = formValues;
 
     // 2) Armado del FormData
     const formData = new FormData();
@@ -1572,17 +1586,15 @@ async function editProduct(productId) {
     };
     formData.append('data', JSON.stringify(dataPayload));
 
-    // ⬇️⬇️ CAMBIO CLAVE: convertir nuevas imágenes a JPG vía Cloudinary ⬇️⬇️
+    // 3) Convertir SOLO NUEVAS imágenes a JPG vía Cloudinary y adjuntar
     if (imageFiles && imageFiles.length > 0) {
       for (const f of imageFiles) {
-        const jpgFile = await toJpgFileViaCloudinary(f); // <- mismo helper que en "crear"
+        const jpgFile = await toJpgFileViaCloudinary(f);
         formData.append('files', jpgFile);
       }
     }
-    // ⬆️⬆️ FIN CAMBIO CLAVE ⬆️⬆️
-    // (Si no se seleccionan nuevas, el backend mantiene las existentes)
 
-    // 3) Enviar
+    // 4) Enviar PUT
     const { ok: okPut, data: dataPut } = await fetchWithAuth(`${MCL_API_BASE}/productos/${productId}`, {
       method: 'PUT',
       body: formData
@@ -1592,6 +1604,7 @@ async function editProduct(productId) {
       Swal.fire('Éxito', 'Producto editado correctamente.', 'success');
       if (typeof fetchProductosMCL === 'function') fetchProductosMCL();
     } else {
+      console.error('Error en la respuesta:', dataPut);
       Swal.fire('Error', (dataPut && (dataPut.error || dataPut.message)) || 'Error al editar el producto.', 'error');
     }
   } catch (err) {
@@ -1599,3 +1612,6 @@ async function editProduct(productId) {
     Swal.fire('Error', 'Hubo un error al editar el producto.', 'error');
   }
 }
+
+
+
