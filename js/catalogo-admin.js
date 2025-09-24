@@ -1206,7 +1206,7 @@ async function addProduct(subcategoryId) {
   closeIndeterminate();
 
   // === 2) Armamos el FormData con JPG normalizados ===
-  const formData = new FormData();
+  /*const formData = new FormData();
   const dataPayload = {
     nombre: name,
     version: version || null,
@@ -1229,7 +1229,56 @@ try {
     method: 'POST',
     formData,
     onProgress: (p) => updateUploadProgress(p, 'Enviando archivos')
-  });
+  });*/
+
+  // *************************** Agregue esto ultimo cambio**********************************
+  // === 2) Subir imágenes a Cloudinary y obtener URLs ===
+  showUploadProgress('Subiendo imágenes…');
+  const fotosCloudinary = [];
+
+  for (let i = 0; i < jpgFiles.length; i++) {
+    updateUploadProgress((i / jpgFiles.length) * 90, `Subiendo imagen ${i + 1}/${jpgFiles.length}`);
+    
+    const url = `https://api.cloudinary.com/v1_1/${CLOUDINARY.cloudName}/auto/upload`;
+    const fd = new FormData();
+    fd.append('file', jpgFiles[i]);
+    fd.append('upload_preset', CLOUDINARY.uploadPreset);
+    
+    const res = await fetch(url, { method: 'POST', body: fd });
+    const cloudinaryData = await res.json();
+    
+    if (!res.ok) throw new Error(cloudinaryData?.error?.message || 'Error subiendo a Cloudinary');
+    
+    fotosCloudinary.push({
+      public_id: cloudinaryData.public_id,
+      secure_url: cloudinaryData.secure_url
+    });
+  }
+
+  updateUploadProgress(95, 'Guardando producto...');
+
+  // === 3) Enviar JSON al nuevo endpoint ===
+  const payload = {
+    nombre: name,
+    version: version || null,
+    modelo: modelo ?? null,
+    kilometros: km ?? null,
+    descripcion: description,
+    precio: parseFloat(price.toFixed(2)),
+    prioridad: prioridad ?? null,
+    idSubCategoria: subcategoryId,
+    esOculto: !!esOculto,
+    Fotos: fotosCloudinary
+  };
+
+  try {
+    const { ok, data } = await fetchWithAuth(`${MCL_API_BASE}/productos/cloudinary`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(payload)
+    });
+
+  // ------ **********************************************************
 
   closeUploadProgress();
 
