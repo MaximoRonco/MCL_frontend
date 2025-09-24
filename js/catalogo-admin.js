@@ -1285,6 +1285,7 @@ try {
   if (ok) {
     Swal.fire('Éxito', 'Producto agregado con éxito.', 'success');
     setTimeout(async () => {
+      // if (typeof fetchProductosMCL === 'function') fetchProductosMCL(); Tambien agregue el await y el setTimeout
       if (typeof fetchProductosMCL === 'function') {
         await fetchProductosMCL();
     }
