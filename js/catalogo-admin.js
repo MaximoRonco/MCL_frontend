@@ -1284,8 +1284,12 @@ try {
 
   if (ok) {
     Swal.fire('Éxito', 'Producto agregado con éxito.', 'success');
-    if (typeof fetchProductosMCL === 'function') fetchProductosMCL();
-  } else {
+    setTimeout(async () => {
+      if (typeof fetchProductosMCL === 'function') {
+        await fetchProductosMCL();
+    }
+  }, 1000); // 1 segundo de delay
+} else {
     console.error('Error en la respuesta:', data);
     Swal.fire('Error', (data && data.error) || 'Hubo un error al agregar el producto', 'error');
   }
@@ -1682,7 +1686,9 @@ async function editProduct(productId) {
 
       if (okPut) {
         Swal.fire('Éxito', 'Producto editado correctamente.', 'success');
-        if (typeof fetchProductosMCL === 'function') fetchProductosMCL();
+        if (typeof fetchProductosMCL === 'function') {
+          await fetchProductosMCL();
+        }
       } else {
         console.error('Error en la respuesta:', dataPut);
         Swal.fire('Error', (dataPut && (dataPut.error || dataPut.message)) || 'Error al editar el producto.', 'error');
