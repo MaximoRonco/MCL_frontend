@@ -1456,8 +1456,7 @@ async function editProduct(productId) {
         <input id="mcl-modelo-edit" type="number" class="swal2-input" placeholder="Modelo (año)" value="${prod.modelo ?? ''}">
         <input id="mcl-km-edit" type="number" class="swal2-input" placeholder="Kilómetros" value="${prod.kilometros ?? ''}">
         <textarea id="mcl-description-edit" class="swal2-input" placeholder="Descripción *">${escapeHTML(prod.descripcion || '')}</textarea>
-        <input id="mcl-price-edit" type="number" class="swal2-input" placeholder="Precio *" step="1" value="${prod.precio ? Math.trunc(prod.precio) : ''}">
-        <input id="mcl-prioridad-edit" type="number" class="swal2-input" placeholder="Prioridad" value="${prod.prioridad ?? ''}">
+        <input id="mcl-price-edit" type="number" class="swal2-input" placeholder="Precio *" step="1" value="${prod.precio ? Math.trunc(prod.precio) : ''}">        <input id="mcl-prioridad-edit" type="number" class="swal2-input" placeholder="Prioridad" value="${prod.prioridad ?? ''}">
         <label style="display:block; text-align:left; margin:0 0 4px 5px;"><b>Oculto *</b></label>
         <select id="mcl-oculto-edit" class="swal2-select" style="width:100%; padding:6px;">
           <option value="false" ${!prod.esOculto ? 'selected' : ''}>No</option>
@@ -1479,6 +1478,7 @@ async function editProduct(productId) {
         const previewNew = document.getElementById('mcl-images-preview-new');
         const help = document.getElementById('mcl-images-help-edit');
 
+        // Render SOLO para ver las actuales (sin drag, sin borrar)
         (function renderCurrentFotos() {
           previewCurrent.innerHTML = '';
           for (const f of currentFotos) {
@@ -1500,6 +1500,7 @@ async function editProduct(productId) {
           }
         })();
 
+        // Nuevas imágenes: sí se pueden reordenar
         inputNew.addEventListener('change', function () {
           selectedFiles = Array.from(this.files);
           fileMap = new Map(selectedFiles.map((f, i) => [makeKey(f, i), f]));
@@ -1618,7 +1619,7 @@ async function editProduct(productId) {
           modelo: modeloNum,   // número o null
           km: kmNum,           // número o null
           description,
-          price: Math.round((precioNum + Number.EPSILON) * 100) / 100, // número
+          price: precioNum,    // número
           prioridad: prioridadNum,
           esOculto,
           imageFiles: selectedFiles // SOLO nuevas (ordenadas)
@@ -1633,17 +1634,18 @@ async function editProduct(productId) {
     } = formValues;
 
     const idSubCategoria =
-      prod.idSubCategoria ??
-      prod.subcategoriaId ??
-      prod.subcategoria_id ??
-      prod.SubCategoriaId ??
-      prod.subcategoria?._id ??
-      prod.subcategoria?.id ?? null;
+        prod.idSubCategoria ??
+        prod.subcategoriaId ??
+        prod.subcategoria_id ??
+        prod.SubCategoriaId ??
+        prod.subcategoria?._id ??
+        prod.subcategoria?.id ?? null;
 
-    if (!idSubCategoria) {
-      Swal.fire('Error', 'No se pudo determinar la subcategoría del producto.', 'error');
-      return;
-    }
+      if (!idSubCategoria) {
+        Swal.fire('Error', 'No se pudo determinar la subcategoría del producto.', 'error');
+        return;
+      }
+
 
     // === 1) Preparar FormData
     const formData = new FormData();
@@ -1654,42 +1656,23 @@ async function editProduct(productId) {
       modelo: modelo ?? null,
       kilometros: km ?? null,
       descripcion: description,
-      precio: price, // número
+      // precio como number con 2 decimales (evita strings vacías)
+      precio: Math.round((price + Number.EPSILON) * 100) / 100,
       prioridad: prioridad ?? null,
       esOculto: !!esOculto
     };
     formData.append('data', JSON.stringify(dataPayload));
 
-    // === 2) (CAMBIO CLAVE) Comprimir SOLO NUEVAS imágenes con spinner (si hay) ===
+    // === 2) Convertir SOLO NUEVAS imágenes a JPG con spinner (si hay)
     if (imageFiles && imageFiles.length > 0) {
       showIndeterminate('Preparando imágenes…');
-      const reqId = `EDIT-${Date.now()}-${Math.random().toString(36).slice(2,8)}`;
-
       const jpgFiles = [];
-      let totalBytes = 0;
       for (let i = 0; i < imageFiles.length; i++) {
-        updateIndeterminate(`Comprimiendo imagen ${i + 1} de ${imageFiles.length}…`);
+        updateIndeterminate(`Convirtiendo imagen ${i + 1} de ${imageFiles.length}…`);
         const f = imageFiles[i];
-        // comprime si pesa > 900 KB o si el total ya se acerca al límite
-        const needCompress = f.size > 900_000 || totalBytes > 3_000_000;
-        const out = needCompress ? await compressImage(f, { maxSize: 1600, quality: 0.78 }) : f;
-        jpgFiles.push(out);
-        totalBytes += out.size;
-        console.log(`[${reqId}] img #${i+1}: ${f.name} => ${(out.size/1024).toFixed(0)} KB`);
+        const jpgFile = await toJpgFileViaCloudinary(f);
+        jpgFiles.push(jpgFile);
       }
-      // si todavía pasamos de 4 MB, recomprimimos todas más fuerte
-      if (jpgFiles.reduce((s,f)=>s+f.size,0) > 4_000_000) {
-        console.warn(`[${reqId}] total > 4MB, recomprimiendo más agresivo…`);
-        const tighter = [];
-        for (const f of jpgFiles) {
-          const c = await compressImage(f, { maxSize: 1400, quality: 0.7, minQuality: 0.5 });
-          tighter.push(c);
-        }
-        jpgFiles.length = 0;
-        jpgFiles.push(...tighter);
-      }
-      console.log(`[${reqId}] total upload ~ ${(jpgFiles.reduce((s,f)=>s+f.size,0)/1024).toFixed(0)} KB`);
-
       closeIndeterminate();
       for (const f of jpgFiles) formData.append('files', f);
     }
@@ -1724,7 +1707,6 @@ async function editProduct(productId) {
     Swal.fire('Error', 'Hubo un error al editar el producto.', 'error');
   }
 }
-
 
 
 
