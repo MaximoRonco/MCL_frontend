@@ -1589,9 +1589,24 @@ async function editProduct(productId) {
       name, version, modelo, km, description, price, prioridad, esOculto, imageFiles
     } = formValues;
 
+    const idSubCategoria =
+        prod.idSubCategoria ??
+        prod.subcategoriaId ??
+        prod.subcategoria_id ??
+        prod.SubCategoriaId ??
+        prod.subcategoria?._id ??
+        prod.subcategoria?.id ?? null;
+
+      if (!idSubCategoria) {
+        Swal.fire('Error', 'No se pudo determinar la subcategoría del producto.', 'error');
+        return;
+      }
+
+
     // === 1) Preparar FormData
     const formData = new FormData();
     const dataPayload = {
+      idSubCategoria,
       nombre: name,
       version: version || null,
       modelo: modelo ?? null,
