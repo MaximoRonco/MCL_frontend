@@ -1001,19 +1001,18 @@ function shouldBypassTransform(file) {
 
 async function addProduct(subcategoryId) {
   let selectedFiles = [];
-  // Mapa clave -> File para mantener identidad estable en el DOM
   let fileMap = new Map();
 
   const { value: formValues } = await Swal.fire({
     title: 'Agregar Producto',
     html: `
       <input id="mcl-name" class="swal2-input" placeholder="Nombre *">
-      <input id="mcl-version" class="swal2-input" placeholder="Versión (ej: High Line)">
+      <input id="mcl-version" class="swal2-input" placeholder="Versión (ej: High Line) *">
       <input id="mcl-modelo" class="swal2-input" placeholder="Modelo (año)">
       <input id="mcl-km" type="number" class="swal2-input" placeholder="Kilómetros">
       <textarea id="mcl-description" class="swal2-input" placeholder="Descripción *"></textarea>
-      <input id="mcl-price" type="number" class="swal2-input" placeholder="Precio *">
-      <input id="mcl-prioridad" type="number" class="swal2-input" placeholder="Prioridad (orden)">
+      <input id="mcl-price" type="number" class="swal2-input" placeholder="Precio (entero) *">
+      <input id="mcl-prioridad" type="number" class="swal2-input" placeholder="Prioridad (1–1000) *">
       <label style="display:block; text-align:left; margin:0 0 4px 5px;"><b>Oculto *</b></label>
       <select id="mcl-oculto" class="swal2-select" style="width:100%; padding:6px;">
         <option value="false" selected>No</option>
@@ -1031,28 +1030,25 @@ async function addProduct(subcategoryId) {
 
       input.addEventListener('change', function () {
         selectedFiles = Array.from(this.files);
-        // construir claves estables
         fileMap = new Map(selectedFiles.map((f, i) => [makeKey(f, i), f]));
         renderPreview();
         ensureSortable();
       });
 
       function makeKey(file, idx) {
-        // clave suficientemente única por sesión
         return `${file.name}__${file.size}__${file.lastModified}__${idx}`;
       }
 
       function renderPreview() {
         preview.innerHTML = '';
-
-        // Si por alguna razón se vació el map y hay files, lo reconstruimos
         if (fileMap.size === 0 && selectedFiles.length > 0) {
           fileMap = new Map(selectedFiles.map((f, i) => [makeKey(f, i), f]));
         }
 
         let idxFallback = 0;
         for (const f of selectedFiles) {
-          const key = [...fileMap.entries()].find(([, file]) => file === f)?.[0] ?? makeKey(f, idxFallback++);
+          const found = [...fileMap.entries()].find(([, file]) => file === f);
+          const key = found ? found[0] : makeKey(f, idxFallback++);
           if (!fileMap.has(key)) fileMap.set(key, f);
 
           const reader = new FileReader();
@@ -1061,7 +1057,7 @@ async function addProduct(subcategoryId) {
             imgWrap.style.position = 'relative';
             imgWrap.style.display = 'inline-block';
             imgWrap.style.marginRight = '4px';
-            imgWrap.dataset.key = key; // <- lo usa Sortable para reconstruir el orden
+            imgWrap.dataset.key = key;
 
             const img = document.createElement('img');
             img.src = e.target.result;
@@ -1071,7 +1067,6 @@ async function addProduct(subcategoryId) {
             img.style.borderRadius = '6px';
             img.title = f.name;
 
-            // Botón Quitar (opcional, cómodo en mobile)
             const del = document.createElement('button');
             del.textContent = '×';
             del.style.position = 'absolute';
@@ -1112,7 +1107,6 @@ async function addProduct(subcategoryId) {
           animation: 150,
           ghostClass: 'drag-ghost',
           onEnd: () => {
-            // reconstruimos selectedFiles según el orden visual actual
             const newOrder = [];
             preview.querySelectorAll('[data-key]').forEach(node => {
               const key = node.dataset.key;
@@ -1132,40 +1126,53 @@ async function addProduct(subcategoryId) {
     preConfirm: () => {
       const name = document.getElementById('mcl-name').value.trim();
       const version = document.getElementById('mcl-version').value.trim();
-      const modelo = document.getElementById('mcl-modelo').value;
-      const km = document.getElementById('mcl-km').value;
+      const modeloStr = document.getElementById('mcl-modelo').value.trim();
+      const kmStr = document.getElementById('mcl-km').value.trim();
       const description = document.getElementById('mcl-description').value.trim();
-      const price = document.getElementById('mcl-price').value;
-      const prioridad = document.getElementById('mcl-prioridad').value;
+      const priceStr = document.getElementById('mcl-price').value.trim();
+      const prioridadStr = document.getElementById('mcl-prioridad').value.trim();
       const esOcultoStr = document.getElementById('mcl-oculto').value;
 
-      if (!name || !description || !price || selectedFiles.length === 0) {
-        Swal.showValidationMessage('Campos obligatorios: Nombre, Descripción, Precio e Imágenes.');
+      // Obligatorios (incluimos versión y prioridad)
+      if (!name || !version || !description || !priceStr || !prioridadStr || selectedFiles.length === 0) {
+        Swal.showValidationMessage('Campos obligatorios: Nombre, Versión, Descripción, Precio, Prioridad e Imágenes.');
         return false;
       }
 
-      const precioNum = Number(price);
-      if (!Number.isFinite(precioNum) || precioNum <= 0) {
-        Swal.showValidationMessage('Ingresá un precio válido.');
+      // Precio entero positivo
+      const precio = parseInt(priceStr, 10);
+      if (!Number.isInteger(precio) || precio <= 0) {
+        Swal.showValidationMessage('El precio debe ser un número entero positivo.');
         return false;
       }
 
-      const kmNum = km ? Number(km) : null;
-      if (km && (!Number.isFinite(kmNum) || kmNum < 0)) {
-        Swal.showValidationMessage('Kilómetros inválidos.');
+      // Prioridad 1..1000 entero
+      const prioridad = parseInt(prioridadStr, 10);
+      if (!Number.isInteger(prioridad) || prioridad < 1 || prioridad > 1000) {
+        Swal.showValidationMessage('La prioridad debe ser un entero entre 1 y 1000.');
         return false;
       }
 
-      const modeloNum = modelo ? Number(modelo) : null;
-      if (modelo && (!Number.isFinite(modeloNum) || modeloNum < 1900)) {
-        Swal.showValidationMessage('Modelo inválido.');
-        return false;
+      // Modelo opcional como año válido
+      let modelo = null;
+      if (modeloStr !== '') {
+        const modeloNum = parseInt(modeloStr, 10);
+        if (!Number.isInteger(modeloNum) || modeloNum < 1900) {
+          Swal.showValidationMessage('Modelo inválido (año).');
+          return false;
+        }
+        modelo = modeloNum;
       }
 
-      const prioridadNum = prioridad ? Number(prioridad) : null;
-      if (prioridad && (!Number.isFinite(prioridadNum) || prioridadNum < 0)) {
-        Swal.showValidationMessage('Prioridad inválida (número >= 0).');
-        return false;
+      // Kilómetros opcional ≥ 0 entero
+      let kilometros = null;
+      if (kmStr !== '') {
+        const km = parseInt(kmStr, 10);
+        if (!Number.isInteger(km) || km < 0) {
+          Swal.showValidationMessage('Kilómetros inválidos (entero ≥ 0).');
+          return false;
+        }
+        kilometros = km;
       }
 
       const esOculto = esOcultoStr === 'true';
@@ -1173,11 +1180,11 @@ async function addProduct(subcategoryId) {
       return {
         name,
         version,
-        modelo: modeloNum,
-        km: kmNum,
+        modelo,
+        kilometros,
         description,
-        price: precioNum,
-        prioridad: prioridadNum,
+        precio,      // 🔥 entero
+        prioridad,   // 🔥 entero
         esOculto,
         imageFiles: selectedFiles
       };
@@ -1187,98 +1194,67 @@ async function addProduct(subcategoryId) {
   if (!formValues) return;
 
   const {
-    name, version, modelo, km, description, price, prioridad, esOculto, imageFiles
+    name, version, modelo, kilometros, description, precio, prioridad, esOculto, imageFiles
   } = formValues;
 
-  // Render inmediato en UI local (como ya hacías)
-  createProductElementMCL(subcategoryId, {
-    nombre: name,
-    version,
-    modelo,
-    kilometros: km,
-    descripcion: description,
-    precio: price,
-    prioridad,
-    esOculto
-  }, imageFiles);
-
-  // === 1) Conversión a JPG con spinner indeterminado ===
+  // 1) Conversión local a JPG (si corresponde)
   showIndeterminate('Preparando imágenes…');
-
   const jpgFiles = [];
-  for (let i = 0; i < imageFiles.length; i++) {
-    updateIndeterminate(`Convirtiendo imagen ${i + 1} de ${imageFiles.length}…`);
-    const f = imageFiles[i];
-    const jpgFile = await toJpgFileViaCloudinary(f);
-    jpgFiles.push(jpgFile);
+  try {
+    for (let i = 0; i < imageFiles.length; i++) {
+      updateIndeterminate(`Convirtiendo imagen ${i + 1} de ${imageFiles.length}…`);
+      const f = imageFiles[i];
+      const jpgFile = await toJpgFileViaCloudinary(f); // tu helper existente
+      jpgFiles.push(jpgFile);
+    }
+  } catch (e) {
+    closeIndeterminate();
+    console.error('Error convirtiendo imágenes:', e);
+    Swal.fire('Error', 'No se pudieron convertir algunas imágenes.', 'error');
+    return;
   }
-
   closeIndeterminate();
 
-  // === 2) Armamos el FormData con JPG normalizados ===
-  /*const formData = new FormData();
-  const dataPayload = {
-    nombre: name,
-    version: version || null,
-    modelo: modelo ?? null,
-    kilometros: km ?? null,
-    descripcion: description,
-    precio: price.toFixed(2),
-    prioridad: prioridad ?? null,
-    idSubCategoria: subcategoryId,
-    esOculto: !!esOculto
-  };
-  formData.append('data', JSON.stringify(dataPayload));
-  for (const f of jpgFiles) formData.append('files', f);
-
-showUploadProgress('Subiendo producto…');
-
-try {
-  const { ok, data } = await uploadWithProgress({
-    url: `${MCL_API_BASE}${MCL_UPLOAD_PATH}`,
-    method: 'POST',
-    formData,
-    onProgress: (p) => updateUploadProgress(p, 'Enviando archivos')
-  });*/
-
-  // *************************** Agregue esto ultimo cambio**********************************
-  // === 2) Subir imágenes a Cloudinary y obtener URLs ===
+  // 2) Subida a Cloudinary
   showUploadProgress('Subiendo imágenes…');
   const fotosCloudinary = [];
+  try {
+    for (let i = 0; i < jpgFiles.length; i++) {
+      updateUploadProgress((i / jpgFiles.length) * 90, `Subiendo imagen ${i + 1}/${jpgFiles.length}`);
+      const url = `https://api.cloudinary.com/v1_1/${CLOUDINARY.cloudName}/auto/upload`;
+      const fd = new FormData();
+      fd.append('file', jpgFiles[i]);
+      fd.append('upload_preset', CLOUDINARY.uploadPreset);
 
-  for (let i = 0; i < jpgFiles.length; i++) {
-    updateUploadProgress((i / jpgFiles.length) * 90, `Subiendo imagen ${i + 1}/${jpgFiles.length}`);
-    
-    const url = `https://api.cloudinary.com/v1_1/${CLOUDINARY.cloudName}/auto/upload`;
-    const fd = new FormData();
-    fd.append('file', jpgFiles[i]);
-    fd.append('upload_preset', CLOUDINARY.uploadPreset);
-    
-    const res = await fetch(url, { method: 'POST', body: fd });
-    const cloudinaryData = await res.json();
-    
-    if (!res.ok) throw new Error(cloudinaryData?.error?.message || 'Error subiendo a Cloudinary');
-    
-    fotosCloudinary.push({
-      public_id: cloudinaryData.public_id,
-      secure_url: cloudinaryData.secure_url
-    });
+      const res = await fetch(url, { method: 'POST', body: fd });
+      const cloudinaryData = await res.json();
+      if (!res.ok) throw new Error(cloudinaryData?.error?.message || 'Error subiendo a Cloudinary');
+
+      fotosCloudinary.push({
+        public_id: cloudinaryData.public_id,
+        secure_url: cloudinaryData.secure_url
+      });
+    }
+  } catch (e) {
+    closeUploadProgress();
+    console.error('Error subiendo a Cloudinary:', e);
+    Swal.fire('Error', 'Ocurrió un problema al subir imágenes.', 'error');
+    return;
   }
 
+  // 3) Crear el producto en el backend
   updateUploadProgress(95, 'Guardando producto...');
-
-  // === 3) Enviar JSON al nuevo endpoint ===
   const payload = {
     nombre: name,
-    version: version || null,
+    version,
     modelo: modelo ?? null,
-    kilometros: km ?? null,
+    kilometros: kilometros ?? null,
     descripcion: description,
-    precio: parseFloat(price.toFixed(2)),
-    prioridad: prioridad ?? null,
+    precio,                 // entero
+    prioridad,              // entero
     idSubCategoria: subcategoryId,
     esOculto: !!esOculto,
-    Fotos: fotosCloudinary
+    Fotos: fotosCloudinary  // [{ public_id, secure_url }]
   };
 
   try {
@@ -1288,29 +1264,43 @@ try {
       body: JSON.stringify(payload)
     });
 
-  // ------ **********************************************************
+    closeUploadProgress();
 
-  closeUploadProgress();
+    if (!ok) {
+      console.error('Error en la respuesta:', data);
+      Swal.fire('Error', (data && data.error) || 'Hubo un error al agregar el producto', 'error');
+      return;
+    }
 
-  if (ok) {
+    // 4) Sólo ahora reflejamos en UI (o refrescamos lista)
     Swal.fire('Éxito', 'Producto agregado con éxito.', 'success');
-    setTimeout(async () => {
-      // Forzar datos frescos sin cache
-      if (typeof fetchProductosMCL === 'function') {
-        await fetchProductosMCL(true); // true = forzar datos frescos
-      }
-    }, 2000); // 2 segundos para que Vercel procese
-  } else {
-    console.error('Error en la respuesta:', data);
-    Swal.fire('Error', (data && data.error) || 'Hubo un error al agregar el producto', 'error');
+
+    // Opción A: refrescar desde API (recomendado para coherencia)
+    if (typeof fetchProductosMCL === 'function') {
+      await fetchProductosMCL(true);
+    } else if (typeof createProductElementMCL === 'function') {
+      // Opción B: dibujar usando la respuesta
+      const prod = data?.producto || {
+        nombre: name,
+        version,
+        modelo,
+        kilometros,
+        descripcion: description,
+        precio,
+        prioridad,
+        esOculto
+      };
+      const imgs = (data?.fotos || []).map(f => f.url);
+      createProductElementMCL(subcategoryId, prod, imgs);
+    }
+
+  } catch (err) {
+    closeUploadProgress();
+    console.error('Error al agregar el producto:', err);
+    Swal.fire('Error', 'Hubo un error al agregar el producto', 'error');
   }
-} catch (err) {
-  closeUploadProgress();
-  console.error('Error al agregar el producto:', err);
-  Swal.fire('Error', 'Hubo un error al agregar el producto', 'error');
 }
 
-}
 
 
 
