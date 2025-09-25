@@ -1133,46 +1133,46 @@ async function addProduct(subcategoryId) {
       const prioridadStr = document.getElementById('mcl-prioridad').value.trim();
       const esOcultoStr = document.getElementById('mcl-oculto').value;
 
-      // Obligatorios (incluimos versión y prioridad)
+      // obligatorios
       if (!name || !version || !description || !priceStr || !prioridadStr || selectedFiles.length === 0) {
         Swal.showValidationMessage('Campos obligatorios: Nombre, Versión, Descripción, Precio, Prioridad e Imágenes.');
         return false;
       }
 
-      // Precio entero positivo
+      // precio entero > 0
       const precio = parseInt(priceStr, 10);
       if (!Number.isInteger(precio) || precio <= 0) {
         Swal.showValidationMessage('El precio debe ser un número entero positivo.');
         return false;
       }
 
-      // Prioridad 1..1000 entero
+      // prioridad 1..1000
       const prioridad = parseInt(prioridadStr, 10);
       if (!Number.isInteger(prioridad) || prioridad < 1 || prioridad > 1000) {
         Swal.showValidationMessage('La prioridad debe ser un entero entre 1 y 1000.');
         return false;
       }
 
-      // Modelo opcional como año válido
+      // modelo (año) opcional válido
       let modelo = null;
       if (modeloStr !== '') {
-        const modeloNum = parseInt(modeloStr, 10);
-        if (!Number.isInteger(modeloNum) || modeloNum < 1900) {
+        const m = parseInt(modeloStr, 10);
+        if (!Number.isInteger(m) || m < 1900) {
           Swal.showValidationMessage('Modelo inválido (año).');
           return false;
         }
-        modelo = modeloNum;
+        modelo = m;
       }
 
-      // Kilómetros opcional ≥ 0 entero
+      // km opcional ≥ 0
       let kilometros = null;
       if (kmStr !== '') {
-        const km = parseInt(kmStr, 10);
-        if (!Number.isInteger(km) || km < 0) {
+        const k = parseInt(kmStr, 10);
+        if (!Number.isInteger(k) || k < 0) {
           Swal.showValidationMessage('Kilómetros inválidos (entero ≥ 0).');
           return false;
         }
-        kilometros = km;
+        kilometros = k;
       }
 
       const esOculto = esOcultoStr === 'true';
@@ -1183,8 +1183,8 @@ async function addProduct(subcategoryId) {
         modelo,
         kilometros,
         description,
-        precio,      // 🔥 entero
-        prioridad,   // 🔥 entero
+        precio,      // entero
+        prioridad,   // entero
         esOculto,
         imageFiles: selectedFiles
       };
@@ -1197,25 +1197,24 @@ async function addProduct(subcategoryId) {
     name, version, modelo, kilometros, description, precio, prioridad, esOculto, imageFiles
   } = formValues;
 
-  // 1) Conversión local a JPG (si corresponde)
+  // 1) convertir localmente a JPG (si hace falta)
   showIndeterminate('Preparando imágenes…');
   const jpgFiles = [];
   try {
     for (let i = 0; i < imageFiles.length; i++) {
       updateIndeterminate(`Convirtiendo imagen ${i + 1} de ${imageFiles.length}…`);
-      const f = imageFiles[i];
-      const jpgFile = await toJpgFileViaCloudinary(f); // tu helper existente
+      const jpgFile = await toJpgFileViaCloudinary(imageFiles[i]); // tu helper existente
       jpgFiles.push(jpgFile);
     }
   } catch (e) {
     closeIndeterminate();
-    console.error('Error convirtiendo imágenes:', e);
+    console.error('[addProduct] Error convirtiendo imágenes:', e);
     Swal.fire('Error', 'No se pudieron convertir algunas imágenes.', 'error');
     return;
   }
   closeIndeterminate();
 
-  // 2) Subida a Cloudinary
+  // 2) subir a Cloudinary
   showUploadProgress('Subiendo imágenes…');
   const fotosCloudinary = [];
   try {
@@ -1237,12 +1236,12 @@ async function addProduct(subcategoryId) {
     }
   } catch (e) {
     closeUploadProgress();
-    console.error('Error subiendo a Cloudinary:', e);
+    console.error('[addProduct] Error subiendo a Cloudinary:', e);
     Swal.fire('Error', 'Ocurrió un problema al subir imágenes.', 'error');
     return;
   }
 
-  // 3) Crear el producto en el backend
+  // 3) crear el producto en backend
   updateUploadProgress(95, 'Guardando producto...');
   const payload = {
     nombre: name,
@@ -1258,6 +1257,7 @@ async function addProduct(subcategoryId) {
   };
 
   try {
+    console.log('[addProduct] payload.Fotos (secure_url):', fotosCloudinary.map(f => f.secure_url));
     const { ok, data } = await fetchWithAuth(`${MCL_API_BASE}/productos/cloudinary`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
@@ -1267,19 +1267,21 @@ async function addProduct(subcategoryId) {
     closeUploadProgress();
 
     if (!ok) {
-      console.error('Error en la respuesta:', data);
+      console.error('[addProduct] Error en la respuesta:', data);
       Swal.fire('Error', (data && data.error) || 'Hubo un error al agregar el producto', 'error');
       return;
     }
 
-    // 4) Sólo ahora reflejamos en UI (o refrescamos lista)
+    const urlsResp = (data?.fotos || []).map(f => f.url);
+    console.log('[addProduct] URLs devueltas por backend:', urlsResp);
+
     Swal.fire('Éxito', 'Producto agregado con éxito.', 'success');
 
-    // Opción A: refrescar desde API (recomendado para coherencia)
+    // refrescar lista desde backend (recomendado)
     if (typeof fetchProductosMCL === 'function') {
       await fetchProductosMCL(true);
     } else if (typeof createProductElementMCL === 'function') {
-      // Opción B: dibujar usando la respuesta
+      // fallback: pintar con lo que volvió
       const prod = data?.producto || {
         nombre: name,
         version,
@@ -1290,16 +1292,17 @@ async function addProduct(subcategoryId) {
         prioridad,
         esOculto
       };
-      const imgs = (data?.fotos || []).map(f => f.url);
-      createProductElementMCL(subcategoryId, prod, imgs);
+      createProductElementMCL(subcategoryId, prod, urlsResp);
     }
 
   } catch (err) {
     closeUploadProgress();
-    console.error('Error al agregar el producto:', err);
+    console.error('[addProduct] Error al crear producto:', err);
     Swal.fire('Error', 'Hubo un error al agregar el producto', 'error');
   }
 }
+
+
 
 
 
