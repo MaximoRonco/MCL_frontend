@@ -1,3 +1,34 @@
+// Utilidad: comprime a JPG usando canvas
+async function compressImage(file, {maxSize=1600, quality=0.78, minQuality=0.5} = {}) {
+  const img = await new Promise((res, rej) => {
+    const el = new Image();
+    el.onload = () => res(el);
+    el.onerror = rej;
+    el.src = URL.createObjectURL(file);
+  });
+
+  const scale = Math.min(1, maxSize / Math.max(img.width, img.height));
+  const w = Math.max(1, Math.round(img.width * scale));
+  const h = Math.max(1, Math.round(img.height * scale));
+
+  const canvas = document.createElement('canvas');
+  canvas.width = w; canvas.height = h;
+  const ctx = canvas.getContext('2d');
+  ctx.drawImage(img, 0, 0, w, h);
+
+  let q = quality, blob = await new Promise(r => canvas.toBlob(r, 'image/jpeg', q));
+  // baja calidad si sigue muy pesado (> 900 KB)
+  while (blob && blob.size > 900_000 && q > minQuality) {
+    q -= 0.08;
+    blob = await new Promise(r => canvas.toBlob(r, 'image/jpeg', q));
+  }
+
+  const out = new File([blob], (file.name.replace(/\.[^.]+$/, '') || 'img') + '.jpg', { type: 'image/jpeg' });
+  URL.revokeObjectURL(img.src);
+  return out;
+}
+
+
 /* =========================
    MCL: GET + Render productos
    ========================= */
@@ -990,263 +1021,276 @@ function shouldBypassTransform(file) {
 
 
 async function addProduct(subcategoryId) {
+  // --- requestId para trazar todo el flujo ---
+  const reqId = `ADD-${Date.now()}-${Math.random().toString(36).slice(2,8)}`;
+  const t0 = performance.now();
+  console.groupCollapsed(`[${reqId}] addProduct init`);
+  console.log(`[${reqId}] subcategoryId:`, subcategoryId);
+
   let selectedFiles = [];
-  // Mapa clave -> File para mantener identidad estable en el DOM
   let fileMap = new Map();
 
-  const { value: formValues } = await Swal.fire({
-    title: 'Agregar Producto',
-    html: `
-      <input id="mcl-name" class="swal2-input" placeholder="Nombre *">
-      <input id="mcl-version" class="swal2-input" placeholder="Versión (ej: High Line)">
-      <input id="mcl-modelo" class="swal2-input" placeholder="Modelo (año)">
-      <input id="mcl-km" type="number" class="swal2-input" placeholder="Kilómetros">
-      <textarea id="mcl-description" class="swal2-input" placeholder="Descripción *"></textarea>
-      <input id="mcl-price" type="number" class="swal2-input" placeholder="Precio *">
-      <input id="mcl-prioridad" type="number" class="swal2-input" placeholder="Prioridad (orden)">
-      <label style="display:block; text-align:left; margin:0 0 4px 5px;"><b>Oculto *</b></label>
-      <select id="mcl-oculto" class="swal2-select" style="width:100%; padding:6px;">
-        <option value="false" selected>No</option>
-        <option value="true">Sí</option>
-      </select>
-      <label style="display:block; text-align:left; margin:12px 0 4px 5px;"><b>Imágenes *</b></label>
-      <input id="mcl-images" type="file" class="swal2-file" multiple>
-      <div id="mcl-images-preview" style="display:flex; gap:8px; flex-wrap:wrap; margin-top:8px; min-height:70px;"></div>
-      <small id="mcl-images-help"></small>
-    `,
-    didOpen: () => {
-      const input = document.getElementById('mcl-images');
-      const preview = document.getElementById('mcl-images-preview');
-      const help = document.getElementById('mcl-images-help');
+  try {
+    const { value: formValues } = await Swal.fire({
+      title: 'Agregar Producto',
+      html: `
+        <input id="mcl-name" class="swal2-input" placeholder="Nombre *">
+        <input id="mcl-version" class="swal2-input" placeholder="Versión (ej: High Line)">
+        <input id="mcl-modelo" class="swal2-input" placeholder="Modelo (año)">
+        <input id="mcl-km" type="number" class="swal2-input" placeholder="Kilómetros">
+        <textarea id="mcl-description" class="swal2-input" placeholder="Descripción *"></textarea>
+        <input id="mcl-price" type="number" class="swal2-input" placeholder="Precio *">
+        <input id="mcl-prioridad" type="number" class="swal2-input" placeholder="Prioridad (orden)">
+        <label style="display:block; text-align:left; margin:0 0 4px 5px;"><b>Oculto *</b></label>
+        <select id="mcl-oculto" class="swal2-select" style="width:100%; padding:6px;">
+          <option value="false" selected>No</option>
+          <option value="true">Sí</option>
+        </select>
+        <label style="display:block; text-align:left; margin:12px 0 4px 5px;"><b>Imágenes *</b></label>
+        <input id="mcl-images" type="file" class="swal2-file" multiple>
+        <div id="mcl-images-preview" style="display:flex; gap:8px; flex-wrap:wrap; margin-top:8px; min-height:70px;"></div>
+        <small id="mcl-images-help"></small>
+      `,
+      didOpen: () => {
+        const input = document.getElementById('mcl-images');
+        const preview = document.getElementById('mcl-images-preview');
+        const help = document.getElementById('mcl-images-help');
 
-      input.addEventListener('change', function () {
-        selectedFiles = Array.from(this.files);
-        // construir claves estables
-        fileMap = new Map(selectedFiles.map((f, i) => [makeKey(f, i), f]));
-        renderPreview();
-        ensureSortable();
-      });
-
-      function makeKey(file, idx) {
-        // clave suficientemente única por sesión
-        return `${file.name}__${file.size}__${file.lastModified}__${idx}`;
-      }
-
-      function renderPreview() {
-        preview.innerHTML = '';
-
-        // Si por alguna razón se vació el map y hay files, lo reconstruimos
-        if (fileMap.size === 0 && selectedFiles.length > 0) {
-          fileMap = new Map(selectedFiles.map((f, i) => [makeKey(f, i), f]));
-        }
-
-        let idxFallback = 0;
-        for (const f of selectedFiles) {
-          const key = [...fileMap.entries()].find(([, file]) => file === f)?.[0] ?? makeKey(f, idxFallback++);
-          if (!fileMap.has(key)) fileMap.set(key, f);
-
-          const reader = new FileReader();
-          reader.onload = (e) => {
-            const imgWrap = document.createElement('div');
-            imgWrap.style.position = 'relative';
-            imgWrap.style.display = 'inline-block';
-            imgWrap.style.marginRight = '4px';
-            imgWrap.dataset.key = key; // <- lo usa Sortable para reconstruir el orden
-
-            const img = document.createElement('img');
-            img.src = e.target.result;
-            img.style.width = '60px';
-            img.style.height = '60px';
-            img.style.objectFit = 'cover';
-            img.style.borderRadius = '6px';
-            img.title = f.name;
-
-            // Botón Quitar (opcional, cómodo en mobile)
-            const del = document.createElement('button');
-            del.textContent = '×';
-            del.style.position = 'absolute';
-            del.style.top = '-6px';
-            del.style.right = '-6px';
-            del.style.width = '20px';
-            del.style.height = '20px';
-            del.style.borderRadius = '50%';
-            del.style.border = 'none';
-            del.style.cursor = 'pointer';
-            del.style.lineHeight = '20px';
-            del.style.fontSize = '14px';
-            del.style.background = '#f33';
-            del.style.color = '#fff';
-            del.title = 'Quitar imagen';
-            del.addEventListener('click', () => {
-              fileMap.delete(key);
-              selectedFiles = selectedFiles.filter(ff => ff !== f);
-              renderPreview();
-              ensureSortable();
-            });
-
-            imgWrap.appendChild(img);
-            imgWrap.appendChild(del);
-            preview.appendChild(imgWrap);
-          };
-          reader.readAsDataURL(f);
-        }
-      }
-
-      let sortableInstance = null;
-      function ensureSortable() {
-        if (sortableInstance) {
-          sortableInstance.destroy();
-          sortableInstance = null;
-        }
-        sortableInstance = Sortable.create(preview, {
-          animation: 150,
-          ghostClass: 'drag-ghost',
-          onEnd: () => {
-            // reconstruimos selectedFiles según el orden visual actual
-            const newOrder = [];
-            preview.querySelectorAll('[data-key]').forEach(node => {
-              const key = node.dataset.key;
-              const file = fileMap.get(key);
-              if (file) newOrder.push(file);
-            });
-            selectedFiles = newOrder;
-          }
+        input.addEventListener('change', function () {
+          selectedFiles = Array.from(this.files);
+          fileMap = new Map(selectedFiles.map((f, i) => [`${f.name}__${f.size}__${f.lastModified}__${i}`, f]));
+          console.log(`[${reqId}] files selected:`, selectedFiles.map(f => ({name:f.name, size:f.size, type:f.type})));
+          renderPreview();
+          ensureSortable();
         });
+
+        function renderPreview() {
+          preview.innerHTML = '';
+          let idx = 0;
+          for (const f of selectedFiles) {
+            const key = [...fileMap.entries()].find(([, file]) => file === f)?.[0] ?? `${f.name}__${f.size}__${f.lastModified}__${idx++}`;
+            if (!fileMap.has(key)) fileMap.set(key, f);
+
+            const reader = new FileReader();
+            reader.onload = (e) => {
+              const wrap = document.createElement('div');
+              wrap.style.position = 'relative';
+              wrap.style.display = 'inline-block';
+              wrap.style.marginRight = '4px';
+              wrap.dataset.key = key;
+
+              const img = document.createElement('img');
+              img.src = e.target.result;
+              img.style.width = '60px';
+              img.style.height = '60px';
+              img.style.objectFit = 'cover';
+              img.style.borderRadius = '6px';
+              img.title = f.name;
+
+              const del = document.createElement('button');
+              del.textContent = '×';
+              Object.assign(del.style, { position:'absolute', top:'-6px', right:'-6px', width:'20px', height:'20px',
+                borderRadius:'50%', border:'none', cursor:'pointer', lineHeight:'20px', fontSize:'14px', background:'#f33', color:'#fff' });
+              del.addEventListener('click', () => {
+                fileMap.delete(key);
+                selectedFiles = selectedFiles.filter(ff => ff !== f);
+                console.log(`[${reqId}] removed file:`, f.name);
+                renderPreview();
+                ensureSortable();
+              });
+
+              wrap.appendChild(img);
+              wrap.appendChild(del);
+              preview.appendChild(wrap);
+            };
+            reader.readAsDataURL(f);
+          }
+        }
+
+        let sortableInstance = null;
+        function ensureSortable() {
+          if (sortableInstance) { sortableInstance.destroy(); sortableInstance = null; }
+          sortableInstance = Sortable.create(preview, {
+            animation: 150,
+            ghostClass: 'drag-ghost',
+            onEnd: () => {
+              const newOrder = [];
+              preview.querySelectorAll('[data-key]').forEach(node => {
+                const file = fileMap.get(node.dataset.key);
+                if (file) newOrder.push(file);
+              });
+              selectedFiles = newOrder;
+              console.log(`[${reqId}] files reordered:`, selectedFiles.map(f => f.name));
+            }
+          });
+        }
+
+        help.textContent = 'Arrastrá para reordenar (funciona en celular y PC).';
+      },
+      focusConfirm: false,
+      confirmButtonText: 'Crear',
+      showCancelButton: true,
+      preConfirm: () => {
+        const name = document.getElementById('mcl-name').value.trim();
+        const version = document.getElementById('mcl-version').value.trim();
+        const modelo = document.getElementById('mcl-modelo').value;
+        const km = document.getElementById('mcl-km').value;
+        const description = document.getElementById('mcl-description').value.trim();
+        const price = document.getElementById('mcl-price').value;
+        const prioridad = document.getElementById('mcl-prioridad').value;
+        const esOcultoStr = document.getElementById('mcl-oculto').value;
+
+        if (!name || !description || !price || selectedFiles.length === 0) {
+          Swal.showValidationMessage('Campos obligatorios: Nombre, Descripción, Precio e Imágenes.');
+          return false;
+        }
+
+        const precioNum = Number(price);
+        if (!Number.isFinite(precioNum) || precioNum <= 0) {
+          Swal.showValidationMessage('Ingresá un precio válido.');
+          return false;
+        }
+
+        const kmNum = km ? Number(km) : null;
+        if (km && (!Number.isFinite(kmNum) || kmNum < 0)) {
+          Swal.showValidationMessage('Kilómetros inválidos.');
+          return false;
+        }
+
+        const modeloNum = modelo ? Number(modelo) : null;
+        if (modelo && (!Number.isFinite(modeloNum) || modeloNum < 1900)) {
+          Swal.showValidationMessage('Modelo inválido.');
+          return false;
+        }
+
+        const prioridadNum = prioridad ? Number(prioridad) : null;
+        if (prioridad && (!Number.isFinite(prioridadNum) || prioridadNum < 0)) {
+          Swal.showValidationMessage('Prioridad inválida (número >= 0).');
+          return false;
+        }
+
+        const esOculto = esOcultoStr === 'true';
+
+        return {
+          name, version,
+          modelo: modeloNum,
+          km: kmNum,
+          description,
+          price: Math.round((precioNum + Number.EPSILON) * 100) / 100, // número
+          prioridad: prioridadNum,
+          esOculto,
+          imageFiles: selectedFiles
+        };
       }
+    });
 
-      help.textContent = 'Arrastrá para reordenar (funciona en celular y PC).';
-    },
-    focusConfirm: false,
-    confirmButtonText: 'Crear',
-    showCancelButton: true,
-    preConfirm: () => {
-      const name = document.getElementById('mcl-name').value.trim();
-      const version = document.getElementById('mcl-version').value.trim();
-      const modelo = document.getElementById('mcl-modelo').value;
-      const km = document.getElementById('mcl-km').value;
-      const description = document.getElementById('mcl-description').value.trim();
-      const price = document.getElementById('mcl-price').value;
-      const prioridad = document.getElementById('mcl-prioridad').value;
-      const esOcultoStr = document.getElementById('mcl-oculto').value;
+    if (!formValues) { console.log(`[${reqId}] cancelled by user`); console.groupEnd(); return; }
 
-      if (!name || !description || !price || selectedFiles.length === 0) {
-        Swal.showValidationMessage('Campos obligatorios: Nombre, Descripción, Precio e Imágenes.');
-        return false;
-      }
+    const { name, version, modelo, km, description, price, prioridad, esOculto, imageFiles } = formValues;
+    console.log(`[${reqId}] form ok:`, { name, version, modelo, km, price, prioridad, esOculto, files:imageFiles.length });
 
-      const precioNum = Number(price);
-      if (!Number.isFinite(precioNum) || precioNum <= 0) {
-        Swal.showValidationMessage('Ingresá un precio válido.');
-        return false;
-      }
-
-      const kmNum = km ? Number(km) : null;
-      if (km && (!Number.isFinite(kmNum) || kmNum < 0)) {
-        Swal.showValidationMessage('Kilómetros inválidos.');
-        return false;
-      }
-
-      const modeloNum = modelo ? Number(modelo) : null;
-      if (modelo && (!Number.isFinite(modeloNum) || modeloNum < 1900)) {
-        Swal.showValidationMessage('Modelo inválido.');
-        return false;
-      }
-
-      const prioridadNum = prioridad ? Number(prioridad) : null;
-      if (prioridad && (!Number.isFinite(prioridadNum) || prioridadNum < 0)) {
-        Swal.showValidationMessage('Prioridad inválida (número >= 0).');
-        return false;
-      }
-
-      const esOculto = esOcultoStr === 'true';
-
-      return {
-        name,
-        version,
-        modelo: modeloNum,
-        km: kmNum,
-        description,
-        price: precioNum,
-        prioridad: prioridadNum,
-        esOculto,
-        imageFiles: selectedFiles
-      };
+    // Render local (si lo usás)
+    if (typeof createProductElementMCL === 'function') {
+      createProductElementMCL(subcategoryId, {
+        nombre: name, version, modelo, kilometros: km, descripcion: description, precio: price, prioridad, esOculto
+      }, imageFiles);
     }
-  });
 
-  if (!formValues) return;
+    // --- Conversión a JPG ---
+    showIndeterminate('Preparando imágenes…');
+    const tConv0 = performance.now();
+    const jpgFiles = [];
+    let totalBytes = 0;
+    for (let i = 0; i < imageFiles.length; i++) {
+      updateIndeterminate(`Comprimiendo imagen ${i + 1} de ${imageFiles.length}…`);
+      const f = imageFiles[i];
+      // comprime si pesa > 900 KB o si el total ya se va acercando al límite
+      const needCompress = f.size > 900_000 || totalBytes > 3_000_000;
+      const out = needCompress ? await compressImage(f, {maxSize: 1600, quality: 0.78}) : f;
+      jpgFiles.push(out);
+      totalBytes += out.size;
+      console.log(`[${reqId}] img #${i+1}: ${f.name} => ${(out.size/1024).toFixed(0)} KB`);
+    }
+    // Si todavía pasamos de 4 MB, volvemos a comprimir todas con calidad menor
+    if (jpgFiles.reduce((s,f)=>s+f.size,0) > 4_000_000) {
+      console.warn(`[${reqId}] total > 4MB, recomprimiendo más agresivo…`);
+      const tighter = [];
+      for (const f of jpgFiles) {
+        const c = await compressImage(f, {maxSize: 1400, quality: 0.7, minQuality: 0.5});
+        tighter.push(c);
+      }
+      jpgFiles.length = 0;
+      jpgFiles.push(...tighter);
+    }
+    console.log(`[${reqId}] total upload ~ ${(jpgFiles.reduce((s,f)=>s+f.size,0)/1024).toFixed(0)} KB`);
 
-  const {
-    name, version, modelo, km, description, price, prioridad, esOculto, imageFiles
-  } = formValues;
+    const tConv1 = performance.now();
+    closeIndeterminate();
+    console.log(`[${reqId}] conversion done in ${(tConv1 - tConv0).toFixed(0)}ms, files:`, jpgFiles.map(f => ({name:f.name, size:f.size})));
 
-  // Render inmediato en UI local (como ya hacías)
-  createProductElementMCL(subcategoryId, {
-    nombre: name,
-    version,
-    modelo,
-    kilometros: km,
-    descripcion: description,
-    precio: price,
-    prioridad,
-    esOculto
-  }, imageFiles);
+    // --- Armado FormData ---
+    const formData = new FormData();
+    const dataPayload = {
+      nombre: name,
+      version: version || null,
+      modelo: modelo ?? null,
+      kilometros: km ?? null,
+      descripcion: description,
+      precio: price, // número
+      prioridad: prioridad ?? null,
+      idSubCategoria: subcategoryId,
+      esOculto: !!esOculto,
+      _trace: { reqId, tStart: t0 } // META para debug en server si querés
+    };
+    formData.append('data', JSON.stringify(dataPayload));
+    for (const f of jpgFiles) formData.append('files', f);
+    console.log(`[${reqId}] payload:`, dataPayload);
+    console.log(`[${reqId}] files to upload:`, jpgFiles.map(f => ({name:f.name, size:f.size, type:f.type})));
 
-  // === 1) Conversión a JPG con spinner indeterminado ===
-  showIndeterminate('Preparando imágenes…');
+    // --- Upload con progreso ---
+    showUploadProgress('Subiendo producto…');
+    const tUp0 = performance.now();
+    const { ok, data, status } = await uploadWithProgress({
+      url: `${MCL_API_BASE}${MCL_UPLOAD_PATH}`,
+      method: 'POST',
+      formData,
+      onProgress: (p) => {
+        updateUploadProgress(p, 'Enviando archivos');
+        // logueamos algunos hitos para trazar cuellos de botella
+        if (p === 0 || p === 25 || p === 50 || p === 75 || p === 100) {
+          console.log(`[${reqId}] upload progress: ${p}%`);
+        }
+      }
+    }).catch(err => {
+      console.error(`[${reqId}] uploadWithProgress threw:`, err);
+      return { ok:false, data:{ error: String(err) }, status: 0 };
+    });
+    const tUp1 = performance.now();
+    closeUploadProgress();
 
-  const jpgFiles = [];
-  for (let i = 0; i < imageFiles.length; i++) {
-    updateIndeterminate(`Convirtiendo imagen ${i + 1} de ${imageFiles.length}…`);
-    const f = imageFiles[i];
-    const jpgFile = await toJpgFileViaCloudinary(f);
-    jpgFiles.push(jpgFile);
-  }
+    console.log(`[${reqId}] upload done in ${(tUp1 - tUp0).toFixed(0)}ms, status: ${status}, ok: ${ok}`);
+    if (!ok) {
+      console.error(`[${reqId}] server responded error:`, data);
+      Swal.fire('Error', (data && (data.error || data.message)) || 'Hubo un error al agregar el producto', 'error');
+      console.groupEnd();
+      return;
+    }
 
-  closeIndeterminate();
-
-  // === 2) Armamos el FormData con JPG normalizados ===
-  const formData = new FormData();
-  const dataPayload = {
-    nombre: name,
-    version: version || null,
-    modelo: modelo ?? null,
-    kilometros: km ?? null,
-    descripcion: description,
-    precio: price.toFixed(2),
-    prioridad: prioridad ?? null,
-    idSubCategoria: subcategoryId,
-    esOculto: !!esOculto
-  };
-  formData.append('data', JSON.stringify(dataPayload));
-  for (const f of jpgFiles) formData.append('files', f);
-
-showUploadProgress('Subiendo producto…');
-
-try {
-  const { ok, data } = await uploadWithProgress({
-    url: `${MCL_API_BASE}${MCL_UPLOAD_PATH}`,
-    method: 'POST',
-    formData,
-    onProgress: (p) => updateUploadProgress(p, 'Enviando archivos')
-  });
-
-  closeUploadProgress();
-
-  if (ok) {
+    // --- OK final ---
     Swal.fire('Éxito', 'Producto agregado con éxito.', 'success');
     if (typeof fetchProductosMCL === 'function') fetchProductosMCL();
-  } else {
-    console.error('Error en la respuesta:', data);
-    Swal.fire('Error', (data && data.error) || 'Hubo un error al agregar el producto', 'error');
+    console.log(`[${reqId}] SUCCESS total ${(performance.now()-t0).toFixed(0)}ms`);
+    console.groupEnd();
+
+  } catch (err) {
+    closeIndeterminate?.();
+    closeUploadProgress?.();
+    console.error(`[${reqId}] FATAL addProduct:`, err);
+    Swal.fire('Error', 'Hubo un error al agregar el producto', 'error');
+    console.groupEnd();
   }
-} catch (err) {
-  closeUploadProgress();
-  console.error('Error al agregar el producto:', err);
-  Swal.fire('Error', 'Hubo un error al agregar el producto', 'error');
 }
 
-}
 
 
 
