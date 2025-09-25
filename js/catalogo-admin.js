@@ -3,15 +3,25 @@
    ========================= */
 
 // 1) Traer del backend
-async function fetchProductosMCL() {
-  const URL = 'https://mcl-backend-ten.vercel.app/productos';
+async function fetchProductosMCL(forceFresh = false) {
+  let URL = 'https://mcl-backend-ten.vercel.app/productos';
+  
+  // Si queremos datos frescos, agregamos timestamp para evitar cache
+  if (forceFresh) {
+    URL += `?t=${Date.now()}`;
+  }
+  
   try {
-    const resp = await fetch(URL);
+    const resp = await fetch(URL, {
+      // Forzar no-cache en headers también
+      cache: forceFresh ? 'no-cache' : 'default',
+      headers: forceFresh ? { 'Cache-Control': 'no-cache' } : {}
+    });
     if (!resp.ok) throw new Error(`HTTP ${resp.status} ${resp.statusText}`);
     const data = await resp.json();
     window.productosMCL_ORIGINAL = data; 
-    displayCategorias(data); // Mostrar las categorías en la barra
-    document.getElementById('marcas-contenedor').style.display = 'none'; // Oculta marcas al inicio
+    displayCategorias(data);
+    document.getElementById('marcas-contenedor').style.display = 'none';
     displayProductosMCL(data);
   } catch (err) {
     console.error('Error trayendo productos MCL:', err);
@@ -1285,12 +1295,12 @@ try {
   if (ok) {
     Swal.fire('Éxito', 'Producto agregado con éxito.', 'success');
     setTimeout(async () => {
-      // if (typeof fetchProductosMCL === 'function') fetchProductosMCL(); Tambien agregue el await y el setTimeout
+      // Forzar datos frescos sin cache
       if (typeof fetchProductosMCL === 'function') {
-        await fetchProductosMCL();
-    }
-  }, 1000); // 1 segundo de delay
-} else {
+        await fetchProductosMCL(true); // true = forzar datos frescos
+      }
+    }, 2000); // 2 segundos para que Vercel procese
+  } else {
     console.error('Error en la respuesta:', data);
     Swal.fire('Error', (data && data.error) || 'Hubo un error al agregar el producto', 'error');
   }
