@@ -552,8 +552,16 @@
   overflow: auto !important;     /* si el contenido excede */
   background-color: rgba(0, 0, 0, 0.6) !important;
   justify-content: center !important;
-  align-items: center !important;
+  align-items: flex-start !important;
   padding: 16px;
+  padding-top: 80px;
+}
+
+@media (min-width: 768px) {
+  .modal.mcl-modal {
+    align-items: center !important;
+    padding-top: 16px;
+  }
 }
 
 /* ===== Caja del modal ===== */
@@ -567,7 +575,7 @@
   animation: fadeIn 0.3s ease-in-out;
   position: relative;   
   border: none !important;
-  margin-top: 200px;
+  margin: 0;
 }
 
 /* Layout responsive dentro del modal */
@@ -576,7 +584,6 @@
     display: grid;
     grid-template-columns: 1fr 1fr;
     gap: 12px;
-    margin: 0;
   }
 }
 
