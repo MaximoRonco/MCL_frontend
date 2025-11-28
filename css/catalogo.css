@@ -1161,3 +1161,33 @@
   border-bottom-left-radius: 0 !important;
   border-bottom-right-radius: 0 !important;
 }
+
+/* Scroll para descripciones largas en mobile */
+@media (max-width: 768px) {
+  .producto_descripcion_modal {
+    max-height: 200px;
+    overflow-y: auto;
+    padding-right: 10px;
+    /* Estilo del scrollbar para mejor apariencia */
+    scrollbar-width: thin;
+    scrollbar-color: rgba(255, 255, 255, 0.5) transparent;
+  }
+  
+  /* Para navegadores WebKit (Chrome, Safari) */
+  .producto_descripcion_modal::-webkit-scrollbar {
+    width: 6px;
+  }
+  
+  .producto_descripcion_modal::-webkit-scrollbar-track {
+    background: transparent;
+  }
+  
+  .producto_descripcion_modal::-webkit-scrollbar-thumb {
+    background-color: rgba(255, 255, 255, 0.5);
+    border-radius: 3px;
+  }
+  
+  .producto_descripcion_modal::-webkit-scrollbar-thumb:hover {
+    background-color: rgba(255, 255, 255, 0.7);
+  }
+}
