@@ -53,13 +53,17 @@ function displayCategorias(data) {
 
 // Mostrar subcategorías en la barra
 function displayMarcas(subcategorias) {
+    console.log('Subcategorias recibidas:', subcategorias);
+    subcategorias.forEach(sub => console.log('Sub:', sub));
     const marcasContenedor = document.getElementById('marcas-contenedor');
+    if (!marcasContenedor) return;
     marcasContenedor.innerHTML = '';
 
     // Botón "Todas"
     const btnTodas = document.createElement('button');
     btnTodas.className = 'marca-btn selected';
     btnTodas.textContent = 'Todas las subcategorías';
+    btnTodas.dataset.subcategoriaId = 'null';
     btnTodas.onclick = () => {
         subcategoriaSeleccionadaId = null;
         marcarSeleccionMarca(null);
@@ -71,7 +75,8 @@ function displayMarcas(subcategorias) {
         const marcaBtn = document.createElement('button');
         marcaBtn.className = 'marca-btn';
         marcaBtn.textContent = subcategoria.nombre;
-        marcaBtn.onclick = () => filtrarPorMarca(subcategoria.id, window.productosMCL_ORIGINAL);
+        marcaBtn.dataset.subcategoriaNombre = subcategoria.nombre;
+        marcaBtn.onclick = () => filtrarPorMarca(subcategoria.nombre, window.productosMCL_ORIGINAL);
         marcasContenedor.appendChild(marcaBtn);
     });
 }
@@ -83,19 +88,28 @@ function marcarSeleccionCategoria(id) {
         document.querySelector('.categoria-btn').classList.add('selected');
     } else {
         document.querySelectorAll('.categoria-btn').forEach(btn => {
-            if (btn.textContent === getCategoriaNombreById(id)) btn.classList.add('selected');
+            if (btn.textContent.trim() === getCategoriaNombreById(id).trim()) btn.classList.add('selected');
         });
     }
 }
-function marcarSeleccionMarca(id) {
-    document.querySelectorAll('.marca-btn').forEach(btn => btn.classList.remove('selected'));
-    if (id === null) {
-        document.querySelector('.marca-btn').classList.add('selected');
-    } else {
-        document.querySelectorAll('.marca-btn').forEach(btn => {
-            if (btn.textContent === getSubcategoriaNombreById(id)) btn.classList.add('selected');
-        });
-    }
+function marcarSeleccionMarca(nombre) {
+    const botones = document.querySelectorAll('.marca-btn');
+    
+    botones.forEach((btn) => {
+        btn.classList.remove('selected');
+        // Comparar por nombre
+        const btnNombre = btn.dataset.subcategoriaNombre;
+        const targetNombre = nombre === null ? null : nombre;
+        
+        if (nombre === null) {
+            // Si es null, marca el primer botón (Todas las subcategorías)
+            if (btn === botones[0]) {
+                btn.classList.add('selected');
+            }
+        } else if (btnNombre === targetNombre) {
+            btn.classList.add('selected');
+        }
+    });
 }
 function getCategoriaNombreById(id) {
     const cat = window.productosMCL_ORIGINAL.find(c => c.id === id);
@@ -135,13 +149,13 @@ function filtrarPorCategoria(categoriaId, data, mostrarMarcas = true) {
     }
     displayProductosMCL([categoriaFiltrada]);
 }
-// Filtrar productos por subcategoría
-function filtrarPorMarca(subcategoriaId, data) {
-    subcategoriaSeleccionadaId = subcategoriaId;
-    marcarSeleccionMarca(subcategoriaId);
+// Filtrar productos por subcategoría (por nombre)
+function filtrarPorMarca(subcategoriaNombre, data) {
+    subcategoriaSeleccionadaId = subcategoriaNombre;
+    marcarSeleccionMarca(subcategoriaNombre);
 
     const categoriasFiltradas = data.map(categoria => {
-        const subcategoriasFiltradas = (categoria.SubCategorias || []).filter(subcategoria => subcategoria.id === subcategoriaId);
+        const subcategoriasFiltradas = (categoria.SubCategorias || []).filter(subcategoria => subcategoria.nombre === subcategoriaNombre);
         if (subcategoriasFiltradas.length > 0) {
             return { ...categoria, SubCategorias: subcategoriasFiltradas };
         } else {
@@ -161,33 +175,30 @@ function buscarYCargarCatalogo(query) {
   }
   const q = query.trim().toLowerCase();
 
+  // Solo filtra productos, mantiene solo las subcategorías que tienen productos coincidentes
   const resultado = data.map(cat => {
-    // Si la categoría coincide, la devolvemos completa
-    if (cat.nombre.toLowerCase().includes(q)) {
-      return cat;
-    }
-    // Si no, filtramos subcategorías
-    const subFiltradas = (cat.SubCategorias || []).map(sub => {
-      // Filtrar productos
-      const productosFiltrados = (sub.Productos || []).filter(prod =>
-        (prod.nombre && prod.nombre.toLowerCase().includes(q)) ||
-        (prod.version && prod.version.toLowerCase().includes(q)) ||
-        (prod.modelo && String(prod.modelo).toLowerCase().includes(q))
-      );
-      if (
-        sub.nombre.toLowerCase().includes(q) ||
-        productosFiltrados.length > 0
-      ) {
-        return { ...sub, Productos: productosFiltrados };
-      }
-      return null;
-    }).filter(Boolean);
+    const subFiltradas = (cat.SubCategorias || [])
+      .map(sub => {
+        // Filtrar solo productos
+        const productosFiltrados = (sub.Productos || []).filter(prod =>
+          (prod.nombre && prod.nombre.toLowerCase().includes(q)) ||
+          (prod.version && prod.version.toLowerCase().includes(q)) ||
+          (prod.modelo && String(prod.modelo).toLowerCase().includes(q))
+        );
+        // Si hay productos que coinciden, devuelve la subcategoría
+        if (productosFiltrados.length > 0) {
+          return { ...sub, Productos: productosFiltrados };
+        }
+        return null;
+      })
+      .filter(Boolean); // Elimina las subcategorías sin productos
 
+    // Solo devuelve la categoría si tiene subcategorías con productos
     if (subFiltradas.length > 0) {
       return { ...cat, SubCategorias: subFiltradas };
     }
     return null;
-  }).filter(Boolean);
+  }).filter(Boolean); // Elimina las categorías sin subcategorías
 
   displayCategorias(resultado);
   displayProductosMCL(resultado);
@@ -410,6 +421,14 @@ window.addEventListener('click', function (e) {
   // si el click fue exactamente sobre el overlay
   if (e.target === modal) {
     closeModal();
+  }
+});
+
+// Event listener para el botón close
+document.addEventListener('DOMContentLoaded', function() {
+  const closeBtn = document.getElementById('modal-close-btn');
+  if (closeBtn) {
+    closeBtn.addEventListener('click', closeModal);
   }
 });
 

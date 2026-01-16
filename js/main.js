@@ -19,7 +19,10 @@ function openWhatsappContact() {
 
 document.getElementById('btnWpp').addEventListener('click', openWhatsappContact);
 
-document.getElementById('wsp_contacto').addEventListener('click', openWhatsappContact);
+const wspContacto = document.getElementById('wsp_contacto');
+if (wspContacto) {
+  wspContacto.addEventListener('click', openWhatsappContact);
+}
 
 const footerWpp = document.getElementById('footerWpp');
 if (footerWpp) {
