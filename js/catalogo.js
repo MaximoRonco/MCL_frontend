@@ -154,6 +154,19 @@ function filtrarPorMarca(subcategoriaNombre, data) {
     subcategoriaSeleccionadaId = subcategoriaNombre;
     marcarSeleccionMarca(subcategoriaNombre);
 
+    // Solo filtrar dentro de la categoría seleccionada
+    if (categoriaSeleccionadaId) {
+        const categoria = data.find(cat => cat.id === categoriaSeleccionadaId);
+        if (categoria) {
+            const subcategoriasFiltradas = (categoria.SubCategorias || []).filter(
+                subcategoria => subcategoria.nombre === subcategoriaNombre
+            );
+            displayProductosMCL([{ ...categoria, SubCategorias: subcategoriasFiltradas }]);
+            return;
+        }
+    }
+
+    // Si no hay categoría seleccionada, filtrar en todos
     const categoriasFiltradas = data.map(categoria => {
         const subcategoriasFiltradas = (categoria.SubCategorias || []).filter(subcategoria => subcategoria.nombre === subcategoriaNombre);
         if (subcategoriasFiltradas.length > 0) {
@@ -243,7 +256,7 @@ function displayProductosMCL(data) {
       <h2>${escapeHTML(categoria.nombre)}</h2>
     `;
 
-    (categoria.SubCategorias || []).forEach(sub => {
+    (categoria.SubCategorias || []).sort((a, b) => (a.nombre || '').localeCompare((b.nombre || ''), 'es-AR')).forEach(sub => {
       const subDiv = document.createElement('div');
       subDiv.className = 'subcategory';
       subDiv.id = `subcategoria-${sub.id}`;
@@ -256,6 +269,7 @@ function displayProductosMCL(data) {
 
       (sub.Productos || [])
       .filter(prod => !prod.esOculto)
+      .sort((a, b) => (a.nombre || '').localeCompare((b.nombre || ''), 'es-AR') * -1)
       .forEach(prod => {
         const cardWrap = document.createElement('div');
         cardWrap.className = 'product-container';
