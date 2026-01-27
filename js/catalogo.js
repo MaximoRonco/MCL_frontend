@@ -327,7 +327,7 @@ function displayProductosMCL(data) {
           `• Precio: ${precioFmt}`
         );
         // Reemplaza el número por el tuyo real (sin + ni espacios, solo números y código país)
-        const numeroWpp = '5493572587819';
+        const numeroWpp = '5493572683013';
         wppBtn.href = `https://wa.me/${numeroWpp}?text=${mensaje}`;
         wppBtn.innerHTML = `<i class="fab fa-whatsapp"></i>`;
 
@@ -394,7 +394,7 @@ function openModal(prod) {
     (prod.kilometros ? `• Kilómetros: ${prod.kilometros}\n` : '') +
     `• Precio: ${precioFmt}`
   );
-  const numeroWpp = '5493572587819'; // tu número real
+  const numeroWpp = '5493572683013'; // tu número real
   const wppBtnHtml = `
     <a class="wpp-contact-btn-modal" href="https://wa.me/${numeroWpp}?text=${mensaje}" target="_blank" rel="noopener">
       <i class="fab fa-whatsapp"></i> Consultar
