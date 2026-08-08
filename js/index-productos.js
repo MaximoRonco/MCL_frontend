@@ -41,6 +41,21 @@ function renderFeaturedGrid(productos) {
 
     let imgSrc = (prod.Fotos && prod.Fotos.length > 0) ? prod.Fotos[0].url : 'https://via.placeholder.com/400x180?text=Sin+imagen';
 
+    const precioNum = parseFloat(prod.precio);
+    const precioFmt = isFinite(precioNum)
+      ? `$${Math.floor(precioNum).toLocaleString('es-AR')}`
+      : `$${prod.precio}`;
+
+    const kmFmt = (prod.kilometros != null && prod.kilometros !== '')
+      ? `${Number(prod.kilometros).toLocaleString('es-AR')} km`
+      : '';
+
+    const metaItems = [
+      prod.modelo ? escapeHTML(String(prod.modelo)) : '',
+      prod.version ? escapeHTML(prod.version) : '',
+      kmFmt ? escapeHTML(kmFmt) : ''
+    ].filter(Boolean);
+
     // Botón WhatsApp (solo nombre)
     const mensaje = encodeURIComponent(
       `¡Hola! Quiero consultar por este vehículo:\n• Nombre: ${prod.nombre}`
@@ -59,6 +74,24 @@ function renderFeaturedGrid(productos) {
         <h3>${escapeHTML(prod.nombre)}</h3>
         <div class="product-buttons" style="margin-top:12px; justify-content:center;">
           ${verMasBtn}
+          ${wppBtn}
+        </div>
+      </div>
+    `;
+
+    card.innerHTML = `
+      <div class="card-img-wrap latest-card__media">
+        <img src="${imgSrc}" alt="${escapeHTML(prod.nombre)}">
+      </div>
+      <div class="card-body latest-card__body">
+        <span class="latest-card__label">${idx === 0 ? 'Recien ingresado' : 'Nuevo ingreso'}</span>
+        <h3>${escapeHTML(prod.nombre)}</h3>
+        <div class="latest-card__meta">
+          ${metaItems.map(item => `<span>${item}</span>`).join('')}
+        </div>
+        <div class="latest-card__price">${precioFmt}</div>
+        <div class="product-buttons latest-card__actions">
+          <button class="ver-mas-btn">Ver más</button>
           ${wppBtn}
         </div>
       </div>

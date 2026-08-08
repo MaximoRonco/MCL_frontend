@@ -1199,7 +1199,6 @@
   }
 }
 
-
 /* ======= MODERNIZACION PUBLICA: CATALOGO Y VEHICULOS ======= */
 .public-page #barra-busqueda,
 .public-page .subcategory,
@@ -2839,6 +2838,396 @@ body.public-page .ver-mas .btn::after {
   }
 
   body.public-page .ver-mas .btn {
+    width: 100%;
+  }
+}
+
+/* ======= CAPA FINAL EFECTIVA: CARDS PUBLICAS + ULTIMOS INGRESOS ======= */
+body.public-page #productos .products-row {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(270px, 1fr));
+  gap: 24px;
+  width: min(1220px, 100%);
+  margin: 24px auto 42px;
+}
+
+body.public-page #productos .product-container {
+  max-width: none;
+  height: 100%;
+  padding: 0;
+  border: 1px solid #dedfe3;
+  border-radius: 16px;
+  background: #ffffff;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.06);
+  overflow: hidden;
+}
+
+body.public-page #productos .product-container:hover {
+  border-color: rgba(185, 17, 39, 0.35);
+  box-shadow: 0 14px 34px rgba(0, 0, 0, 0.09);
+  transform: translateY(-3px);
+}
+
+body.public-page #productos .vehicle-card,
+body.public-page #productos .product-index {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  background: #ffffff;
+}
+
+body.public-page #productos .vehicle-card__media,
+body.public-page #productos .product-cover {
+  aspect-ratio: 4 / 3;
+  height: auto !important;
+  overflow: hidden;
+  background: #f1f2f4;
+  cursor: pointer;
+}
+
+body.public-page #productos .product-cover-image {
+  width: 100%;
+  height: 100%;
+  max-height: none;
+  padding: 0;
+  object-fit: cover;
+  object-position: center;
+}
+
+body.public-page #productos .vehicle-card__content,
+body.public-page #productos .product-info {
+  display: flex;
+  flex: 1 1 auto;
+  flex-direction: column;
+  gap: 14px;
+  padding: 18px 20px 0;
+  text-align: left;
+}
+
+body.public-page #productos .vehicle-card__eyebrow {
+  width: fit-content;
+  padding: 5px 9px;
+  border-radius: 999px;
+  background: rgba(185, 17, 39, 0.08);
+  color: #b91127;
+  font-size: 1.15rem;
+  font-weight: 800;
+  letter-spacing: 0.05em;
+  line-height: 1;
+  text-transform: uppercase;
+}
+
+body.public-page #productos .product-card-title {
+  display: -webkit-box;
+  min-height: 54px;
+  overflow: hidden;
+  color: #171717;
+  font-family: var(--font-heading) !important;
+  font-size: clamp(2rem, 1.6vw, 2.25rem);
+  font-weight: 700;
+  line-height: 1.18;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+}
+
+body.public-page #productos .product-card-meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 7px;
+  min-height: 32px;
+  margin: 0;
+}
+
+body.public-page #productos .product-card-meta-row {
+  display: none;
+}
+
+body.public-page #productos .product-card-meta-chip {
+  display: inline-flex;
+  align-items: center;
+  min-height: 28px;
+  padding: 0 9px;
+  border: 1px solid #e3e4e8;
+  border-radius: 999px;
+  background: #f7f7f8;
+  color: #4e5158;
+  font-size: 1.25rem;
+  font-weight: 700;
+}
+
+body.public-page #productos .vehicle-card__price-block {
+  margin-top: auto;
+  padding-top: 12px;
+}
+
+body.public-page #productos .vehicle-card__price-block > span {
+  display: block;
+  margin-bottom: 4px;
+  color: #777a82;
+  font-size: 1.2rem;
+  font-weight: 800;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+}
+
+body.public-page #productos .divPrecio {
+  margin: 0;
+  color: #171717;
+  font-family: var(--font-heading) !important;
+  font-size: clamp(2.55rem, 2.2vw, 3rem);
+  font-weight: 800;
+  line-height: 1.05;
+  text-align: left;
+}
+
+body.public-page #productos .vehicle-card__footer,
+body.public-page #productos .product-buttons {
+  display: flex;
+  gap: 10px;
+  margin-top: auto;
+  padding: 18px 20px 20px;
+}
+
+body.public-page #productos .ver-mas-btn {
+  flex: 1 1 auto;
+  min-height: 46px;
+  border-radius: 10px;
+  background: #b91127;
+  color: #ffffff !important;
+  font-weight: 800;
+}
+
+body.public-page #productos .wpp-contact-btn {
+  flex: 0 0 46px;
+  width: 46px;
+  height: 46px;
+  min-height: 46px;
+  border-radius: 10px;
+}
+
+body.public-page .ultimos-ingresos-section {
+  width: 100%;
+  margin: 76px 0 0;
+  padding: 72px 0 76px;
+  background:
+    radial-gradient(circle at top left, rgba(185, 17, 39, 0.18), transparent 34%),
+    #131313;
+}
+
+body.public-page .ultimos-ingresos-inner {
+  width: min(1240px, calc(100% - 48px));
+  margin: 0 auto;
+}
+
+body.public-page .ultimos-ingresos-inner > .titulo-ultimos {
+  display: none;
+}
+
+body.public-page .ultimos-ingresos-header {
+  margin-bottom: 28px;
+}
+
+body.public-page .ultimos-kicker {
+  display: inline-flex;
+  gap: 8px;
+  margin-bottom: 12px;
+  color: #ff5366;
+  font-size: 1.25rem;
+  font-weight: 900;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+body.public-page .ultimos-title {
+  margin: 0 0 10px;
+  color: #ffffff;
+  font-size: clamp(3rem, 3.6vw, 4.8rem) !important;
+  line-height: 1.05;
+  text-align: left;
+}
+
+body.public-page .ultimos-ingresos-header p {
+  margin: 0;
+  color: #c6c8ce;
+  font-size: 1.6rem;
+}
+
+body.public-page #productos-index.featured-grid {
+  display: grid;
+  grid-template-columns: minmax(0, 1.15fr) minmax(0, 0.82fr) minmax(0, 0.82fr);
+  gap: 18px;
+  width: 100%;
+  max-width: none;
+  margin: 0;
+}
+
+body.public-page #productos-index .featured-card,
+body.public-page #productos-index .mini-card {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 18px;
+  background: #1b1b1d;
+  box-shadow: 0 16px 38px rgba(0, 0, 0, 0.22) !important;
+  overflow: hidden;
+  cursor: pointer;
+}
+
+body.public-page #productos-index .featured-card {
+  grid-row: 1 / span 2;
+  grid-column: 1 / 2;
+}
+
+body.public-page #productos-index .featured-card:hover,
+body.public-page #productos-index .mini-card:hover {
+  border-color: rgba(185, 17, 39, 0.48);
+  background: #202023;
+}
+
+body.public-page #productos-index .card-img-wrap {
+  aspect-ratio: 16 / 10;
+  height: auto !important;
+  overflow: hidden;
+  background: #101011;
+}
+
+body.public-page #productos-index .featured-card .card-img-wrap {
+  aspect-ratio: 4 / 3;
+  height: auto !important;
+}
+
+body.public-page #productos-index img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: center;
+}
+
+body.public-page #productos-index .card-body {
+  display: flex;
+  flex: 1 1 auto;
+  flex-direction: column;
+  gap: 12px;
+  padding: 18px;
+  color: #ffffff;
+}
+
+body.public-page #productos-index .featured-card .card-body {
+  padding: 24px;
+}
+
+body.public-page #productos-index .latest-card__label {
+  width: fit-content;
+  padding: 5px 9px;
+  border-radius: 999px;
+  background: rgba(185, 17, 39, 0.18);
+  color: #ff6a7a;
+  font-size: 1.12rem;
+  font-weight: 900;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+body.public-page #productos-index h3 {
+  min-height: 48px;
+  color: #ffffff;
+  font-size: 1.9rem !important;
+}
+
+body.public-page #productos-index .featured-card h3 {
+  min-height: auto;
+  font-size: 2.8rem !important;
+}
+
+body.public-page #productos-index .latest-card__meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+body.public-page #productos-index .latest-card__meta span {
+  padding: 5px 8px;
+  border: 1px solid rgba(255, 255, 255, 0.11);
+  border-radius: 999px;
+  color: #cacdd3;
+  font-size: 1.18rem;
+  font-weight: 700;
+}
+
+body.public-page #productos-index .latest-card__price {
+  margin-top: auto;
+  color: #ffffff;
+  font-size: 2.3rem;
+  font-weight: 800;
+}
+
+body.public-page #productos-index .featured-card .latest-card__price {
+  font-size: 3rem;
+}
+
+body.public-page #productos-index .product-buttons {
+  display: flex;
+  gap: 10px;
+  margin-top: 4px !important;
+}
+
+body.public-page .ultimos-ingresos-section .ver-mas {
+  width: 100%;
+  margin: 28px 0 0;
+  text-align: right;
+}
+
+body.public-page .ultimos-ingresos-section .ver-mas .btn {
+  min-height: 46px;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  border-radius: 999px;
+  background: #ffffff !important;
+  color: #151515 !important;
+}
+
+body.public-page .ultimos-ingresos-section .ver-mas .btn::after {
+  content: " \2192";
+}
+
+@media (max-width: 1024px) {
+  body.public-page #productos-index.featured-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  body.public-page #productos-index .featured-card {
+    grid-row: auto;
+    grid-column: 1 / -1;
+  }
+}
+
+@media (max-width: 700px) {
+  body.public-page #productos .products-row,
+  body.public-page #productos-index.featured-grid {
+    grid-template-columns: 1fr;
+  }
+
+  body.public-page .ultimos-ingresos-section {
+    padding: 54px 0 58px;
+  }
+
+  body.public-page .ultimos-ingresos-inner {
+    width: min(100% - 24px, 430px);
+  }
+
+  body.public-page #productos-index .featured-card,
+  body.public-page #productos-index .mini-card {
+    width: 100%;
+    max-width: none;
+    grid-column: auto !important;
+    grid-row: auto !important;
+  }
+
+  body.public-page .ultimos-ingresos-section .ver-mas {
+    text-align: left;
+  }
+
+  body.public-page .ultimos-ingresos-section .ver-mas .btn {
     width: 100%;
   }
 }

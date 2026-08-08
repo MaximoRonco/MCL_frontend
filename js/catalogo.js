@@ -304,9 +304,30 @@ function displayProductosMCL(data) {
         `;
 
         // Botón "Ver más"
+        const metaItems = [
+          prod.modelo ? escapeHTML(String(prod.modelo)) : '',
+          prod.version ? escapeHTML(prod.version) : '',
+          kmFmt ? escapeHTML(kmFmt) : ''
+        ].filter(Boolean);
+
+        info.innerHTML = `
+          <div class="vehicle-card__head">
+            <span class="vehicle-card__eyebrow">Disponible</span>
+            <strong class="product-card-title">${escapeHTML(prod.nombre)}</strong>
+          </div>
+          <div class="producto_descripcion product-card-meta">
+            ${metaItems.map(item => `<span class="product-card-meta-chip">${item}</span>`).join('')}
+          </div>
+          <div class="vehicle-card__price-block">
+            <span>Precio</span>
+            <div class="divPrecio">${precioFmt}</div>
+          </div>
+        `;
+
         const verMasBtn = document.createElement('button');
         verMasBtn.classList.add('ver-mas-btn');
         verMasBtn.innerHTML = 'Ver más';
+        verMasBtn.textContent = 'Ver más';
         verMasBtn.onclick = function () {
           openModal(prod);
         };
@@ -338,6 +359,10 @@ function displayProductosMCL(data) {
         btns.appendChild(wppBtn);
 
         // Armado
+        card.classList.add('vehicle-card');
+        cover.classList.add('vehicle-card__media');
+        info.classList.add('vehicle-card__content');
+        btns.classList.add('vehicle-card__footer');
         card.appendChild(cover);
         card.appendChild(info);
         card.appendChild(btns);
