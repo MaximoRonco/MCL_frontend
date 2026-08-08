@@ -73,6 +73,10 @@
                         <a class="navegacion-enlace" href="index.html#contacto" title="Contacto">Contacto</a>
                         <!-- <a class="navegacion-enlace" href="#mapa">Nosotros</a> -->
                     </div>
+                    <a class="drawer-login navegacion-enlace" href="sesion.html" rel="nofollow">
+                        <i class="fas fa-user"></i>
+                        <span>Iniciar sesión</span>
+                    </a>
                 </nav>
                 <div class="flex iconos-header">
                     <a href="sesion.html" class="iniciar-sesion-icono" rel="nofollow" title="Iniciar sesión en tu cuenta">
@@ -132,26 +136,38 @@
  </div>
 
   <!-- Footer -->
-<footer class="footer">   
-    <div class="map-container">
-        <iframe src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d424.5437765297539!2d-63.90065740428695!3d-31.651637074419064!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x9432cb0659e24343%3A0x84ea6faf444da86!2sMCL%20Automotores!5e0!3m2!1ses-419!2sar!4v1755031114029!5m2!1ses-419!2sar" 
-            width="100%" 
-            height="200" 
-            style="border:0;" 
-            allowfullscreen="" 
-            loading="lazy" 
-            referrerpolicy="no-referrer-when-downgrade">
-        </iframe>
-    </div>
-    
-    <div class="dividir_footer">
-        <a href="index.html" class="logo_footer"><img id="logo_footer" src="./assets/img/logo_blanco-trn.png" alt="">
-        </a>
-        <div class="footer-container">
+<footer class="footer">
+    <div class="dividir_footer footer-shell">
+        <div class="footer-top">
+        <div class="footer-brand">
+            <a href="index.html" class="logo_footer"><img id="logo_footer" src="./assets/img/logo_blanco-trn.png" alt="">
+            </a>
+            <p>Compra y venta de vehículos</p>
+            <span>Río Segundo · Jesús María</span>
+        </div>
+        <div class="footer-branch footer-branch--rio">
+            <p class="footer-label">Sucursal</p>
+            <h3><i class="fas fa-map-marker-alt"></i> Río Segundo</h3>
+            <p>Ruta 9, esquina Paraguay</p>
+        </div>
+        <div class="footer-branch footer-branch--new">
+            <p class="footer-label">Nueva sucursal</p>
+            <h3><i class="fas fa-map-marker-alt"></i> Jesús María</h3>
+            <p>Ameghino 384</p>
+        </div>
+        </div>
+        <div class="footer-container footer-bottom">
             <!-- Agencia -->
         <div id="agencia-info" class="footer-section">
-            <h3>Agencia</h3>
-            <p><i class="fas fa-map-marker-alt"></i> Ruta 9, esquina Paraguay, Río Segundo</p>
+            <h3>Sucursales / Contacto</h3>
+            <div class="footer-branch">
+                <i class="fas fa-map-marker-alt"></i>
+                <p><strong>Rio Segundo</strong><span>Ruta 9, esquina Paraguay</span></p>
+            </div>
+            <div class="footer-branch">
+                <i class="fas fa-map-marker-alt"></i>
+                <p><strong>Jesus Maria</strong><span>Ameghino 384</span></p>
+            </div>
 
             <p><i class="fas fa-phone-alt"></i> <strong>Ignacio:</strong> 3572 52-5775</p>
             <p><i class="fas fa-phone-alt"></i> <strong>Santiago:</strong> 3572 43-9282</p>
@@ -162,16 +178,17 @@
         </div>
 
             <!-- Secciones -->
-            <div class="footer-section">
+            <div class="footer-section footer-nav">
                 <h3>Secciones</h3>
+                <a href="index.html"><p>Inicio</p></a>
                 <a href="catalogo.html"><p><i class="fas fa-car-side"></i> Catálogo</p></a>
                 <a href="index.html#sobre-nosotros"><p><i class="fas fa-users"></i> Nosotros</p></a>
                 <a href="index.html#contacto"><p><i class="fas fa-envelope"></i> Contacto</p></a>
             </div>
 
             <!-- Redes Sociales -->
-            <div class="footer-section">
-                <h3>Seguinos en las redes</h3>
+            <div class="footer-section footer-social">
+                <h3>Seguinos</h3>
                 <div class="social-icons">
                     <a href="https://www.instagram.com/mclautomotores_/?hl=es" target="_blank">
                         <i class="fab fa-instagram fa-2x"></i>
