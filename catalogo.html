@@ -24,10 +24,27 @@
     <link rel="stylesheet" href="css/header_styles.css">
     <link rel="stylesheet" href="css/catalogo.css">
     <link rel="stylesheet" href="css/style.css">
-    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;700&display=swap" rel="stylesheet">
+    <style>
+        body.public-page #barra-busqueda .categoria-btn.selected {
+            border-color: #b91127 !important;
+            background: #b91127 !important;
+            color: #ffffff !important;
+            box-shadow: 0 3px 10px rgba(185, 17, 39, 0.16) !important;
+        }
+
+        body.public-page #barra-busqueda .marca-btn.selected {
+            border-color: #b91127 !important;
+            background: rgba(185, 17, 39, 0.08) !important;
+            color: #b91127 !important;
+            box-shadow: none !important;
+        }
+    </style>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Montserrat:wght@400;500;600;700;800&display=swap" rel="stylesheet">
     <script src="https://kit.fontawesome.com/80682cd68b.js" crossorigin="anonymous"></script>
 </head>
-<body>
+<body class="public-page">
 
   <!-- Navbar -->
   <header class="header">
@@ -76,14 +93,24 @@
     </div>
 
     <div id="barra-busqueda">
+        <div class="filter-panel-header">
+            <h1>Encontrá tu vehículo</h1>
+            <p>Buscá por nombre, modelo o elegí una categoría.</p>
+        </div>
         <div id="input-busqueda">
-            <input type="text" id="buscar-input" placeholder="Buscar" onkeyup="filtrarPorBusqueda()">
+            <input type="text" id="buscar-input" placeholder="Buscar por marca, modelo o versión..." onkeyup="filtrarPorBusqueda()">
             <button id="buscar-btn">
-                <i class="fa-solid fa-magnifying-glass" style="color: #2f2f8f;"></i>
+                <i class="fa-solid fa-magnifying-glass"></i>
             </button>
         </div>
-        <div id="categorias-contenedor" class="categorias-contenedor"></div> <!-- Contenedor para las categorías -->
-        <div id="marcas-contenedor" class="marcas-contenedor" style="display: none;"></div> <!-- Contenedor para las marcas (subcategorías) -->    
+        <div class="filter-group filter-group-categorias">
+            <span class="filter-label">Tipo de vehículo</span>
+            <div id="categorias-contenedor" class="categorias-contenedor"></div> <!-- Contenedor para las categorías -->
+        </div>
+        <div class="filter-group filter-group-marcas">
+            <span class="filter-label">Marca</span>
+            <div id="marcas-contenedor" class="marcas-contenedor" style="display: none;"></div> <!-- Contenedor para las marcas (subcategorías) -->
+        </div>
     </div> 
     <div id="productos">
         <!-- El contenido se generará dinámicamente aquí -->

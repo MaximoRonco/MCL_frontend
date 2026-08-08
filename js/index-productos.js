@@ -126,7 +126,20 @@ window.openModalIndexProducto = function(prodStr) {
   // Namespace para ganar a Bootstrap
   modal.classList.add('mcl-modal');
   const contentWrapper = modal.querySelector('.modal-content');
-  if (contentWrapper) contentWrapper.classList.add('mcl-modal-content');
+  if (contentWrapper) {
+    contentWrapper.classList.add('mcl-modal-content');
+    let closeBtn = contentWrapper.querySelector('.close-btn');
+    if (!closeBtn) {
+      closeBtn = document.createElement('button');
+      closeBtn.className = 'close-btn';
+      contentWrapper.prepend(closeBtn);
+    }
+    closeBtn.innerHTML = '&times;';
+    closeBtn.setAttribute('aria-label', 'Cerrar detalle del vehículo');
+    closeBtn.setAttribute('role', 'button');
+    if (closeBtn.tagName === 'BUTTON') closeBtn.type = 'button';
+    closeBtn.onclick = window.closeModal;
+  }
 
   // Formateos
   const precioNum = parseFloat(prod.precio);
@@ -140,9 +153,7 @@ window.openModalIndexProducto = function(prodStr) {
 
   // Carrusel dentro del modal (igual que catalogo.js)
   if (contentWrapper) {
-    // limpiar carrusel previo si lo hubiera
-    const previous = contentWrapper.querySelector('.carousel-producto');
-    if (previous) previous.remove();
+    contentWrapper.querySelectorAll('.mcl-modal-gallery, .carousel-producto').forEach(el => el.remove());
 
     // Para index, si el producto tiene Fotos (array de objetos con url), si no, usar placeholder
     let fotos = [];
@@ -155,7 +166,10 @@ window.openModalIndexProducto = function(prodStr) {
 
     if (typeof window.createCarouselMCL === 'function') {
       const modalCarousel = window.createCarouselMCL(fotos, prod.nombre);
-      contentWrapper.insertBefore(modalCarousel, modalContent);
+      const gallery = document.createElement('div');
+      gallery.className = 'mcl-modal-gallery';
+      gallery.appendChild(modalCarousel);
+      contentWrapper.insertBefore(gallery, modalContent);
     } else {
       // fallback: solo imagen
       const img = document.createElement('img');
@@ -163,7 +177,10 @@ window.openModalIndexProducto = function(prodStr) {
       img.alt = prod.nombre;
       img.style.width = '100%';
       img.style.borderRadius = '12px';
-      contentWrapper.insertBefore(img, modalContent);
+      const gallery = document.createElement('div');
+      gallery.className = 'mcl-modal-gallery';
+      gallery.appendChild(img);
+      contentWrapper.insertBefore(gallery, modalContent);
     }
   }
 
@@ -183,19 +200,29 @@ window.openModalIndexProducto = function(prodStr) {
     </a>
   `;
 
+  modalContent.classList.add('mcl-modal-info');
+
   // Llenar el modal con la información
   modalContent.innerHTML = `
-    <span class="close-btn" onclick="closeModal()">&times;</span>
+    <div class="mcl-modal-kicker">Detalle del vehículo</div>
     <strong class="product-nombre">${escapeHTML(prod.nombre)}</strong>
-    <p class="producto_descripcion_modal">
-      ${prod.version ? `<b>Versión:</b> ${escapeHTML(prod.version)}<br>` : ''}
-      ${prod.modelo ? `<b>Modelo:</b> ${escapeHTML(String(prod.modelo))}<br>` : ''}
-      ${kmFmt ? `<b>Kilómetros:</b> ${kmFmt}<br>` : ''}
-      ${prod.descripcion ? `<b>Descripción:</b> ${escapeHTML(prod.descripcion)}<br>` : ''}
-    </p>
-    <div class="divPrecio-modal">${precioFmt}</div>
-    <div class="modal-buttons">
-      ${wppBtnHtml}
+    <div class="mcl-modal-meta">
+      ${prod.version ? `<div class="mcl-modal-meta-item"><span>Versión</span><strong>${escapeHTML(prod.version)}</strong></div>` : ''}
+      ${prod.modelo ? `<div class="mcl-modal-meta-item"><span>Modelo</span><strong>${escapeHTML(String(prod.modelo))}</strong></div>` : ''}
+      ${kmFmt ? `<div class="mcl-modal-meta-item"><span>Kilómetros</span><strong>${escapeHTML(kmFmt)}</strong></div>` : ''}
+    </div>
+    ${prod.descripcion ? `
+      <div class="mcl-modal-description">
+        <span>Descripción</span>
+        <p class="producto_descripcion_modal">${escapeHTML(prod.descripcion)}</p>
+      </div>
+    ` : ''}
+    <div class="mcl-modal-action-panel">
+      <span class="mcl-modal-price-label">Precio</span>
+      <div class="divPrecio-modal">${precioFmt}</div>
+      <div class="modal-buttons">
+        ${wppBtnHtml}
+      </div>
     </div>
   `;
 

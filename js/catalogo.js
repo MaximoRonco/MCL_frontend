@@ -294,12 +294,12 @@ function displayProductosMCL(data) {
           : '';
 
         info.innerHTML = `
-          <strong>${escapeHTML(prod.nombre)}</strong><br>
-          <p class="producto_descripcion">
-            ${prod.version ? `<b>Versión:</b> ${escapeHTML(prod.version)}<br>` : ''}
-            ${prod.modelo  ? `<b>Modelo:</b> ${escapeHTML(String(prod.modelo))}<br>` : ''}
-            ${kmFmt ? `<b>Kilómetros:</b> ${kmFmt}<br>` : ''}
-          </p>
+          <strong class="product-card-title">${escapeHTML(prod.nombre)}</strong>
+          <div class="producto_descripcion product-card-meta">
+            ${prod.version ? `<div class="product-card-meta-row"><b>Versión</b><span>${escapeHTML(prod.version)}</span></div>` : ''}
+            ${prod.modelo  ? `<div class="product-card-meta-row"><b>Modelo</b><span>${escapeHTML(String(prod.modelo))}</span></div>` : ''}
+            ${kmFmt ? `<div class="product-card-meta-row"><b>Kilómetros</b><span>${escapeHTML(kmFmt)}</span></div>` : ''}
+          </div>
           <div class="divPrecio">${precioFmt}</div>
         `;
 
@@ -340,8 +340,8 @@ function displayProductosMCL(data) {
         // Armado
         card.appendChild(cover);
         card.appendChild(info);
+        card.appendChild(btns);
         cardWrap.appendChild(card);
-        cardWrap.appendChild(btns);
         row.appendChild(cardWrap);
       });
 
@@ -361,7 +361,20 @@ function openModal(prod) {
   // AÑADIMOS NAMESPACE para ganar a Bootstrap (no quitamos tus clases)
   modal.classList.add('mcl-modal');
   const contentWrapper = modal.querySelector('.modal-content');
-  if (contentWrapper) contentWrapper.classList.add('mcl-modal-content');
+  if (contentWrapper) {
+    contentWrapper.classList.add('mcl-modal-content');
+    let closeBtn = contentWrapper.querySelector('.close-btn');
+    if (!closeBtn) {
+      closeBtn = document.createElement('button');
+      closeBtn.className = 'close-btn';
+      contentWrapper.prepend(closeBtn);
+      closeBtn.addEventListener('click', closeModal);
+    }
+    closeBtn.innerHTML = '&times;';
+    closeBtn.setAttribute('aria-label', 'Cerrar detalle del vehículo');
+    closeBtn.setAttribute('role', 'button');
+    if (closeBtn.tagName === 'BUTTON') closeBtn.type = 'button';
+  }
 
   // Formateos
   const precioNum = parseFloat(prod.precio);
@@ -376,13 +389,14 @@ function openModal(prod) {
   // Carrusel dentro del modal (reusa tu createCarouselMCL)
   const modalContentWrapper = modal.querySelector('.modal-content');
   if (modalContentWrapper) {
-    // limpiar carrusel previo si lo hubiera
-    const previous = modalContentWrapper.querySelector('.carousel-producto');
-    if (previous) previous.remove();
+    modalContentWrapper.querySelectorAll('.mcl-modal-gallery, .carousel-producto').forEach(el => el.remove());
 
     const fotos = (prod.Fotos || []).map(f => f.url);
     const modalCarousel = createCarouselMCL(fotos, prod.nombre);
-    modalContentWrapper.insertBefore(modalCarousel, modalContent); // arriba del texto
+    const gallery = document.createElement('div');
+    gallery.className = 'mcl-modal-gallery';
+    gallery.appendChild(modalCarousel);
+    modalContentWrapper.insertBefore(gallery, modalContent);
   }
 
   // ----- Botón WhatsApp -----
@@ -401,18 +415,29 @@ function openModal(prod) {
     </a>
   `;
 
+  modalContent.classList.add('mcl-modal-info');
+
   // ----- Llenar el modal con la información -----
   modalContent.innerHTML = `
+    <div class="mcl-modal-kicker">Detalle del vehículo</div>
     <strong class="product-nombre">${escapeHTML(prod.nombre)}</strong>
-    <p class="producto_descripcion_modal">
-      ${prod.version ? `<b>Versión:</b> ${escapeHTML(prod.version)}<br>` : ''}
-      ${prod.modelo ? `<b>Modelo:</b> ${escapeHTML(String(prod.modelo))}<br>` : ''}
-      ${kmFmt ? `<b>Kilómetros:</b> ${kmFmt}<br>` : ''}
-      ${prod.descripcion ? `<b>Descripción:</b> ${escapeHTML(prod.descripcion)}<br>` : ''}
-    </p>
-    <div class="divPrecio-modal">${precioFmt}</div>
-    <div class="modal-buttons">
-      ${wppBtnHtml}
+    <div class="mcl-modal-meta">
+      ${prod.version ? `<div class="mcl-modal-meta-item"><span>Versión</span><strong>${escapeHTML(prod.version)}</strong></div>` : ''}
+      ${prod.modelo ? `<div class="mcl-modal-meta-item"><span>Modelo</span><strong>${escapeHTML(String(prod.modelo))}</strong></div>` : ''}
+      ${kmFmt ? `<div class="mcl-modal-meta-item"><span>Kilómetros</span><strong>${escapeHTML(kmFmt)}</strong></div>` : ''}
+    </div>
+    ${prod.descripcion ? `
+      <div class="mcl-modal-description">
+        <span>Descripción</span>
+        <p class="producto_descripcion_modal">${escapeHTML(prod.descripcion)}</p>
+      </div>
+    ` : ''}
+    <div class="mcl-modal-action-panel">
+      <span class="mcl-modal-price-label">Precio</span>
+      <div class="divPrecio-modal">${precioFmt}</div>
+      <div class="modal-buttons">
+        ${wppBtnHtml}
+      </div>
     </div>
   `;
 
@@ -486,7 +511,7 @@ function createCoverImageMCL(urls = [], altBase = 'foto', onClick = null) {
 }
 
 // CARRUSEL DE IMAGENES PARA LA PANTALLA MODAL //
-function createCarouselMCL(urls = [], altBase = 'foto') {
+function createCarouselMCLLegacy(urls = [], altBase = 'foto') {
   const wrap = document.createElement('div');
   wrap.className = 'carousel-producto';
 
@@ -594,6 +619,340 @@ function createCarouselMCL(urls = [], altBase = 'foto') {
 }
 
 // Compat: si en algún lugar seguís llamando moveCarouselMCL(...)
+function createCarouselMCL(urls = [], altBase = 'foto') {
+  const wrap = document.createElement('div');
+  wrap.className = 'carousel-producto';
+
+  if (!urls.length) {
+    const empty = document.createElement('div');
+    empty.className = 'carousel-empty';
+    empty.textContent = 'Sin imágenes';
+    wrap.appendChild(empty);
+    return wrap;
+  }
+
+  let currentIndex = 0;
+
+  const main = document.createElement('div');
+  main.className = 'modal-gallery-main';
+
+  const mainImg = document.createElement('img');
+  mainImg.className = 'modal-main-image';
+  mainImg.loading = 'eager';
+  mainImg.decoding = 'async';
+  mainImg.addEventListener('click', () => {
+    if (mainImg.src) openMCLImageLightbox(mainImg.src, mainImg.alt || altBase);
+  });
+
+  const prev = document.createElement('button');
+  prev.className = 'carousel-control prev';
+  prev.type = 'button';
+  prev.setAttribute('aria-label', 'Imagen anterior');
+  prev.innerHTML = '&lt;';
+
+  const next = document.createElement('button');
+  next.className = 'carousel-control next';
+  next.type = 'button';
+  next.setAttribute('aria-label', 'Imagen siguiente');
+  next.innerHTML = '&gt;';
+
+  const thumbs = document.createElement('div');
+  thumbs.className = 'carousel-thumbs';
+
+  urls.forEach((src, i) => {
+    const thumb = document.createElement('img');
+    thumb.src = src;
+    thumb.alt = `mini ${i + 1}`;
+    thumb.className = 'carousel-thumb';
+    thumb.loading = 'lazy';
+    thumb.decoding = 'async';
+    thumb.addEventListener('click', () => setActiveImage(i));
+    thumbs.appendChild(thumb);
+  });
+
+  function setActiveImage(nextIndex) {
+    currentIndex = (nextIndex + urls.length) % urls.length;
+    mainImg.src = urls[currentIndex];
+    mainImg.alt = `${altBase} ${currentIndex + 1}`;
+
+    thumbs.querySelectorAll('.carousel-thumb').forEach((thumb, i) => {
+      const isActive = i === currentIndex;
+      thumb.classList.toggle('active', isActive);
+      if (isActive) {
+        thumb.scrollIntoView({ behavior: 'smooth', block: 'nearest', inline: 'nearest' });
+      }
+    });
+  }
+
+  function jump(step) {
+    setActiveImage(currentIndex + step);
+  }
+
+  prev.addEventListener('click', () => jump(-1));
+  next.addEventListener('click', () => jump(1));
+
+  let startX = 0;
+  let deltaX = 0;
+  main.addEventListener('touchstart', (e) => {
+    startX = e.touches[0].clientX;
+    deltaX = 0;
+  }, { passive: true });
+  main.addEventListener('touchmove', (e) => {
+    deltaX = e.touches[0].clientX - startX;
+  }, { passive: true });
+  main.addEventListener('touchend', () => {
+    if (Math.abs(deltaX) > 40) jump(deltaX < 0 ? 1 : -1);
+    deltaX = 0;
+  });
+
+  wrap.tabIndex = 0;
+  wrap.addEventListener('keydown', (e) => {
+    if (e.key === 'ArrowLeft') { e.preventDefault(); jump(-1); }
+    if (e.key === 'ArrowRight') { e.preventDefault(); jump(1); }
+  });
+
+  main.appendChild(prev);
+  main.appendChild(mainImg);
+  main.appendChild(next);
+  wrap.appendChild(main);
+  wrap.appendChild(thumbs);
+
+  setActiveImage(0);
+  return wrap;
+}
+
+let mclImageLightbox = null;
+let mclLightboxState = {
+  isOpen: false,
+  scale: 1,
+  translateX: 0,
+  translateY: 0,
+  previousBodyOverflow: '',
+  pointers: new Map(),
+  isDragging: false,
+  didDrag: false,
+  dragStartX: 0,
+  dragStartY: 0,
+  dragBaseX: 0,
+  dragBaseY: 0,
+  pinchStartDistance: 0,
+  pinchStartScale: 1
+};
+
+function ensureMCLImageLightbox() {
+  if (mclImageLightbox) return mclImageLightbox;
+
+  const lightbox = document.createElement('div');
+  lightbox.className = 'mcl-image-lightbox';
+  lightbox.setAttribute('role', 'dialog');
+  lightbox.setAttribute('aria-modal', 'true');
+  lightbox.setAttribute('aria-label', 'Vista ampliada del vehículo');
+
+  lightbox.innerHTML = `
+    <div class="lightbox-toolbar">
+      <button class="lightbox-control lightbox-zoom-out" type="button" aria-label="Alejar">-</button>
+      <span class="lightbox-zoom-value" aria-live="polite">100%</span>
+      <button class="lightbox-control lightbox-zoom-in" type="button" aria-label="Acercar">+</button>
+      <button class="lightbox-control lightbox-reset" type="button" aria-label="Restablecer zoom">Restablecer</button>
+      <button class="lightbox-control lightbox-close" type="button" aria-label="Cerrar imagen">&times;</button>
+    </div>
+    <div class="lightbox-stage">
+      <img class="lightbox-image" alt="">
+    </div>
+  `;
+
+  document.body.appendChild(lightbox);
+
+  const stage = lightbox.querySelector('.lightbox-stage');
+  const img = lightbox.querySelector('.lightbox-image');
+  const zoomValue = lightbox.querySelector('.lightbox-zoom-value');
+  const zoomOut = lightbox.querySelector('.lightbox-zoom-out');
+  const zoomIn = lightbox.querySelector('.lightbox-zoom-in');
+  const reset = lightbox.querySelector('.lightbox-reset');
+  const close = lightbox.querySelector('.lightbox-close');
+
+  mclImageLightbox = { lightbox, stage, img, zoomValue, zoomOut, zoomIn, reset, close };
+
+  zoomOut.addEventListener('click', () => setMCLLightboxZoom(mclLightboxState.scale - 0.25));
+  zoomIn.addEventListener('click', () => setMCLLightboxZoom(mclLightboxState.scale + 0.25));
+  reset.addEventListener('click', resetMCLLightboxZoom);
+  close.addEventListener('click', closeMCLImageLightbox);
+
+  stage.addEventListener('wheel', (e) => {
+    if (!mclLightboxState.isOpen) return;
+    e.preventDefault();
+    setMCLLightboxZoom(mclLightboxState.scale + (e.deltaY < 0 ? 0.25 : -0.25));
+  }, { passive: false });
+
+  stage.addEventListener('click', (e) => {
+    if (e.target === stage && mclLightboxState.scale === 1 && !mclLightboxState.didDrag) {
+      closeMCLImageLightbox();
+    }
+  });
+
+  img.addEventListener('dblclick', (e) => {
+    e.preventDefault();
+    setMCLLightboxZoom(mclLightboxState.scale === 1 ? 2 : 1);
+  });
+
+  stage.addEventListener('pointerdown', handleMCLLightboxPointerDown);
+  stage.addEventListener('pointermove', handleMCLLightboxPointerMove);
+  stage.addEventListener('pointerup', handleMCLLightboxPointerUp);
+  stage.addEventListener('pointercancel', handleMCLLightboxPointerUp);
+
+  document.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape' && mclLightboxState.isOpen) {
+      e.preventDefault();
+      e.stopPropagation();
+      closeMCLImageLightbox();
+    }
+  }, true);
+
+  window.addEventListener('resize', () => {
+    if (mclLightboxState.isOpen) {
+      clampMCLLightboxPan();
+      applyMCLLightboxTransform();
+    }
+  });
+
+  return mclImageLightbox;
+}
+
+function openMCLImageLightbox(src, alt = 'Vehículo') {
+  const lightbox = ensureMCLImageLightbox();
+  mclLightboxState.previousBodyOverflow = document.body.style.overflow;
+  mclLightboxState.isOpen = true;
+  lightbox.img.src = src;
+  lightbox.img.alt = alt;
+  document.body.style.overflow = 'hidden';
+  resetMCLLightboxZoom();
+  lightbox.lightbox.classList.add('is-open');
+  lightbox.close.focus();
+}
+
+function closeMCLImageLightbox() {
+  if (!mclImageLightbox || !mclLightboxState.isOpen) return;
+  mclImageLightbox.lightbox.classList.remove('is-open');
+  document.body.style.overflow = mclLightboxState.previousBodyOverflow;
+  mclLightboxState.isOpen = false;
+  mclLightboxState.pointers.clear();
+  resetMCLLightboxZoom();
+  mclImageLightbox.img.removeAttribute('src');
+}
+
+function resetMCLLightboxZoom() {
+  mclLightboxState.scale = 1;
+  mclLightboxState.translateX = 0;
+  mclLightboxState.translateY = 0;
+  mclLightboxState.didDrag = false;
+  applyMCLLightboxTransform();
+}
+
+function setMCLLightboxZoom(nextScale) {
+  mclLightboxState.scale = Math.max(1, Math.min(4, nextScale));
+  if (mclLightboxState.scale === 1) {
+    mclLightboxState.translateX = 0;
+    mclLightboxState.translateY = 0;
+  }
+  clampMCLLightboxPan();
+  applyMCLLightboxTransform();
+}
+
+function getMCLLightboxPanBounds() {
+  const { stage, img } = ensureMCLImageLightbox();
+  const rect = stage.getBoundingClientRect();
+  const naturalW = img.naturalWidth || rect.width;
+  const naturalH = img.naturalHeight || rect.height;
+  const fitRatio = Math.min(rect.width / naturalW, rect.height / naturalH);
+  const baseW = naturalW * fitRatio;
+  const baseH = naturalH * fitRatio;
+  return {
+    maxX: Math.max(0, (baseW * mclLightboxState.scale - rect.width) / 2),
+    maxY: Math.max(0, (baseH * mclLightboxState.scale - rect.height) / 2)
+  };
+}
+
+function clampMCLLightboxPan() {
+  const { maxX, maxY } = getMCLLightboxPanBounds();
+  mclLightboxState.translateX = Math.max(-maxX, Math.min(maxX, mclLightboxState.translateX));
+  mclLightboxState.translateY = Math.max(-maxY, Math.min(maxY, mclLightboxState.translateY));
+}
+
+function applyMCLLightboxTransform() {
+  if (!mclImageLightbox) return;
+  const { img, zoomValue } = mclImageLightbox;
+  img.style.transform = `translate(${mclLightboxState.translateX}px, ${mclLightboxState.translateY}px) scale(${mclLightboxState.scale})`;
+  img.classList.toggle('is-zoomed', mclLightboxState.scale > 1);
+  zoomValue.textContent = `${Math.round(mclLightboxState.scale * 100)}%`;
+}
+
+function handleMCLLightboxPointerDown(e) {
+  if (!mclLightboxState.isOpen) return;
+  const { stage } = ensureMCLImageLightbox();
+  if (stage.setPointerCapture) {
+    try {
+      stage.setPointerCapture(e.pointerId);
+    } catch (error) {
+      // Algunas pruebas/eventos sinteticos no registran un pointer capturable.
+    }
+  }
+  mclLightboxState.pointers.set(e.pointerId, { x: e.clientX, y: e.clientY });
+  mclLightboxState.didDrag = false;
+
+  if (mclLightboxState.pointers.size === 1 && mclLightboxState.scale > 1) {
+    mclLightboxState.isDragging = true;
+    mclLightboxState.dragStartX = e.clientX;
+    mclLightboxState.dragStartY = e.clientY;
+    mclLightboxState.dragBaseX = mclLightboxState.translateX;
+    mclLightboxState.dragBaseY = mclLightboxState.translateY;
+  }
+
+  if (mclLightboxState.pointers.size === 2) {
+    const points = Array.from(mclLightboxState.pointers.values());
+    mclLightboxState.pinchStartDistance = Math.hypot(points[0].x - points[1].x, points[0].y - points[1].y);
+    mclLightboxState.pinchStartScale = mclLightboxState.scale;
+    mclLightboxState.isDragging = false;
+  }
+}
+
+function handleMCLLightboxPointerMove(e) {
+  if (!mclLightboxState.isOpen || !mclLightboxState.pointers.has(e.pointerId)) return;
+  mclLightboxState.pointers.set(e.pointerId, { x: e.clientX, y: e.clientY });
+
+  if (mclLightboxState.pointers.size === 2) {
+    const points = Array.from(mclLightboxState.pointers.values());
+    const distance = Math.hypot(points[0].x - points[1].x, points[0].y - points[1].y);
+    if (mclLightboxState.pinchStartDistance > 0) {
+      setMCLLightboxZoom(mclLightboxState.pinchStartScale * (distance / mclLightboxState.pinchStartDistance));
+    }
+    return;
+  }
+
+  if (!mclLightboxState.isDragging || mclLightboxState.scale <= 1) return;
+  const dx = e.clientX - mclLightboxState.dragStartX;
+  const dy = e.clientY - mclLightboxState.dragStartY;
+  if (Math.abs(dx) > 3 || Math.abs(dy) > 3) mclLightboxState.didDrag = true;
+  mclLightboxState.translateX = mclLightboxState.dragBaseX + dx;
+  mclLightboxState.translateY = mclLightboxState.dragBaseY + dy;
+  clampMCLLightboxPan();
+  applyMCLLightboxTransform();
+}
+
+function handleMCLLightboxPointerUp(e) {
+  if (!mclLightboxState.pointers.has(e.pointerId)) return;
+  mclLightboxState.pointers.delete(e.pointerId);
+  mclLightboxState.isDragging = false;
+
+  if (mclLightboxState.pointers.size === 1 && mclLightboxState.scale > 1) {
+    const point = Array.from(mclLightboxState.pointers.values())[0];
+    mclLightboxState.isDragging = true;
+    mclLightboxState.dragStartX = point.x;
+    mclLightboxState.dragStartY = point.y;
+    mclLightboxState.dragBaseX = mclLightboxState.translateX;
+    mclLightboxState.dragBaseY = mclLightboxState.translateY;
+  }
+}
+
 function moveCarouselMCL(step, imgsWrap) {
   const imgs = imgsWrap.querySelectorAll('.carousel-image');
   if (!imgs.length) return;

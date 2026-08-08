@@ -11,6 +11,13 @@
     --color-primary: #b91127;
     --color-black: #131313;
     --color-light: #E6E6E6;
+    --font-heading: 'Montserrat', sans-serif;
+    --font-body: 'Inter', sans-serif;
+    --text-primary: #252525;
+    --text-secondary: #5f6368;
+    --btn-radius: 10px;
+    --btn-height: 46px;
+    --transition-fast: 180ms ease;
 }
 
 .contenedor {
@@ -190,7 +197,7 @@ img {
 }
 
 .header img {
-    height: 70px;
+    height: 60px;
 }
 
 .header a{
@@ -301,7 +308,7 @@ header .navegacion-enlace:hover{
     }
 
     header img{
-        height: 60px !important;
+        height: 50px !important;
     }
 }
 
@@ -641,3 +648,149 @@ header {
 }
 
 */
+
+
+/* ======= MODERNIZACION PUBLICA: TIPOGRAFIA HEADER/UI ======= */
+body.public-page {
+    font-family: var(--font-body) !important;
+    font-size: 1.6rem !important;
+    font-weight: 400;
+    line-height: 1.62 !important;
+    color: var(--text-primary);
+}
+
+.public-page h1,
+.public-page h2,
+.public-page h3,
+.public-page h4,
+.public-page h5 {
+    font-family: var(--font-heading) !important;
+    font-weight: 700;
+    line-height: 1.18 !important;
+    letter-spacing: 0;
+}
+
+.public-page h1 {
+    font-size: clamp(3rem, 4vw, 4.8rem) !important;
+}
+
+.public-page h2 {
+    font-size: clamp(2.5rem, 3vw, 3.6rem) !important;
+}
+
+.public-page h3 {
+    font-size: clamp(2rem, 2vw, 2.4rem) !important;
+}
+
+.public-page h4 {
+    font-size: clamp(1.8rem, 1.8vw, 2.2rem) !important;
+}
+
+.public-page h5 {
+    font-size: clamp(1.6rem, 1.6vw, 2rem) !important;
+}
+
+.public-page p {
+    font-family: var(--font-body);
+    font-size: 1.6rem;
+    line-height: 1.62;
+}
+
+.public-page a {
+    font-family: var(--font-body) !important;
+    font-size: 1.6rem !important;
+    text-transform: none;
+}
+
+.public-page .header {
+    font-family: var(--font-body) !important;
+}
+
+.public-page .logo,
+.public-page .navegacion-enlace {
+    font-family: var(--font-body) !important;
+}
+
+.public-page .navegacion-enlace {
+    font-size: 1.5rem !important;
+    font-weight: 600;
+    letter-spacing: 0;
+    transition:
+        color var(--transition-fast),
+        border-color var(--transition-fast),
+        transform var(--transition-fast);
+}
+
+.public-page header .navegacion-enlace:hover {
+    color: #ffffff;
+    transform: translateY(-1px);
+    border-bottom-color: var(--color-primary);
+}
+
+.public-page .iniciar-sesion-icono {
+    width: 44px;
+    height: 44px;
+    border: 1px solid rgba(255, 255, 255, 0.26);
+    border-radius: 999px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    color: #ffffff;
+    transition:
+        background-color var(--transition-fast),
+        border-color var(--transition-fast),
+        transform var(--transition-fast);
+}
+
+.public-page .iconos-header {
+    padding-left: 12px;
+}
+
+.public-page .iconos-header i {
+    margin-left: 0;
+    font-size: 1.6rem;
+}
+
+.public-page .iconos-header i:hover {
+    transform: none;
+}
+
+.public-page .iniciar-sesion-icono:hover {
+    background: rgba(255, 255, 255, 0.08);
+    border-color: rgba(255, 255, 255, 0.42);
+    transform: translateY(-1px);
+}
+
+.public-page .menu-close {
+    font-family: var(--font-body) !important;
+    transition: color var(--transition-fast), transform var(--transition-fast);
+}
+
+.public-page .menu-close:hover {
+    color: var(--color-primary);
+    transform: translateY(-1px);
+}
+
+@media (max-width: 975px) {
+    .public-page .links-header a {
+        font-size: 1.5rem !important;
+    }
+}
+
+@media (max-width: 600px) {
+    .public-page h1 {
+        font-size: clamp(3rem, 8vw, 3.6rem) !important;
+    }
+
+    .public-page h2 {
+        font-size: clamp(2.5rem, 7vw, 3rem) !important;
+    }
+
+    .public-page h3 {
+        font-size: clamp(1.9rem, 6vw, 2.2rem) !important;
+    }
+
+    .public-page p {
+        font-size: 1.5rem;
+    }
+}
