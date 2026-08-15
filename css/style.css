@@ -961,53 +961,64 @@ h2 {
 /* Inicio de Sesión */
 
 #contenidoSesion i{
-    font-size: 1.5rem;
-    margin-right: 10px;
-    margin-left: 10px;
-    color: var(--color-primary);
+    flex: 0 0 auto;
+    width: 20px;
+    margin: 0 12px 0 0;
+    color: #b91127;
+    font-size: 1.55rem;
+    text-align: center;
 }
 
 .input-container {
     display: flex;
     align-items: center;
-    border: 1px solid #ccc;
-    border-radius: 5px;
-    padding: 5px;
+    width: 100%;
+    height: 52px;
+    padding: 0 15px;
+    border: 1px solid #dddddf;
+    border-radius: 10px;
+    background: #fafafa;
 }
 
 .input-container i {
-    margin-right: 5px;
+    margin-right: 12px;
 }
 
 .input-container input {
     border: none;
     outline: none;
+    background: transparent;
 }
 
 #contenedorSesion{
     font-family: 'Montserrat', sans-serif !important;
     width: 100%;
-    height: 100vh;
+    min-height: calc(100vh - 86px);
+    padding: 48px 16px;
     display: flex;
-    flex-direction: column;
     align-items: center;
     justify-content: center;
+    background:
+      radial-gradient(circle at top, rgba(185, 17, 39, 0.07), transparent 34%),
+      #f5f5f6;
 }
 
 #contenedorSesion img{
-    width: 80%;
-    display: flex;
+    display: block;
+    width: min(195px, 58vw);
+    height: auto;
     margin: 0 auto;
 }
 
 #usuario, #contraseña{
     display: flex;
-    width: 80%;
+    width: 100%;
 }
 
 #iniciar-Sesion input{
-    height: 3rem;
-    width: 80%;
+    width: 100%;
+    height: 100%;
+    min-width: 0;
 }
 
 /*.iconoUser{
@@ -1016,16 +1027,24 @@ h2 {
 
 
 #iniciar-Sesion{
-    height: 500px;
-    width: 50%;
-    border-radius: 5px;
-    -webkit-box-shadow: 0px 5px 15px 0px rgba(112,112,112,0.48);
-    -moz-box-shadow: 0px 5px 15px 0px rgba(112,112,112,0.48);
-    box-shadow: 0px 5px 15px 0px rgba(112,112,112,0.48);
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    border: 0.1px solid rgba(138, 138, 138, 0.336);
+    position: relative;
+    width: min(100%, 450px);
+    padding: 40px 40px 42px;
+    border: 1px solid rgba(21, 21, 21, 0.08);
+    border-radius: 18px;
+    background: #ffffff;
+    box-shadow: 0 22px 55px rgba(17, 17, 20, 0.11);
+}
+
+#iniciar-Sesion::before {
+    content: "";
+    position: absolute;
+    top: 0;
+    left: 34px;
+    right: 34px;
+    height: 4px;
+    border-radius: 0 0 999px 999px;
+    background: #b91127;
 }
 .barraSesion{
     display: flex;
@@ -1034,84 +1053,141 @@ h2 {
 }
 
 #imgSesion{
-    margin-top: 40px;
+    display: flex;
+    justify-content: center;
+    margin: 0 0 28px;
 }
 
 #iniciar-Sesion h2{
     font-family: 'Montserrat', sans-serif !important;
-    margin-top: 10px;
-    font-size: 30px !important;
-    color: #3f3f3f;
+    margin: 0;
+    font-size: 2.8rem !important;
+    color: #151515;
+    line-height: 1.15;
 }
 
 #contenidoSesion{
     display: flex;
     flex-direction: column;
-    align-items: center;
-    gap: 20px;
+    width: 100%;
+    gap: 18px;
+}
+
+#contenidoSesion .login-heading {
+    margin-bottom: 6px;
+    text-align: center;
+}
+
+#contenidoSesion .login-heading p {
+    margin: 10px 0 0;
+    color: #70737a;
+    font-family: 'Inter', sans-serif;
+    font-size: 1.45rem;
+    line-height: 1.45;
+}
+
+.login-field {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    width: 100%;
+}
+
+.login-field label {
+    color: #25262a;
+    font-family: 'Inter', sans-serif;
+    font-size: 1.35rem;
+    font-weight: 700;
+    line-height: 1.2;
+}
+
+.input-container:focus-within {
+    border-color: #b91127;
+    background: #ffffff;
+    box-shadow: 0 0 0 4px rgba(185, 17, 39, 0.11);
 }
 
 #iniciar-Sesion button{
-    height: 3rem;
-    font-size: 15px;
-    font-weight:bold;
-    width: 80%;
+    height: 50px;
+    min-height: 50px;
+    margin-top: 4px;
+    font-size: 1.55rem;
+    font-weight: 700;
+    width: 100%;
     border: none;
-    background-color: var(--color-primary);
+    border-radius: 10px;
+    background-color: #b91127;
     color: var(--color-light);
 }
 
 #iniciar-Sesion input::placeholder{
-    font-size: 15px;
+    color: #9a9ca3;
+    font-size: 1.5rem;
 }
 
 #iniciar-Sesion input{
-    font-size: 20px;
+    color: #151515;
+    font-family: 'Inter', sans-serif;
+    font-size: 1.55rem;
+    font-weight: 500;
 }
 
 #iniciar-Sesion button:hover{
-    transform: scale(1.02);
-    transition: all 200ms;
-    background-color: #474747;
+    transform: none;
+    transition: background-color 180ms ease, box-shadow 180ms ease;
+    background-color: #9f0f21;
+    box-shadow: 0 10px 22px rgba(185, 17, 39, 0.18);
     cursor: pointer;
 }
 
 
 @media (max-width: 768px) {
+    #contenedorSesion {
+        min-height: calc(100vh - 76px);
+        padding: 34px 16px;
+    }
+
+    #contenedorSesion img {
+        width: min(175px, 54vw);
+    }
+
+    #imgSesion {
+        margin-bottom: 24px;
+    }
+
     #contenidoSesion h2{
         font-family: 'Montserrat', sans-serif !important;
-        font-size: 25px !important;
-        margin: 20px;
+        font-size: 2.45rem !important;
+        margin: 0;
     }
 
     #iniciar-Sesion{
-        width: 80%;
-        box-shadow: 0 1px 3px rgba(0,0,0,0.12), 0 1px 2px rgba(0,0,0,0.24);
-        display: flex;
-        flex-direction: column;
-        align-items: center;
+        width: min(100%, 450px);
+        padding: 30px 22px 32px;
+        border-radius: 18px;
+        box-shadow: 0 18px 42px rgba(17, 17, 20, 0.1);
     }
 
     #usuario, #contraseña{
-        width: 80%;
+        width: 100%;
     }
 
     #iniciar-Sesion button{
-        height: 3rem;
-        font-size: 15px;
-        font-weight:bold;
-        width: 80%;
+        height: 50px;
+        font-size: 1.5rem;
+        font-weight: 700;
+        width: 100%;
         border: none;
-        background-color: var(--color-primary);
+        background-color: #b91127;
         color: var(--color-light);
 
     }
     #iniciar-Sesion input::placeholder{
-        font-size: 12px;
+        font-size: 1.45rem;
     }
     #contenidoSesion i{
-        font-size: 1.3rem;
-        margin-right: 10px;
+        font-size: 1.45rem;
+        margin-right: 12px;
     }
 }
 
@@ -1706,8 +1782,22 @@ body.public-page {
 }
 
 .public-page #iniciar-Sesion button {
-  width: 80%;
-  height: var(--btn-height);
+  width: 100%;
+  height: 50px;
+  min-height: 50px;
+}
+
+.public-page #contenedorSesion #btnIniciarSesion {
+  border-radius: 10px;
+  background: #b91127;
+  box-shadow: none;
+  transform: none;
+}
+
+.public-page #contenedorSesion #btnIniciarSesion:hover {
+  background: #9f0f21 !important;
+  box-shadow: 0 10px 22px rgba(185, 17, 39, 0.18);
+  transform: none;
 }
 
 @media (max-width: 600px) {
@@ -1876,11 +1966,12 @@ body.public-page .contacto-container {
   display: flex;
   flex-direction: column;
   align-items: flex-start;
-  justify-content: space-between;
+  justify-content: flex-start;
+  gap: 34px;
   margin: 0;
   min-width: 0;
   height: auto;
-  padding: 48px 44px 0;
+  padding: 46px 44px 0;
   overflow: hidden;
   background:
     linear-gradient(135deg, rgba(185, 17, 39, 0.2), transparent 34%),
@@ -1891,6 +1982,7 @@ body.public-page .contacto-container {
 body.public-page .contacto-copy {
   position: relative;
   z-index: 1;
+  width: 100%;
 }
 
 body.public-page .contacto-eyebrow {
@@ -1915,11 +2007,12 @@ body.public-page .contacto-eyebrow span {
 }
 
 body.public-page .contacto-container h2 {
-  max-width: 9.4em;
+  max-width: 10.4em;
   margin: 0 0 18px;
   color: #ffffff;
   font-size: clamp(3.6rem, 4.2vw, 5.4rem) !important;
   line-height: 0.98;
+  text-align: left;
 }
 
 body.public-page .contacto-container p {
@@ -1937,6 +2030,10 @@ body.public-page .footer .social-icons {
   flex-wrap: wrap;
   gap: 12px;
   margin: 0;
+}
+
+body.public-page .contacto-social {
+  margin-top: 4px;
 }
 
 body.public-page .contacto-social a {
@@ -1973,7 +2070,8 @@ body.public-page .contacto-social i {
 
 body.public-page .contacto-auto {
   width: 100%;
-  margin-top: 30px;
+  margin-top: auto;
+  margin-bottom: 20px !important;
 }
 
 body.public-page .contacto-auto img,
@@ -1985,6 +2083,7 @@ body.public-page .contacto-container img {
   margin: 0 0 -10px auto !important;
   object-fit: contain;
   filter: drop-shadow(0 22px 24px rgba(0, 0, 0, 0.28));
+  transform: translateX(-30px);
 }
 
 body.public-page .formulario-container {
@@ -2001,6 +2100,10 @@ body.public-page .formulario-container {
   transform: none;
 }
 
+#contacto-title{
+  width: 100%;
+}
+
 body.public-page .formulario-intro {
   margin-bottom: 30px;
 }
@@ -2011,11 +2114,12 @@ body.public-page .contacto-eyebrow--form {
 }
 
 body.public-page .formulario-intro h3 {
-  max-width: 12em;
+  max-width: min(100%, 540px);
   margin: 0;
   color: #151515;
   font-size: clamp(2.4rem, 2.5vw, 3.2rem) !important;
   line-height: 1.12;
+  text-align: left;
 }
 
 body.public-page .formulario {
@@ -2373,6 +2477,7 @@ body.public-page .derechos p {
   }
 
   body.public-page .contacto-container {
+    gap: 28px;
     padding: 42px 38px 0;
   }
 
@@ -2380,6 +2485,7 @@ body.public-page .derechos p {
   body.public-page .contacto-container img {
     width: min(72%, 360px);
     margin: 24px auto -8px !important;
+    transform: none;
   }
 
   body.public-page .formulario-container {
@@ -2428,6 +2534,7 @@ body.public-page .derechos p {
 
   body.public-page .contacto-container {
     align-items: flex-start;
+    gap: 24px;
     padding: 30px 24px 0;
   }
 
@@ -2467,6 +2574,7 @@ body.public-page .derechos p {
     width: min(260px, 84%);
     align-self: center;
     margin: 22px auto -6px !important;
+    transform: none;
   }
 
   body.public-page .formulario-container {
@@ -2474,6 +2582,7 @@ body.public-page .derechos p {
   }
 
   body.public-page .formulario-intro h3 {
+    max-width: 100%;
     font-size: 2.45rem !important;
   }
 
@@ -2511,3 +2620,8 @@ body.public-page .derechos p {
   }
 }
 
+#contacto-title{
+  width: 100% !important;
+  max-width: 10.4em !important;
+  text-align: left !important;
+}

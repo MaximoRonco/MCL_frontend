@@ -1230,6 +1230,47 @@
   font-size: clamp(1.9rem, 2vw, 2.2rem);
 }
 
+.public-page #productos .catalog-empty-state {
+  display: grid;
+  justify-items: center;
+  gap: 10px;
+  width: min(100%, 620px);
+  margin: 18px auto 30px;
+  padding: 32px 28px;
+  border: 1px solid #e3e3e5;
+  border-radius: 14px;
+  background: #f7f7f8;
+  color: #1f2024;
+  text-align: center;
+}
+
+.public-page #productos .catalog-empty-state i {
+  display: inline-grid;
+  place-items: center;
+  width: 48px;
+  height: 48px;
+  border-radius: 999px;
+  background: #ffffff;
+  color: #b91127;
+  font-size: 2rem;
+  box-shadow: 0 10px 24px rgba(0, 0, 0, 0.08);
+}
+
+.public-page #productos .catalog-empty-state strong {
+  color: #151515;
+  font-size: clamp(1.8rem, 2vw, 2.2rem);
+  font-weight: 800;
+  line-height: 1.25;
+}
+
+.public-page #productos .catalog-empty-state p {
+  max-width: 46ch;
+  margin: 0;
+  color: #6d7078;
+  font-size: 1.45rem;
+  line-height: 1.45;
+}
+
 .public-page .featured-card h3,
 .public-page .mini-card h3 {
   font-size: clamp(2rem, 2.2vw, 2.4rem) !important;
@@ -2904,6 +2945,12 @@ body.public-page #productos .product-info {
   text-align: left;
 }
 
+body.public-page #productos .vehicle-card__head {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
 body.public-page #productos .vehicle-card__eyebrow {
   width: fit-content;
   padding: 5px 9px;
@@ -3054,8 +3101,8 @@ body.public-page .ultimos-ingresos-header p {
 
 body.public-page #productos-index.featured-grid {
   display: grid;
-  grid-template-columns: minmax(0, 1.15fr) minmax(0, 0.82fr) minmax(0, 0.82fr);
-  gap: 18px;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: 20px;
   width: 100%;
   max-width: none;
   margin: 0;
@@ -3065,35 +3112,37 @@ body.public-page #productos-index .featured-card,
 body.public-page #productos-index .mini-card {
   display: flex;
   flex-direction: column;
+  min-height: 420px;
   height: 100%;
   border: 1px solid rgba(255, 255, 255, 0.1);
-  border-radius: 18px;
-  background: #1b1b1d;
+  border-radius: 16px;
+  background: linear-gradient(135deg, #202023 0%, #171719 100%);
   box-shadow: 0 16px 38px rgba(0, 0, 0, 0.22) !important;
   overflow: hidden;
   cursor: pointer;
 }
 
 body.public-page #productos-index .featured-card {
-  grid-row: 1 / span 2;
-  grid-column: 1 / 2;
+  grid-row: auto;
+  grid-column: auto;
 }
 
 body.public-page #productos-index .featured-card:hover,
 body.public-page #productos-index .mini-card:hover {
   border-color: rgba(185, 17, 39, 0.48);
-  background: #202023;
+  background: linear-gradient(135deg, #252529 0%, #1a1a1d 100%);
 }
 
 body.public-page #productos-index .card-img-wrap {
   aspect-ratio: 16 / 10;
   height: auto !important;
+  min-height: 0;
   overflow: hidden;
   background: #101011;
 }
 
 body.public-page #productos-index .featured-card .card-img-wrap {
-  aspect-ratio: 4 / 3;
+  aspect-ratio: 16 / 10;
   height: auto !important;
 }
 
@@ -3108,13 +3157,14 @@ body.public-page #productos-index .card-body {
   display: flex;
   flex: 1 1 auto;
   flex-direction: column;
-  gap: 12px;
-  padding: 18px;
+  gap: 14px;
+  min-width: 0;
+  padding: 20px;
   color: #ffffff;
 }
 
 body.public-page #productos-index .featured-card .card-body {
-  padding: 24px;
+  padding: 20px;
 }
 
 body.public-page #productos-index .latest-card__label {
@@ -3130,14 +3180,16 @@ body.public-page #productos-index .latest-card__label {
 }
 
 body.public-page #productos-index h3 {
-  min-height: 48px;
+  min-height: auto;
+  margin: 0;
   color: #ffffff;
-  font-size: 1.9rem !important;
+  font-size: clamp(2rem, 2vw, 2.7rem) !important;
+  line-height: 1.08;
 }
 
 body.public-page #productos-index .featured-card h3 {
   min-height: auto;
-  font-size: 2.8rem !important;
+  font-size: clamp(2rem, 2vw, 2.7rem) !important;
 }
 
 body.public-page #productos-index .latest-card__meta {
@@ -3147,29 +3199,40 @@ body.public-page #productos-index .latest-card__meta {
 }
 
 body.public-page #productos-index .latest-card__meta span {
-  padding: 5px 8px;
+  padding: 6px 9px;
   border: 1px solid rgba(255, 255, 255, 0.11);
   border-radius: 999px;
   color: #cacdd3;
-  font-size: 1.18rem;
+  font-size: 1.2rem;
   font-weight: 700;
 }
 
 body.public-page #productos-index .latest-card__price {
-  margin-top: auto;
+  margin-top: 4px;
   color: #ffffff;
-  font-size: 2.3rem;
+  font-size: clamp(2.2rem, 2vw, 2.9rem);
   font-weight: 800;
 }
 
 body.public-page #productos-index .featured-card .latest-card__price {
-  font-size: 3rem;
+  font-size: clamp(2.2rem, 2vw, 2.9rem);
 }
 
 body.public-page #productos-index .product-buttons {
   display: flex;
   gap: 10px;
-  margin-top: 4px !important;
+  margin-top: 0 !important;
+}
+
+body.public-page #productos-index .ver-mas-btn {
+  min-height: 44px;
+}
+
+body.public-page #productos-index .wpp-contact-btn {
+  flex: 0 0 44px;
+  width: 44px;
+  height: 44px;
+  min-height: 44px;
 }
 
 body.public-page .ultimos-ingresos-section .ver-mas {
@@ -3195,9 +3258,9 @@ body.public-page .ultimos-ingresos-section .ver-mas .btn::after {
     grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 
-  body.public-page #productos-index .featured-card {
-    grid-row: auto;
-    grid-column: 1 / -1;
+  body.public-page #productos-index .featured-card,
+  body.public-page #productos-index .mini-card {
+    min-height: 400px;
   }
 }
 
@@ -3217,10 +3280,25 @@ body.public-page .ultimos-ingresos-section .ver-mas .btn::after {
 
   body.public-page #productos-index .featured-card,
   body.public-page #productos-index .mini-card {
+    display: flex;
+    flex-direction: column;
     width: 100%;
     max-width: none;
     grid-column: auto !important;
     grid-row: auto !important;
+    min-height: 0;
+  }
+
+  body.public-page #productos-index .card-img-wrap,
+  body.public-page #productos-index .featured-card .card-img-wrap {
+    aspect-ratio: 16 / 10;
+    height: auto !important;
+    min-height: 0;
+  }
+
+  body.public-page #productos-index .card-body,
+  body.public-page #productos-index .featured-card .card-body {
+    padding: 18px;
   }
 
   body.public-page .ultimos-ingresos-section .ver-mas {

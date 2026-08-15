@@ -78,14 +78,23 @@
                 <img src="./assets/img/logo_rojo-trn.png" alt="Logo de MCL Automotores">
             </div>
             <div id="contenidoSesion">
-                <h2>Iniciar Sesión</h2>
-                <div id="usuario" class="input-container">
-                    <i class="fas fa-user"></i>
-                    <input type="text" id="username" placeholder="Usuario">
+                <div class="login-heading">
+                    <h2>Iniciar Sesión</h2>
+                    <p>Ingresá tus datos para acceder al sistema.</p>
                 </div>
-                <div id="contraseña" class="input-container">
-                    <i class="fas fa-lock"></i>
-                    <input type="password" id="password" placeholder="Contraseña">
+                <div class="login-field">
+                    <label for="username">Usuario</label>
+                    <div id="usuario" class="input-container">
+                        <i class="fas fa-user"></i>
+                        <input type="text" id="username" placeholder="Usuario">
+                    </div>
+                </div>
+                <div class="login-field">
+                    <label for="password">Contraseña</label>
+                    <div id="contraseña" class="input-container">
+                        <i class="fas fa-lock"></i>
+                        <input type="password" id="password" placeholder="Contraseña">
+                    </div>
                 </div>
                 <button id="btnIniciarSesion" type="button" class="btn btn-primary" onclick="login()">Iniciar Sesión</button>
             </div>

@@ -242,6 +242,33 @@ document.addEventListener('DOMContentLoaded', function() {
 });
 
 // 2) Render como Cardelli (categoría > subcategoría > productos)
+function crearCatalogEmptyState(mensaje, detalle = 'Volvé a revisar más tarde o consultanos por nuevas unidades.') {
+  const empty = document.createElement('div');
+  empty.className = 'catalog-empty-state';
+  empty.innerHTML = `
+    <i class="fas fa-car-side" aria-hidden="true"></i>
+    <strong>${escapeHTML(mensaje)}</strong>
+    <p>${escapeHTML(detalle)}</p>
+  `;
+  return empty;
+}
+
+function formatearNombreCatalogo(nombre) {
+  const nombreLimpio = String(nombre || '').trim();
+  if (nombreLimpio.length <= 3 && nombreLimpio === nombreLimpio.toLocaleUpperCase('es-AR')) {
+    return nombreLimpio;
+  }
+
+  return nombreLimpio
+    .toLocaleLowerCase('es-AR')
+    .replace(/(^|\s|-)(\p{L})/gu, (match) => match.toLocaleUpperCase('es-AR'));
+}
+
+function esSubcategoriaSeleccionada(sub) {
+  if (subcategoriaSeleccionadaId === null || subcategoriaSeleccionadaId === undefined) return false;
+  return String(sub.id) === String(subcategoriaSeleccionadaId) || sub.nombre === subcategoriaSeleccionadaId;
+}
+
 function displayProductosMCL(data) {
   if (!Array.isArray(data)) return;
 
@@ -249,6 +276,8 @@ function displayProductosMCL(data) {
   productosDiv.innerHTML = '';
 
   data.forEach(categoria => {
+    if (!categoria) return;
+
     const catDiv = document.createElement('div');
     catDiv.className = 'category';
     catDiv.id = `category-${categoria.id}`;
@@ -256,7 +285,24 @@ function displayProductosMCL(data) {
       <h2>${escapeHTML(categoria.nombre)}</h2>
     `;
 
+    let categoriaTieneProductosVisibles = false;
+    let categoriaTieneSubcategoriasRenderizadas = false;
+    const hayCategoriaSeleccionada = categoriaSeleccionadaId !== null && categoriaSeleccionadaId !== undefined;
+    const haySubcategoriaSeleccionada = subcategoriaSeleccionadaId !== null && subcategoriaSeleccionadaId !== undefined;
+
     (categoria.SubCategorias || []).sort((a, b) => (a.nombre || '').localeCompare((b.nombre || ''), 'es-AR')).forEach(sub => {
+      const productosVisibles = (sub.Productos || []).filter(prod => !prod.esOculto);
+      const subcategoriaEstaSeleccionada = esSubcategoriaSeleccionada(sub);
+
+      if (productosVisibles.length === 0 && !subcategoriaEstaSeleccionada) {
+        return;
+      }
+
+      categoriaTieneSubcategoriasRenderizadas = true;
+      if (productosVisibles.length > 0) {
+        categoriaTieneProductosVisibles = true;
+      }
+
       const subDiv = document.createElement('div');
       subDiv.className = 'subcategory';
       subDiv.id = `subcategoria-${sub.id}`;
@@ -267,8 +313,7 @@ function displayProductosMCL(data) {
       const row = document.createElement('div');
       row.className = 'products-row';
 
-      (sub.Productos || [])
-      .filter(prod => !prod.esOculto)
+      productosVisibles
       .sort((a, b) => (a.nombre || '').localeCompare((b.nombre || ''), 'es-AR') * -1)
       .forEach(prod => {
         const cardWrap = document.createElement('div');
@@ -370,11 +415,24 @@ function displayProductosMCL(data) {
         row.appendChild(cardWrap);
       });
 
-      subDiv.appendChild(row);
+      if (productosVisibles.length > 0) {
+        subDiv.appendChild(row);
+      } else if (subcategoriaEstaSeleccionada) {
+        subDiv.appendChild(crearCatalogEmptyState(`No hay vehículos disponibles de ${formatearNombreCatalogo(sub.nombre)} en este momento.`));
+      }
+
       catDiv.appendChild(subDiv);
     });
 
-    productosDiv.appendChild(catDiv);
+    if (hayCategoriaSeleccionada && !haySubcategoriaSeleccionada && !categoriaTieneProductosVisibles) {
+      catDiv.appendChild(crearCatalogEmptyState('No hay vehículos disponibles en esta categoría por el momento.'));
+      productosDiv.appendChild(catDiv);
+      return;
+    }
+
+    if (categoriaTieneSubcategoriasRenderizadas) {
+      productosDiv.appendChild(catDiv);
+    }
   });
 }
 // ===== Modal =====
